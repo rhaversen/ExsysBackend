@@ -1,5 +1,5 @@
 {
-  "name": "exsys-project",
+  "name": "exsys-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -37,8 +37,6 @@
     "depcheck": "npx depcheck",
     "upgrade": "npm update && npx ncu -u && npm install"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "config": "^3.3.11",
     "express": "^4.19.2",
