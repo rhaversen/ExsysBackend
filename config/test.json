@@ -1,0 +1,43 @@
+{
+	"apiLimiter": {
+		"sensitivity": {
+			"veryLow": {
+				"max": 1000,
+				"windowMs": 1,
+				"standardHeaders": true
+			},
+			"low": {
+				"max": 1000,
+				"windowMs": 1,
+				"standardHeaders": true
+			},
+			"medium": {
+				"max": 1000,
+				"windowMs": 1,
+				"standardHeaders": true
+			},
+			"high": {
+				"max": 1000,
+				"windowMs": 1,
+				"standardHeaders": true
+			},
+			"critical": {
+				"max": 1000,
+				"windowMs": 1,
+				"standardHeaders": true
+			}
+		}
+	},
+	"expressPort": 5000,
+	"mongoose": {
+		"retrySettings": {
+			"maxAttempts": 5,
+			"interval": 5000
+		},
+		"options": {
+			"retryWrites": "true",
+			"w": "majority",
+			"appName": "main"
+		}
+	}
+}
