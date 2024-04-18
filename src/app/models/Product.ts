@@ -14,8 +14,7 @@ export interface IProduct extends Document {
 }
 
 // Schema
-const productSchema = new Schema<IProduct>({
-})
+const productSchema = new Schema<IProduct>({})
 
 // Adding indexes
 

@@ -14,8 +14,7 @@ export interface IOption extends Document {
 }
 
 // Schema
-const orderSchema = new Schema<IOption>({
-})
+const orderSchema = new Schema<IOption>({})
 
 // Adding indexes
 

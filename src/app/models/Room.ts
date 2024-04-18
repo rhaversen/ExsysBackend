@@ -14,8 +14,7 @@ export interface IRoom extends Document {
 }
 
 // Schema
-const roomSchema = new Schema<IRoom>({
-})
+const roomSchema = new Schema<IRoom>({})
 
 // Adding indexes
 
