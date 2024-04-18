@@ -12,7 +12,6 @@ import logger from '../utils/logger.js'
 export interface IOrder extends Document {
     _id: Types.ObjectId
     requestedDeliveryDate: Date // The date the order is supposed to be delivered
-    orderCreationDate: Date // The date the order was created in the system
     roomId: Types.ObjectId // Reference to the Room document
     products: Array<{
         product: Types.ObjectId
@@ -29,11 +28,6 @@ const orderSchema = new Schema<IOrder>({
     requestedDeliveryDate: {
         type: Schema.Types.Date,
         required: [true, 'Requested delivery date is required']
-    },
-    orderCreationDate: {
-        type: Schema.Types.Date,
-        required: true,
-        default: Date.now
     },
     roomId: {
         type: Schema.Types.ObjectId,
@@ -66,6 +60,8 @@ const orderSchema = new Schema<IOrder>({
         },
         required: false
     }]
+}, {
+    timestamps: true
 })
 
 // Adding indexes
