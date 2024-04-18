@@ -5,6 +5,7 @@ import express from 'express'
 import mongoSanitize from 'express-mongo-sanitize'
 import helmet from 'helmet'
 import mongoose from 'mongoose'
+import RateLimit from 'express-rate-limit'
 
 // Own Modules
 import databaseConnector from './utils/databaseConnector.js'
@@ -13,12 +14,15 @@ import config from './utils/setupConfig.js'
 
 // Routes
 import globalErrorHandler from './middleware/globalErrorHandler.js'
+import serviceRoutes from './routes/service.js'
 
 // Logging environment
 logger.info(`Node environment: ${process.env.NODE_ENV}`)
 
 // Configs
 const {
+    veryLowSensitivityApiLimiterConfig,
+    mediumSensitivityApiLimiterConfig,
     expressPort
 } = config
 
@@ -36,10 +40,14 @@ app.use(express.json())
 app.use(mongoSanitize())
 
 // Rate limiters
-// No routes yet
+const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfig)
+const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Use all routes with medium sensitivity rate limiter
-// no routes yet
+app.use('/service', mediumSensitivityApiLimiter, serviceRoutes)
+
+// Apply low sensitivity for service routes
+app.use('/service', veryLowSensitivityApiLimiter)
 
 // Global error handler middleware
 app.use(globalErrorHandler)
