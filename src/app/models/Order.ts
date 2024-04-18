@@ -13,7 +13,7 @@ export interface IOrder extends Document {
     _id: Types.ObjectId
     requestedDeliveryDate: Date // The date the order is supposed to be delivered
     orderCreationDate: Date // The date the order was created in the system
-    roomName: Types.ObjectId // Reference to the Room document
+    roomId: Types.ObjectId // Reference to the Room document
     products: Array<{
         product: Types.ObjectId
         quantity: number
