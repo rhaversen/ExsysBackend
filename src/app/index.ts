@@ -11,9 +11,9 @@ import RateLimit from 'express-rate-limit'
 import databaseConnector from './utils/databaseConnector.js'
 import logger from './utils/logger.js'
 import config from './utils/setupConfig.js'
+import globalErrorHandler from './middleware/globalErrorHandler.js'
 
 // Routes
-import globalErrorHandler from './middleware/globalErrorHandler.js'
 import serviceRoutes from './routes/service.js'
 
 // Logging environment
