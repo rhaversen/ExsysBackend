@@ -15,6 +15,7 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 
 // Routes
 import serviceRoutes from './routes/service.js'
+import orderRoutes from './routes/orders.js'
 
 // Logging environment
 logger.info(`Node environment: ${process.env.NODE_ENV}`)
@@ -44,10 +45,17 @@ const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfi
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Use all routes with medium sensitivity rate limiter
+app.use('/v1/orders', mediumSensitivityApiLimiter, orderRoutes)
 app.use('/service', mediumSensitivityApiLimiter, serviceRoutes)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
+
+// Apply medium sensitivity for all database operation routes
+app.use('/v1/orders', mediumSensitivityApiLimiter)
+
+// Apply stricter rate limiters to routes
+// none
 
 // Global error handler middleware
 app.use(globalErrorHandler)
