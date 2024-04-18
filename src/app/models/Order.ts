@@ -35,7 +35,7 @@ const orderSchema = new Schema<IOrder>({
         required: true,
         default: Date.now
     },
-    roomName: {
+    roomId: {
         type: Schema.Types.ObjectId,
         ref: 'Room',
         required: [true, 'Room name is required']
