@@ -38,6 +38,7 @@
     "upgrade": "npm update && npx ncu -u && npm install"
   },
   "dependencies": {
+    "@logtail/node": "^0.4.21",
     "config": "^3.3.11",
     "express": "^4.19.2",
     "express-mongo-sanitize": "^2.2.0",
