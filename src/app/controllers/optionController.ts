@@ -4,14 +4,15 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-//Own modules
-import Option from '../models/Option';
+// Own modules
+import OptionModel from '../models/Option';
 import logger from '../utils/logger';
+
 export async function createOption(req: Request, res: Response, next: NextFunction): Promise<void> {
     logger.silly('Creating option');
 
     try {
-        const newOption = await Option.create(req.body as Record<string, unknown>);
+        const newOption = await OptionModel.create(req.body as Record<string, unknown>);
         res.status(201).json(newOption);
     } catch (error) {
         if (error instanceof mongoose.Error.ValidationError) {
