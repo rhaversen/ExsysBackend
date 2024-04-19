@@ -54,6 +54,7 @@ const orderSchema = new Schema<IOrder>({
     products: [{
         product: {
             type: Schema.Types.ObjectId,
+            unique: true,
             ref: 'Product',
             required: [true, 'Produkt er påkrevet'],
             validate: {
@@ -76,6 +77,7 @@ const orderSchema = new Schema<IOrder>({
     options: [{
         option: {
             type: Schema.Types.ObjectId,
+            unique: true,
             ref: 'Option',
             required: [true, 'Tilvalg er påkrevet'],
             validate: {
