@@ -59,7 +59,18 @@ const productSchema = new Schema<IProduct>({
         ref: 'Option'
     }],
     orderWindow: {
+        type: Schema.Types.Mixed,
+        required: [true, 'orderWindow is required'],
+        validate: {
+            validator: async function (v: any) {
+                const fromTotalMinutes = v.from.hour * 60 + v.from.minute
+                const toTotalMinutes = v.to.hour * 60 + v.to.minute
+                return fromTotalMinutes < toTotalMinutes
+            },
+            message: 'The "from" time must be before the "to" time'
+        },
         from: {
+            type: Schema.Types.Mixed,
             hour: {
                 type: Schema.Types.Number,
                 required: [true, 'Start hour is required'],
@@ -74,6 +85,7 @@ const productSchema = new Schema<IProduct>({
             }
         },
         to: {
+            type: Schema.Types.Mixed,
             hour: {
                 type: Schema.Types.Number,
                 required: [true, 'End hour is required'],
@@ -86,14 +98,6 @@ const productSchema = new Schema<IProduct>({
                 min: [0, 'End minute must be between 0 and 59'],
                 max: [59, 'End minute must be between 0 and 59']
             }
-        },
-        validate: {
-            validator: async function (v: OrderWindow) {
-                const fromTotalMinutes = v.from.hour * 60 + v.from.minute
-                const toTotalMinutes = v.to.hour * 60 + v.to.minute
-                return fromTotalMinutes < toTotalMinutes
-            },
-            message: 'The "from" time must be before the "to" time'
         }
     }
 })
