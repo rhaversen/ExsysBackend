@@ -22,13 +22,13 @@ export interface IOption extends Document {
 const orderSchema = new Schema<IOption>({
     optionName: {
         type: Schema.Types.String,
-        required: [true, 'Optionname er påkrævet'],
-        maxlength: [20, 'Optionname kan højest have 20 tegn'],
+        required: [true, 'OptionName er påkrævet'],
+        maxLength: [20, 'OptionName kan højest have 20 tegn'],
     },
     description: {
         type: Schema.Types.String,
         required: [true, 'Description er påkrævet'],
-        maxlength: [50, 'Description kan højest have 50 tegn'],
+        maxLength: [50, 'Description kan højest have 50 tegn'],
     },
     availability: {
         type: Schema.Types.Number,
