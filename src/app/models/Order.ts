@@ -109,7 +109,7 @@ const orderSchema = new Schema<IOrder>({
             type: Schema.Types.Number,
             required: [true, 'Mængde er påkrevet'],
             min: [1, 'Mængde skal være større end 0'],
-            max: [100, 'Mengde skal være mindre end eller lig med 100'],
+            max: [100, 'Mængde skal være mindre end eller lig med 100'],
             default: 1
         },
         required: false
