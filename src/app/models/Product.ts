@@ -31,6 +31,7 @@ export interface IProduct extends Document {
     }>
 
 }
+
 // Schema
 const productSchema = new Schema<IProduct>({
     name: {
