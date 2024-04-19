@@ -6,7 +6,6 @@ import chaiHttp from 'chai-http'
 import * as chai from 'chai'
 import mongoose from 'mongoose'
 import { type Server } from 'http'
-import chaiAsPromised from 'chai-as-promised'
 
 // Own modules
 import logger from '../app/utils/logger.js'
@@ -19,9 +18,6 @@ process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 const chaiHttpObject = chai.use(chaiHttp)
 let app: { shutDown: (exitCode?: number) => Promise<void>, server: Server }
 let chaiAppServer: ChaiHttp.Agent
-
-// Setup
-chai.use(chaiAsPromised)
 
 const cleanDatabase = async function (): Promise<void> {
     /// ////////////////////////////////////////////
