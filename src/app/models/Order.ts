@@ -52,6 +52,8 @@ const orderSchema = new Schema<IOrder>({
         }
     },
     products: [{
+        type: Schema.Types.Mixed,
+        required: [true, 'Produkter er påkrevet'],
         product: {
             type: Schema.Types.ObjectId,
             unique: true,
@@ -88,10 +90,11 @@ const orderSchema = new Schema<IOrder>({
             min: [1, 'Mængde skal være større end 0'],
             max: [100, 'Mængde skal være mindre end eller lig med 100'],
             default: 1
-        },
-        required: [true, 'Produkter er påkrevet']
+        }
     }],
     options: [{
+        type: Schema.Types.Mixed,
+        required: false,
         option: {
             type: Schema.Types.ObjectId,
             unique: true,
@@ -111,8 +114,7 @@ const orderSchema = new Schema<IOrder>({
             min: [1, 'Mængde skal være større end 0'],
             max: [100, 'Mængde skal være mindre end eller lig med 100'],
             default: 1
-        },
-        required: false
+        }
     }]
 }, {
     timestamps: true
