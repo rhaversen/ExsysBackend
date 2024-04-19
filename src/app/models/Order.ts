@@ -30,67 +30,67 @@ export interface IOrder extends Document {
 const orderSchema = new Schema<IOrder>({
     requestedDeliveryDate: {
         type: Schema.Types.Date,
-        required: [true, 'Requested delivery date is required'],
+        required: [true, 'Leveringstidspunkt er påkrevet'],
         validate: {
             validator: function (v: Date) {
                 // Ensure the requested delivery date is not in the past
                 return v >= new Date()
             },
-            message: 'Requested delivery date cannot be in the past'
+            message: 'Leveringstidspunkt skal være i fremtiden'
         }
     },
     roomId: {
         type: Schema.Types.ObjectId,
         ref: 'Room',
-        required: [true, 'Room name is required'],
+        required: [true, 'Rum er påkrevet'],
         validate: {
             validator: async function (v: Types.ObjectId) {
                 const room = await RoomModel.findById(v)
                 return room !== null && room !== undefined
             },
-            message: 'No such room exists'
+            message: 'Rummet eksisterer ikke'
         }
     },
     products: [{
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
-            required: [true, 'Product is required'],
+            required: [true, 'Produkt er påkrevet'],
             validate: {
                 validator: async function (v: Types.ObjectId) {
                     const product = await ProductModel.findById(v)
                     return product !== null && product !== undefined
                 },
-                message: 'No such product exists'
+                message: 'Produktet eksisterer ikke'
             }
         },
         quantity: {
             type: Schema.Types.Number,
-            required: [true, 'Quantity is required'],
-            min: [1, 'Quantity must be greater than 0'],
-            max: [100, 'Quantity must be less than or equal to 100'],
+            required: [true, 'Mængde er påkrevet'],
+            min: [1, 'Mængde skal være større end 0'],
+            max: [100, 'Mængde skal være mindre end eller lig med 100'],
             default: 1
         },
-        required: [true, 'Products are required']
+        required: [true, 'Produkter er påkrevet']
     }],
     options: [{
         option: {
             type: Schema.Types.ObjectId,
             ref: 'Option',
-            required: [true, 'Option is required'],
+            required: [true, 'Tilvalg er påkrevet'],
             validate: {
                 validator: async function (v: Types.ObjectId) {
                     const option = await OptionModel.findById(v)
                     return option !== null && option !== undefined
                 },
-                message: 'No such option exists'
+                message: 'Tilvalget eksisterer ikke'
             }
         },
         quantity: {
             type: Schema.Types.Number,
-            required: [true, 'Quantity is required'],
-            min: [1, 'Quantity must be greater than 0'],
-            max: [100, 'Quantity must be less than or equal to 100'],
+            required: [true, 'Mængde er påkrevet'],
+            min: [1, 'Mængde skal være større end 0'],
+            max: [100, 'Mengde skal være mindre end eller lig med 100'],
             default: 1
         },
         required: false
