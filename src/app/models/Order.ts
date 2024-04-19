@@ -6,7 +6,7 @@ import { type Document, model, Schema, type Types } from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import OptionModel from './Option.js'
-import ProductModel, { IProduct } from './Product.js'
+import ProductModel from './Product.js'
 import RoomModel from './Room.js'
 
 // Destructuring and global variables
@@ -65,18 +65,19 @@ const orderSchema = new Schema<IOrder>({
                 message: 'Produktet eksisterer ikke'
             }, {
                 validator: async function (v: Types.ObjectId) {
-                    const product = await ProductModel.findById(v) as IProduct // Existence of product is already checked
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    const product = (await ProductModel.findById(v))! // Existence of product is already checked
                     const nowHour = new Date().getHours()
                     const nowMinute = new Date().getMinutes()
 
-                    const from = product.orderWindow.from;
-                    const to = product.orderWindow.to;
+                    const from = product.orderWindow.from
+                    const to = product.orderWindow.to
 
-                    const isWithinHour = from.hour < nowHour && nowHour < to.hour;
-                    const isStartHour = nowHour === from.hour && nowMinute >= from.minute;
-                    const isEndHour = nowHour === to.hour && nowMinute <= to.minute;
+                    const isWithinHour = from.hour < nowHour && nowHour < to.hour
+                    const isStartHour = nowHour === from.hour && nowMinute >= from.minute
+                    const isEndHour = nowHour === to.hour && nowMinute <= to.minute
 
-                    return isWithinHour || isStartHour || isEndHour;
+                    return isWithinHour || isStartHour || isEndHour
                 },
                 message: 'Bestillingen er uden for bestillingsvinduet'
             }]

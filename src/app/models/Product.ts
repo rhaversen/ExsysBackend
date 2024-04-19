@@ -5,7 +5,6 @@ import { type Document, model, Schema, type Types } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import { kMaxLength } from 'buffer'
 
 // Destructuring and global variables
 
@@ -15,7 +14,7 @@ export interface IProduct extends Document {
     name: string
     price: number
     description: string
-    availability : number
+    availability: number
     orderWindow: {
         from: {
             hour: number
@@ -32,7 +31,7 @@ export interface IProduct extends Document {
     }>
 
 }
-type OrderWindow = IProduct['orderWindow'];
+type OrderWindow = IProduct['orderWindow']
 
 // Schema
 const productSchema = new Schema<IProduct>({
@@ -91,14 +90,13 @@ const productSchema = new Schema<IProduct>({
         },
         validate: {
             validator: async function (v: OrderWindow) {
-                const fromTotalMinutes = v.from.hour * 60 + v.from.minute;
-                const toTotalMinutes = v.to.hour * 60 + v.to.minute;
-                return fromTotalMinutes < toTotalMinutes;
+                const fromTotalMinutes = v.from.hour * 60 + v.from.minute
+                const toTotalMinutes = v.to.hour * 60 + v.to.minute
+                return fromTotalMinutes < toTotalMinutes
             },
             message: 'The "from" time must be before the "to" time'
         }
     }
-    
 })
 
 // Adding indexes
