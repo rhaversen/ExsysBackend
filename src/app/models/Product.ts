@@ -31,8 +31,6 @@ export interface IProduct extends Document {
     }>
 
 }
-type OrderWindow = IProduct['orderWindow']
-
 // Schema
 const productSchema = new Schema<IProduct>({
     name: {
