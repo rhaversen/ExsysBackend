@@ -4,11 +4,11 @@ metadata:
     name: backend-deployment
     namespace: exsys-staging
 spec:
-    replicas: 3
+    replicas: 1
     strategy:
         type: RollingUpdate
         rollingUpdate:
-            maxUnavailable: 1
+            maxUnavailable: 0
             maxSurge: 1
     selector:
         matchLabels:
@@ -23,11 +23,11 @@ spec:
                 - name: backend-deployment
                   resources:
                       limits:
-                          cpu: "1"
-                          memory: "512Mi"
-                      requests:
-                          cpu: "0.5"
+                          cpu: "0.2"
                           memory: "256Mi"
+                      requests:
+                          cpu: "0.1"
+                          memory: "125Mi"
                   image: "rhaversen/exsys-backend:${GITHUB_SHA}"
                   imagePullPolicy: Always
                   livenessProbe:
