@@ -39,5 +39,8 @@
 			"w": "majority",
 			"appName": "staging"
 		}
+	},
+	"bcrypt": {
+		"saltRounds": 1
 	}
 }
