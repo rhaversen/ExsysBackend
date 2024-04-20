@@ -26,7 +26,7 @@ const AppConfig = {
     retryWrites: config.get('mongoose.options.retryWrites') as string,
     w: config.get('mongoose.options.w') as string,
     appName: config.get('mongoose.options.appName') as string,
-    bcryptSaltRounds: config.get('bcrypt.saltRounds') as number,
+    bcryptSaltRounds: config.get('bcrypt.saltRounds') as number
 }
 
 export default AppConfig
