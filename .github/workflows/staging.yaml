@@ -2,7 +2,7 @@ name: Staging Testing and Docker Image CI/CD
 
 on:
     push:
-        branches: ["staging"]
+        branches: ["Staging"]
 
 jobs:
     build:
