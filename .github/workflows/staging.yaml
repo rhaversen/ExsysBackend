@@ -59,8 +59,8 @@ jobs:
             - name: Build and push
               run: |
                   docker buildx create --use
-                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/life-tracker-backend:staging .
-                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/life-tracker-backend:${{ github.sha }} .
+                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend:staging .
+                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend:${{ github.sha }} .
 
     push-devops:
         needs: [build, test-integration, push-dockerhub]

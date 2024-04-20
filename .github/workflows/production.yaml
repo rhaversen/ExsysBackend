@@ -44,8 +44,8 @@ jobs:
               run: |
                   docker buildx create --use
                   docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend:prod .
-                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend-backend:latest .
-                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend-backend:${{ github.sha }} .
+                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend:latest .
+                  docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 --push --tag ${{ secrets.DOCKER_USERNAME }}/exsys-backend:${{ github.sha }} .
 
     push-devops:
         needs: [build, push-dockerhub]
