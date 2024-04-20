@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend-deployment
+    namespace: exsys-prod
+spec:
+    replicas: 3
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxUnavailable: 1
+            maxSurge: 1
+    selector:
+        matchLabels:
+            app: backend-deployment
+    template:
+        metadata:
+            labels:
+                app: backend-deployment
+        spec:
+            automountServiceAccountToken: false
+            containers:
+                - name: backend-deployment
+                  resources:
+                      limits:
+                          cpu: "1"
+                          memory: "512Mi"
+                      requests:
+                          cpu: "0.5"
+                          memory: "256Mi"
+                  image: "rhaversen/exsys-backend:${GITHUB_SHA}"
+                  imagePullPolicy: Always
+                  livenessProbe:
+                      httpGet:
+                          path: service/livez
+                          port: 5000
+                      periodSeconds: 10
+                      initialDelaySeconds: 15
+                      failureThreshold: 5
+                  readinessProbe:
+                      httpGet:
+                          path: service/readyz
+                          port: 5000
+                      periodSeconds: 10
+                      initialDelaySeconds: 15
+                      failureThreshold: 5
+                  ports:
+                      - containerPort: 5000
+                  envFrom:
+                      - secretRef:
+                            name: backend-secrets

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: backend-ingress
+    namespace: exsys-staging
+    annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-staging
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+    ingressClassName: nginx
+    tls:
+        - hosts:
+              - staging.kantine.nyskivehus.dk
+          secretName: backend-tls
+    rules:
+        - host: staging.kantine.nyskivehus.dk
+          http:
+              paths:
+                  - backend:
+                        service:
+                            name: backend-service
+                            port:
+                                number: 80
+                    path: /api(/|$)(.*) # Strips the prefix
+                    pathType: Prefix
