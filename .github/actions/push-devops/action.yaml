@@ -13,7 +13,7 @@ runs:
     using: "composite"
     steps:
         - name: Checkout code
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
 
         - name: Configure Git
           run: |
@@ -33,7 +33,7 @@ runs:
           shell: bash
 
         - name: Checkout ExsysBackend-DevOps
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
           with:
               repository: "rhaversen/ExsysBackend-DevOps"
               token: ${{ inputs.devops_repo_token }}
