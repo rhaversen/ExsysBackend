@@ -1,6 +1,17 @@
 name: "Push Docker Image"
 description: "Builds and pushes Docker image to Docker Hub"
 
+inputs:
+    username:
+        description: "Docker Hub username"
+        required: true
+    password:
+        description: "Docker Hub password"
+        required: true
+    tag:
+        description: "Docker image tag"
+        required: true
+
 runs:
     using: "composite"
     steps:
