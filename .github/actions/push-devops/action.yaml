@@ -1,6 +1,14 @@
 name: "Push to DevOps Repo"
 description: "Updates deployment files and pushes to DevOps repository"
 
+inputs:
+    environment:
+        description: "Deployment environment"
+        required: true
+    devops_repo_token:
+        description: "Token for the DevOps repository"
+        required: true
+
 runs:
     using: "composite"
     steps:
