@@ -22,11 +22,11 @@ describe('Order Model', function () {
         requestedDeliveryDate: number
         roomId: Types.ObjectId
         products: Array<{
-            product: Types.ObjectId
+            productId: Types.ObjectId
             quantity: number
         }>
         options: Array<{
-            option: Types.ObjectId
+            optionId: Types.ObjectId
             quantity: number
         }>
     }
@@ -57,11 +57,11 @@ describe('Order Model', function () {
             requestedDeliveryDate: new Date().setDate(new Date().getDate() + 10000),
             roomId: testRoom._id,
             products: [{
-                product: testProduct._id,
+                productId: testProduct._id,
                 quantity: 1
             }],
             options: [{
-                option: testOption._id,
+                optionId: testOption._id,
                 quantity: 1
             }]
         }

@@ -17,11 +17,11 @@ export interface IOrder extends Document {
     requestedDeliveryDate: Date // The date the order is supposed to be delivered
     roomId: Types.ObjectId // Reference to the Room document
     products: Array<{
-        product: Types.ObjectId
+        productId: Types.ObjectId
         quantity: number
     }> // The products and their quantities
     options?: Array<{
-        option: Types.ObjectId
+        optionId: Types.ObjectId
         quantity: number
     }> // Additional options for the order
 }
@@ -54,7 +54,7 @@ const orderSchema = new Schema<IOrder>({
     products: [{
         type: Schema.Types.Mixed,
         required: [true, 'Produkter er påkrevet'],
-        product: {
+        productId: {
             type: Schema.Types.ObjectId,
             unique: true,
             ref: 'Product',
@@ -95,7 +95,7 @@ const orderSchema = new Schema<IOrder>({
     options: [{
         type: Schema.Types.Mixed,
         required: false,
-        option: {
+        optionId: {
             type: Schema.Types.ObjectId,
             unique: true,
             ref: 'Option',
