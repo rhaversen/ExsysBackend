@@ -34,7 +34,7 @@ jobs:
                   name: dist
                   path: dist
             - name: Unit tests
-              run: NODE_ENV=test npm run test:unit
+              run: npm run test:unit
 
     test-lint:
         runs-on: ubuntu-latest
