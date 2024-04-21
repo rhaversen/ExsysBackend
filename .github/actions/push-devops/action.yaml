@@ -1,0 +1,45 @@
+name: "Push to DevOps Repo"
+description: "Updates deployment files and pushes to DevOps repository"
+
+runs:
+    using: "composite"
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Configure Git
+          run: |
+              git config --global user.name "GitHub Actions Bot"
+              git config --global user.email "actions@github.com"
+          shell: bash
+
+        - name: Replace image tag in deployment.yaml
+          run: |
+              sed -i "s/\${GITHUB_SHA}/${{ github.sha }}/g" k8s/${{ inputs.environment }}/deployment.yaml
+          shell: bash
+
+        - name: Commit changes
+          run: |
+              git add k8s/${{ inputs.environment }}/*
+              git commit -m "${{ github.sha }}"
+          shell: bash
+
+        - name: Checkout ExsysBackend-DevOps
+          uses: actions/checkout@v2
+          with:
+              repository: "rhaversen/ExsysBackend-DevOps"
+              token: ${{ inputs.devops_repo_token }}
+              path: "ExsysBackend-DevOps"
+
+        - name: Copy files to ExsysBackend-DevOps
+          run: |
+              cp -r k8s/${{ inputs.environment }}/* ExsysBackend-DevOps/k8s/${{ inputs.environment }}/
+          shell: bash
+
+        - name: Push changes to ExsysBackend-DevOps
+          run: |
+              cd ExsysBackend-DevOps
+              git add k8s/${{ inputs.environment }}/*
+              git commit -m "${{ inputs.environment }}: ${{ github.sha }}"
+              git push origin HEAD
+          shell: bash
