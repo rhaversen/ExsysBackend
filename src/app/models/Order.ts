@@ -26,96 +26,57 @@ export interface IOrder extends Document {
     }> // Additional options for the order
 }
 
-// Schema
-const orderSchema = new Schema<IOrder>({
-    requestedDeliveryDate: {
-        type: Schema.Types.Date,
-        required: [true, 'Leveringstidspunkt er påkrevet'],
-        validate: {
-            validator: function (v: Date) {
-                // Ensure the requested delivery date is not in the past
-                return v >= new Date()
-            },
-            message: 'Leveringstidspunkt skal være i fremtiden'
-        }
-    },
-    roomId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Room',
-        required: [true, 'Rum er påkrevet'],
-        validate: {
-            validator: async function (v: Types.ObjectId) {
-                const room = await RoomModel.findById(v)
-                return room !== null && room !== undefined
-            },
-            message: 'Rummet eksisterer ikke'
-        }
-    },
-    products: [{
-        type: Schema.Types.Mixed,
-        required: [true, 'Produkter er påkrevet'],
-        productId: {
-            type: Schema.Types.ObjectId,
-            unique: true,
-            ref: 'Product',
-            required: [true, 'Produkt er påkrevet'],
-            validate: [{
-                validator: async function (v: Types.ObjectId) {
-                    const product = await ProductModel.findById(v)
-                    return product !== null && product !== undefined
-                },
-                message: 'Produktet eksisterer ikke'
-            }, {
-                validator: async function (v: Types.ObjectId) {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    const product = (await ProductModel.findById(v))! // Existence of product is already checked
-                    const nowHour = new Date().getHours()
-                    const nowMinute = new Date().getMinutes()
+// Sub-schema for products
+const productsSubSchema = new Schema({
+	productId: {
+		type: Schema.Types.ObjectId,
+		ref: 'Product',
+		required: [true, 'Produkt er påkrevet']
+	},
+	quantity: {
+		type: Schema.Types.Number,
+		required: [true, 'Mængde er påkrevet'],
+		min: [1, 'Mængde skal være større end 0']
+	}
+})
 
-                    const from = product.orderWindow.from
-                    const to = product.orderWindow.to
+// Sub-schema for options
+const optionsSubSchema = new Schema({
+	optionId: {
+		type: Schema.Types.ObjectId,
+		ref: 'Option',
+		required: [true, 'Tilvalg er påkrevet']
+	},
+	quantity: {
+		type: Schema.Types.Number,
+		required: [true, 'Mængde er påkrevet'],
+		min: [1, 'Mængde skal være større end 0']
+	}
+})
 
-                    const isWithinHour = from.hour < nowHour && nowHour < to.hour
-                    const isStartHour = nowHour === from.hour && nowMinute >= from.minute
-                    const isEndHour = nowHour === to.hour && nowMinute <= to.minute
-
-                    return isWithinHour || isStartHour || isEndHour
-                },
-                message: 'Bestillingen er uden for bestillingsvinduet'
-            }]
-        },
-        quantity: {
-            type: Schema.Types.Number,
-            required: [true, 'Mængde er påkrevet'],
-            min: [1, 'Mængde skal være større end 0'],
-            default: 1
-        }
-    }],
-    options: [{
-        type: Schema.Types.Mixed,
-        required: false,
-        optionId: {
-            type: Schema.Types.ObjectId,
-            unique: true,
-            ref: 'Option',
-            required: [true, 'Tilvalg er påkrevet'],
-            validate: {
-                validator: async function (v: Types.ObjectId) {
-                    const option = await OptionModel.findById(v)
-                    return option !== null && option !== undefined
-                },
-                message: 'Tilvalget eksisterer ikke'
-            }
-        },
-        quantity: {
-            type: Schema.Types.Number,
-            required: [true, 'Mængde er påkrevet'],
-            min: [1, 'Mængde skal være større end 0'],
-            default: 1
-        }
-    }]
+// Main order schema
+const orderSchema = new Schema({
+	requestedDeliveryDate: {
+		type: Schema.Types.Date,
+		required: [true, 'Leveringstidspunkt er påkrevet']
+	},
+	roomId: {
+		type: Schema.Types.ObjectId,
+		ref: 'Room',
+		required: [true, 'Rum er påkrevet']
+	},
+	products: {
+		type: [productsSubSchema],
+		required: [true, 'Produkter er påkrævet'],
+		unique: true
+	},
+	options: {
+		type: [optionsSubSchema],
+		unique: true,
+		default: undefined
+	}
 }, {
-    timestamps: true
+	timestamps: true
 })
 
 // Adding indexes
