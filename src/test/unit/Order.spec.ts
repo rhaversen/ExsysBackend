@@ -15,11 +15,11 @@ import OptionModel from '../../app/models/Option.js'
 import { type Types } from 'mongoose'
 
 describe('Order Model', function () {
-    let testProduct
-    let testRoom
-    let testOption
+    let testProduct: IProduct
+    let testRoom: IRoom
+    let testOption: IOption
     let testOrderFields: {
-        requestedDeliveryDate: number
+        requestedDeliveryDate: Date
         roomId: Types.ObjectId
         products: Array<{
             productId: Types.ObjectId
