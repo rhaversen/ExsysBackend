@@ -1,0 +1,62 @@
+name: Development Testing CI
+
+on:
+    pull_request:
+        branches: ["development"]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup environment
+              uses: ./.github/actions/setup
+
+            - name: Build
+              run: npm run build
+
+            - name: Archive production artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+
+    test-unit:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup environment
+              uses: ./.github/actions/setup
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+
+            - name: Unit tests
+              run: npm run test:unit
+
+    test-lint:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup environment
+              uses: ./.github/actions/setup
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+
+            - name: Lint tests
+              run: npm run lint
