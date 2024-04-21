@@ -40,7 +40,8 @@ describe('Order Model', function () {
             orderWindow: {
                 from: { hour: 0, minute: 0 },
                 to: { hour: 23, minute: 59 }
-            }
+            },
+            maxOrderQuantity: 10
         })
         testRoom = await RoomModel.create({
             name: 'Test Room',
@@ -51,7 +52,7 @@ describe('Order Model', function () {
             price: 50,
             description: 'A test option',
             availability: 100,
-            maxQuantity: 10
+            maxOrderQuantity: 10
         })
         testOrderFields = {
             requestedDeliveryDate: new Date().setDate(new Date().getDate() + 10000),
