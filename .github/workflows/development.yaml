@@ -10,10 +10,13 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
             - name: Setup environment
               uses: ./.github/actions/setup
+
             - name: Build
               run: npm run build
+
             - name: Archive production artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -26,13 +29,16 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
             - name: Setup environment
               uses: ./.github/actions/setup
+
             - name: Download build artifacts
               uses: actions/download-artifact@v4
               with:
                   name: dist
                   path: dist
+
             - name: Unit tests
               run: npm run test:unit
 
@@ -42,12 +48,15 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
             - name: Setup environment
               uses: ./.github/actions/setup
+
             - name: Download build artifacts
               uses: actions/download-artifact@v4
               with:
                   name: dist
                   path: dist
+
             - name: Lint tests
               run: npm run lint
