@@ -33,6 +33,10 @@ describe('Order Model', function () {
     }
 
     beforeEach(async function () {
+        // Set the fake time to a specific date and time that is before lunch
+        const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+        sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
         testProduct = await ProductModel.create({
             name: 'Test Product',
             price: 100,
@@ -59,7 +63,7 @@ describe('Order Model', function () {
         })
 
         testOrderFields = {
-            requestedDeliveryDate: new Date().setDate(new Date().getDate() + 10000),
+            requestedDeliveryDate: new Date('2024-04-21T15:00:00Z'),
             roomId: testRoom._id,
             products: [{
                 productId: testProduct._id,
