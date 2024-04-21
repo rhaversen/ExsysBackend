@@ -3,16 +3,17 @@
 // Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
+import { Types } from 'mongoose'
+import sinon from 'sinon'
 
 // Own modules
+import OrderModel from '../../app/models/Order.js'
+import ProductModel, { type IProduct } from '../../app/models/Product.js'
+import RoomModel, { type IRoom } from '../../app/models/Room.js'
+import OptionModel, { type IOption } from '../../app/models/Option.js'
 
 // Setup test environment
 import '../testSetup.js'
-import OrderModel from '../../app/models/Order.js'
-import ProductModel from '../../app/models/Product.js'
-import RoomModel from '../../app/models/Room.js'
-import OptionModel from '../../app/models/Option.js'
-import { type Types } from 'mongoose'
 
 describe('Order Model', function () {
     let testProduct: IProduct
@@ -43,10 +44,12 @@ describe('Order Model', function () {
             },
             maxOrderQuantity: 10
         })
+
         testRoom = await RoomModel.create({
             name: 'Test Room',
             description: 'A test room'
         })
+
         testOption = await OptionModel.create({
             optionName: 'Test Option',
             price: 50,
@@ -54,6 +57,7 @@ describe('Order Model', function () {
             availability: 100,
             maxOrderQuantity: 10
         })
+
         testOrderFields = {
             requestedDeliveryDate: new Date().setDate(new Date().getDate() + 10000),
             roomId: testRoom._id,
