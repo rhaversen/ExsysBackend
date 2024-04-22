@@ -52,6 +52,11 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 export async function deleteProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting product')
 
+	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+		res.status(400).json({ error: 'You must confirm the deletion' })
+		return
+	}
+
 	try {
 		await ProductModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()

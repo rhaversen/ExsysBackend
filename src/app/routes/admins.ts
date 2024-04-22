@@ -59,6 +59,7 @@ router.patch('/:id',
  * @desc Delete an admin
  * @access Public
  * @param {string} req.params.id - The id of the admin to be deleted.
+ * @param {boolean} req.body.confirm - Confirm the deletion.
  * @return {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',

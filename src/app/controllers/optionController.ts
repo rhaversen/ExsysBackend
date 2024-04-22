@@ -52,6 +52,11 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 export async function deleteOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting option')
 
+	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+		res.status(400).json({ error: 'You must confirm the deletion' })
+		return
+	}
+
 	try {
 		await OptionModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()

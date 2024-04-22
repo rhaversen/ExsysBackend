@@ -77,6 +77,11 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 export async function deleteAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting admin')
 
+	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+		res.status(400).json({ error: 'You must confirm the deletion' })
+		return
+	}
+
 	try {
 		await AdminModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()
