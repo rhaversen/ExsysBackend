@@ -10,7 +10,7 @@ import logger from '../utils/logger.js'
 
 // Interfaces
 export interface IRoom extends Document {
-    _id: Types.ObjectId
+	_id: Types.ObjectId
 }
 
 // Schema
@@ -20,8 +20,8 @@ const roomSchema = new Schema<IRoom>({})
 
 // Pre-save middleware
 roomSchema.pre('save', function (next) {
-    logger.silly('Saving order')
-    next()
+	logger.silly('Saving order')
+	next()
 })
 
 // Compile the schema into a model
