@@ -58,7 +58,7 @@ adminSchema.pre('save', async function (next) {
 })
 
 // Compile the schema into a model
-const AdminModel = model<IAdmin>('Room', adminSchema)
+const AdminModel = model<IAdmin>('Admin', adminSchema)
 
 // Export the model
 export default AdminModel
