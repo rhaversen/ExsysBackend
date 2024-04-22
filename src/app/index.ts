@@ -22,9 +22,9 @@ logger.info(`Node environment: ${process.env.NODE_ENV}`)
 
 // Configs
 const {
-    veryLowSensitivityApiLimiterConfig,
-    mediumSensitivityApiLimiterConfig,
-    expressPort
+	veryLowSensitivityApiLimiterConfig,
+	mediumSensitivityApiLimiterConfig,
+	expressPort
 } = config
 
 // Global variables and setup
@@ -32,7 +32,7 @@ const app = express()
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
-    await databaseConnector.connectToMongoDB()
+	await databaseConnector.connectToMongoDB()
 }
 
 // Middleware
@@ -62,70 +62,70 @@ app.use(globalErrorHandler)
 
 // Listen
 export const server = app.listen(expressPort, () => {
-    logger.info(`Express is listening at http://localhost:${expressPort}`)
+	logger.info(`Express is listening at http://localhost:${expressPort}`)
 })
 
 // Handle unhandled rejections outside middleware
 process.on('unhandledRejection', (reason, promise): void => {
-    // Attempt to get a string representation of the promise
-    const promiseString = JSON.stringify(promise) !== '' ? JSON.stringify(promise) : 'a promise'
+	// Attempt to get a string representation of the promise
+	const promiseString = JSON.stringify(promise) !== '' ? JSON.stringify(promise) : 'a promise'
 
-    // Get a detailed string representation of the reason
-    const reasonDetail = reason instanceof Error ? reason.stack ?? reason.message : JSON.stringify(reason)
+	// Get a detailed string representation of the reason
+	const reasonDetail = reason instanceof Error ? reason.stack ?? reason.message : JSON.stringify(reason)
 
-    // Log the detailed error message
-    logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
+	// Log the detailed error message
+	logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
 
-    shutDown(1).catch(error => {
-        // If 'error' is an Error object, log its stack trace; otherwise, convert to string
-        const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
-        logger.error(`An error occurred during shutdown: ${errorDetail}`)
-        process.exit(1)
-    })
+	shutDown(1).catch(error => {
+		// If 'error' is an Error object, log its stack trace; otherwise, convert to string
+		const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
+		logger.error(`An error occurred during shutdown: ${errorDetail}`)
+		process.exit(1)
+	})
 })
 
 // Handle uncaught exceptions outside middleware
 process.on('uncaughtException', (err): void => {
-    logger.error('Uncaught exception:', err)
-    shutDown(1).catch(error => {
-        logger.error('An error occurred during shutdown:', error)
-        process.exit(1)
-    })
+	logger.error('Uncaught exception:', err)
+	shutDown(1).catch(error => {
+		logger.error('An error occurred during shutdown:', error)
+		process.exit(1)
+	})
 })
 
 // Assigning shutdown function to SIGINT signal
 process.on('SIGINT', (): void => {
-    logger.info('Received SIGINT')
-    shutDown().catch(error => {
-        logger.error('An error occurred during shutdown:', error)
-        process.exit(1)
-    })
+	logger.info('Received SIGINT')
+	shutDown().catch(error => {
+		logger.error('An error occurred during shutdown:', error)
+		process.exit(1)
+	})
 })
 
 // Assigning shutdown function to SIGTERM signal
 process.on('SIGTERM', (): void => {
-    logger.info('Received SIGTERM')
-    shutDown().catch(error => {
-        logger.error('An error occurred during shutdown:', error)
-        process.exit(1)
-    })
+	logger.info('Received SIGTERM')
+	shutDown().catch(error => {
+		logger.error('An error occurred during shutdown:', error)
+		process.exit(1)
+	})
 })
 
 // Shutdown function
 export async function shutDown (exitCode?: number | undefined): Promise<void> {
-    try {
-        logger.info('Closing server...')
-        server.close()
-        logger.info('Server closed')
-        logger.info('Starting database disconnection...')
-        await mongoose.disconnect()
-        logger.info('Database disconnected')
-        logger.info('Shutdown completed')
-        process.exit(exitCode ?? 0)
-    } catch (error) {
-        logger.error('An error occurred during shutdown:', error)
-        process.exit(1) // Exit with code 1 indicating termination with error
-    }
+	try {
+		logger.info('Closing server...')
+		server.close()
+		logger.info('Server closed')
+		logger.info('Starting database disconnection...')
+		await mongoose.disconnect()
+		logger.info('Database disconnected')
+		logger.info('Shutdown completed')
+		process.exit(exitCode ?? 0)
+	} catch (error) {
+		logger.error('An error occurred during shutdown:', error)
+		process.exit(1) // Exit with code 1 indicating termination with error
+	}
 }
 
 export default app
