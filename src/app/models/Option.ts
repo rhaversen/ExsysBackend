@@ -12,7 +12,7 @@ import logger from '../utils/logger.js'
 export interface IOption extends Document {
     _id: Types.ObjectId
     optionName: string // The name of the option
-    maxQuantity: number // The maximum quantity of the option that can be ordered
+    maxOrderQuantity: number // The maximum quantity of the option that can be ordered
     description: string // A description of the option
     availability: number // The number of the option that is available
     price: number // The price of the option
@@ -40,7 +40,7 @@ const orderSchema = new Schema<IOption>({
         required: [true, 'Price er påkrævet'],
         min: [0, 'Price skal være større eller lig med 0']
     },
-    maxQuantity: {
+    maxOrderQuantity: {
         type: Schema.Types.Number,
         required: [true, 'Max quantity er påkrævet'],
         min: [1, 'Max quantity skal være større end 0']

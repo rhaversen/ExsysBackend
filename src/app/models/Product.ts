@@ -29,7 +29,7 @@ export interface IProduct extends Document {
         option: Types.ObjectId
         quantity: number
     }>
-
+    maxOrderQuantity: number
 }
 
 // Schema
@@ -58,6 +58,11 @@ const productSchema = new Schema<IProduct>({
         type: Schema.Types.ObjectId,
         ref: 'Option'
     }],
+    maxOrderQuantity: {
+        type: Schema.Types.Number,
+        required: [true, 'Max order quantity is required'],
+        min: [1, 'Max order quantity must be greater than 0']
+    },
     orderWindow: {
         type: Schema.Types.Mixed,
         required: [true, 'orderWindow is required'],
