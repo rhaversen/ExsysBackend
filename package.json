@@ -42,6 +42,7 @@
 		"helmet": "^7.1.0",
 		"mongoose": "^8.3.1",
 		"nanoid": "^5.0.7",
+		"validator": "^13.11.0",
 		"winston": "^3.13.0"
 	},
 	"devDependencies": {
@@ -52,6 +53,7 @@
 		"@types/mocha": "^10.0.6",
 		"@types/node": "^20.12.7",
 		"@types/sinon": "^17.0.3",
+		"@types/validator": "^13.11.9",
 		"@typescript-eslint/eslint-plugin": "^6.21.0",
 		"chai": "^5.1.0",
 		"chai-http": "^4.4.0",

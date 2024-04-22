@@ -26,7 +26,7 @@ describe('Order Model', function () {
 			productId: Types.ObjectId
 			quantity: number
 		}>
-		options: Array<{
+		options?: Array<{
 			optionId: Types.ObjectId
 			quantity: number
 		}>
@@ -43,19 +43,26 @@ describe('Order Model', function () {
 			description: 'A test product',
 			availability: 100,
 			orderWindow: {
-				from: { hour: 0, minute: 0 },
-				to: { hour: 23, minute: 59 }
+				from: {
+					hour: 0,
+					minute: 0
+				},
+				to: {
+					hour: 23,
+					minute: 59
+				}
 			},
 			maxOrderQuantity: 10
 		})
 
 		testRoom = await RoomModel.create({
 			name: 'Test Room',
-			description: 'A test room'
+			description: 'A test room',
+			number: 1
 		})
 
 		testOption = await OptionModel.create({
-			optionName: 'Test Option',
+			name: 'Test Option',
 			price: 50,
 			description: 'A test option',
 			availability: 100,
@@ -84,8 +91,59 @@ describe('Order Model', function () {
 		expect(order.roomId).to.equal(testRoom._id)
 		expect(order.products[0].productId).to.equal(testOrderFields.products[0].productId)
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(order.options?.[0].optionId).to.equal(testOrderFields.options[0].optionId)
-		expect(order.options?.[0].quantity).to.equal(testOrderFields.options[0].quantity)
+		expect(order.options?.[0].optionId).to.equal(testOrderFields.options?.[0].optionId)
+		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
+	})
+
+	it('should not allow non-integer quantities for products', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				products: [{
+					productId: testProduct._id,
+					quantity: 1.5
+				}]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow non-integer quantities for options', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				options: [{
+					optionId: testOption._id,
+					quantity: 1.5
+				}]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow no requested delivery date', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				requestedDeliveryDate: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
 	})
 
 	it('should allow no options', async function () {
@@ -292,7 +350,10 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [
-					{ productId: testProduct._id, quantity: testProduct.maxOrderQuantity + 1 }
+					{
+						productId: testProduct._id,
+						quantity: testProduct.maxOrderQuantity + 1
+					}
 				]
 			})
 		} catch (err) {
@@ -432,7 +493,10 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [
-					{ optionId: testOption._id, quantity: testOption.maxOrderQuantity + 1 }
+					{
+						optionId: testOption._id,
+						quantity: testOption.maxOrderQuantity + 1
+					}
 				]
 			})
 		} catch (err) {
@@ -449,8 +513,38 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [
-					{ optionId: testOption._id, quantity: 1 },
-					{ optionId: testOption._id, quantity: 1 }
+					{
+						optionId: testOption._id,
+						quantity: 1
+					},
+					{
+						optionId: testOption._id,
+						quantity: 1
+					}
+				]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow a real and a non-existent option in an order', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				options: [
+					{
+						optionId: testOption._id,
+						quantity: 1
+					},
+					{
+						optionId: new Types.ObjectId(),
+						quantity: 1
+					}
 				]
 			})
 		} catch (err) {
@@ -489,8 +583,14 @@ describe('Order Model', function () {
 				description: 'A test product',
 				availability: 100,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 12, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 12,
+						minute: 0
+					}
 				},
 				maxOrderQuantity: 10
 			})
@@ -501,8 +601,14 @@ describe('Order Model', function () {
 				description: 'A test product',
 				availability: 100,
 				orderWindow: {
-					from: { hour: 12, minute: 0 },
-					to: { hour: 23, minute: 59 }
+					from: {
+						hour: 12,
+						minute: 0
+					},
+					to: {
+						hour: 23,
+						minute: 59
+					}
 				},
 				maxOrderQuantity: 10
 			})

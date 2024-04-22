@@ -120,7 +120,7 @@ orderSchema.path('products').validate(async function (v: Array<{ productId: Type
 	}
 
 	return true
-}, 'Kan ikke bestille flere produkter end der er tilgængelige')
+}, 'Kan ikke bestille flere produkter end der er til rådighed')
 
 orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
 	for (const product of v) {
@@ -166,6 +166,10 @@ orderSchema.path('products.productId').validate(async function (v: Types.ObjectI
 	return isWithinHour || isStartHour || isEndHour
 }, 'Bestillingen er uden for bestillingsvinduet')
 
+orderSchema.path('products.quantity').validate(function (v: number) {
+	return Number.isInteger(v)
+}, 'Produkt mængde skal være et heltal')
+
 orderSchema.path('options').validate(function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.optionId.id))
 	return unique.size === v.length
@@ -175,6 +179,10 @@ orderSchema.path('options.optionId').validate(async function (v: Types.ObjectId)
 	const option = await OptionModel.findById(v)
 	return option !== null && option !== undefined
 }, 'Tilvalget eksisterer ikke')
+
+orderSchema.path('options.quantity').validate(function (v: number) {
+	return Number.isInteger(v)
+}, 'Tilvalg mængde skal være et heltal')
 
 orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
 	for (const option of v) {
@@ -192,7 +200,7 @@ orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.
 	}
 
 	return true
-}, 'Kan ikke bestille flere tilvalg end der er tilgængelige')
+}, 'Kan ikke bestille flere tilvalg end der er til rådighed')
 
 orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
 	for (const option of v) {
