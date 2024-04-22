@@ -7,7 +7,7 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { createProduct, getProducts, patchProduct, deleteProduct } from '../controllers/productController.js'
+import { createProduct, deleteProduct, getProducts, patchProduct } from '../controllers/productController.js'
 
 // Destructuring and global variables
 const router = Router()
