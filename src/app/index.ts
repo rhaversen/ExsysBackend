@@ -64,6 +64,7 @@ app.use('/v1/orders', mediumSensitivityApiLimiter)
 app.use('/v1/products', mediumSensitivityApiLimiter)
 app.use('/v1/admins', mediumSensitivityApiLimiter)
 app.use('/v1/rooms', mediumSensitivityApiLimiter)
+app.use('/v1/options', mediumSensitivityApiLimiter)
 
 // Apply stricter rate limiters to routes
 // none
