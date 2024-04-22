@@ -53,7 +53,7 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 	logger.silly('Deleting room')
 
 	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
-		res.status(400).json({ error: 'You must confirm the deletion' })
+		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 

@@ -53,7 +53,7 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 	logger.silly('Deleting option')
 
 	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
-		res.status(400).json({ error: 'You must confirm the deletion' })
+		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
