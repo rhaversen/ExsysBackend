@@ -9,7 +9,7 @@ import logger from '../utils/logger.js'
 import AdminModel from '../models/Admin.js'
 
 export async function createAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Creating room')
+	logger.silly('Creating admin')
 
 	try {
 		// Destructuring passwords and the remaining fields
