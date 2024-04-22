@@ -12,7 +12,7 @@ import '../testSetup.js'
 
 describe('Option Model', function () {
 	let testOptionFields: {
-		optionName: string
+		name: string
 		price: number
 		description: string
 		availability: number
@@ -21,7 +21,7 @@ describe('Option Model', function () {
 
 	beforeEach(async function () {
 		testOptionFields = {
-			optionName: 'TestOption',
+			name: 'TestOption',
 			price: 100,
 			description: 'TestDescription',
 			availability: 10,
@@ -33,7 +33,7 @@ describe('Option Model', function () {
 		const option = await OptionModel.create(testOptionFields)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
-		expect(option.optionName).to.equal(testOptionFields.optionName)
+		expect(option.name).to.equal(testOptionFields.name)
 		expect(option.price).to.equal(testOptionFields.price)
 		expect(option.description).to.equal(testOptionFields.description)
 		expect(option.availability).to.equal(testOptionFields.availability)
@@ -85,7 +85,7 @@ describe('Option Model', function () {
 		try {
 			await OptionModel.create({
 				...testOptionFields,
-				optionName: undefined
+				name: undefined
 			})
 		} catch (err) {
 			// The promise was rejected as expected
@@ -225,12 +225,12 @@ describe('Option Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create an option with a too long optionName', async function () {
+	it('should not create an option with a too long name', async function () {
 		let errorOccurred = false
 		try {
 			await OptionModel.create({
 				...testOptionFields,
-				optionName: 'a'.repeat(21)
+				name: 'a'.repeat(21)
 			})
 		} catch (err) {
 			// The promise was rejected as expected

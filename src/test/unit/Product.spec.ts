@@ -36,7 +36,7 @@ describe('Product Model', function () {
 
 	beforeEach(async function () {
 		testOption = await OptionModel.create({
-			optionName: 'Test Option',
+			name: 'Test Option',
 			price: 50,
 			description: 'A test option',
 			availability: 100,
@@ -95,7 +95,7 @@ describe('Product Model', function () {
 
 	it('should create a product with multiple options', async function () {
 		const testOption2 = await OptionModel.create({
-			optionName: 'Test Option 2',
+			name: 'Test Option 2',
 			price: 75,
 			description: 'A test option 2',
 			availability: 50,

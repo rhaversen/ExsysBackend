@@ -11,7 +11,7 @@ import logger from '../utils/logger.js'
 // Interfaces
 export interface IOption extends Document {
 	_id: Types.ObjectId
-	optionName: string // The name of the option
+	name: string // The name of the option
 	maxOrderQuantity: number // The maximum quantity of the option that can be ordered
 	description: string // A description of the option
 	availability: number // The number of the option that is available
@@ -20,7 +20,7 @@ export interface IOption extends Document {
 
 // Schema
 const optionSchema = new Schema<IOption>({
-	optionName: {
+	name: {
 		type: Schema.Types.String,
 		required: [true, 'OptionName er påkrævet'],
 		maxLength: [20, 'OptionName kan højest have 20 tegn']

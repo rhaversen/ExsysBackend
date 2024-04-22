@@ -16,14 +16,14 @@ const {
 // Interfaces
 export interface IAdmin extends Document {
 	_id: Types.ObjectId
-	userName: string
+	name: string
 	email: string
 	password: string
 }
 
 // Schema
 const adminSchema = new Schema<IAdmin>({
-	userName: { type: String, required: true, trim: true },
+	name: { type: String, required: true, trim: true },
 	email: { type: String, required: true, unique: true, lowercase: true, trim: true },
 	password: { type: String, required: true, trim: true }
 }, {

@@ -50,14 +50,13 @@ describe('Order Model', function () {
 		})
 
 		testRoom = await RoomModel.create({
-			roomName: 'Test Room',
+			name: 'Test Room',
 			description: 'A test room',
-			roomNumber: 1,
-			roomDescription: 'A test room'
+			number: 1
 		})
 
 		testOption = await OptionModel.create({
-			optionName: 'Test Option',
+			name: 'Test Option',
 			price: 50,
 			description: 'A test option',
 			availability: 100,

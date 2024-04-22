@@ -11,23 +11,23 @@ import logger from '../utils/logger.js'
 // Interfaces
 export interface IRoom extends Document {
 	_id: Types.ObjectId
-	roomName: string // The name of the room
-	roomNumber: number // The number of the room
-	roomDescription: string // A description of the room
+	name: string // The name of the room
+	number: number // The number of the room
+	description: string // A description of the room
 }
 
 // Schema
 const roomSchema = new Schema<IRoom>({
-	roomName: {
+	name: {
 		type: String,
 		required: [true, 'Room name is required']
 	},
-	roomNumber: {
+	number: {
 		type: Number,
 		required: [true, 'Room number is required'],
 		unique: true
 	},
-	roomDescription: {
+	description: {
 		type: String,
 		required: [true, 'Room description is required']
 	}
