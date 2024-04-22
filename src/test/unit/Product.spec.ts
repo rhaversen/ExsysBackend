@@ -73,6 +73,26 @@ describe('Product Model', function () {
 		expect(product.options?.[0].toString()).to.equal(testOption.id)
 	})
 
+	it('should trim the name', async function () {
+		const product = await ProductModel.create({
+			...testProductFields,
+			name: '  TestProduct  '
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(product).to.exist
+		expect(product.name).to.equal('TestProduct')
+	})
+
+	it('should trim the description', async function () {
+		const product = await ProductModel.create({
+			...testProductFields,
+			description: '  TestDescription  '
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(product).to.exist
+		expect(product.description).to.equal('TestDescription')
+	})
+
 	it('should create a product with no options', async function () {
 		const product = await ProductModel.create({
 			...testProductFields,

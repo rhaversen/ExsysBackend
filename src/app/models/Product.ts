@@ -60,6 +60,7 @@ const orderWindowSubSchema = new Schema({
 const productSchema = new Schema<IProduct>({
 	name: {
 		type: Schema.Types.String,
+		trim: true,
 		required: [true, 'Product name is required'],
 		maxLength: [20, 'Produkt navn må maks være 20 tegn lang']
 	},
@@ -70,6 +71,7 @@ const productSchema = new Schema<IProduct>({
 	},
 	description: {
 		type: Schema.Types.String,
+		trim: true,
 		required: [true, 'Product description is required'],
 		maxLength: [50, 'Produkt beskrivelse må maks være 50 tegn lang']
 	},

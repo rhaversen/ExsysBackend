@@ -40,6 +40,26 @@ describe('Option Model', function () {
 		expect(option.maxOrderQuantity).to.equal(testOptionFields.maxOrderQuantity)
 	})
 
+	it('should trim the name', async function () {
+		const option = await OptionModel.create({
+			...testOptionFields,
+			name: '  TestOption  '
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(option).to.exist
+		expect(option.name).to.equal('TestOption')
+	})
+
+	it('should trim the description', async function () {
+		const option = await OptionModel.create({
+			...testOptionFields,
+			description: '  TestDescription  '
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(option).to.exist
+		expect(option.description).to.equal('TestDescription')
+	})
+
 	it('should create an option with a non-integer price', async function () {
 		const option = await OptionModel.create({
 			...testOptionFields,

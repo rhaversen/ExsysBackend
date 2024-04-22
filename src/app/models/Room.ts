@@ -20,6 +20,7 @@ export interface IRoom extends Document {
 const roomSchema = new Schema<IRoom>({
 	name: {
 		type: String,
+		trim: true,
 		required: [true, 'Room name is required']
 	},
 	number: {
