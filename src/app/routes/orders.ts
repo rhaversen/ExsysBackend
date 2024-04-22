@@ -24,7 +24,7 @@ const router = Router()
  * @return {object} res.body - The newly created order.
  */
 router.post('/',
-    asyncErrorHandler(createOrder)
+	asyncErrorHandler(createOrder)
 )
 
 export default router

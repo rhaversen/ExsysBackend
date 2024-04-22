@@ -10,53 +10,66 @@ import logger from '../utils/logger.js'
 
 // Interfaces
 export interface IOption extends Document {
-    _id: Types.ObjectId
-    optionName: string // The name of the option
-    maxQuantity: number // The maximum quantity of the option that can be ordered
-    description: string // A description of the option
-    availability: number // The number of the option that is available
-    price: number // The price of the option
+	_id: Types.ObjectId
+	name: string // The name of the option
+	maxOrderQuantity: number // The maximum quantity of the option that can be ordered
+	description: string // A description of the option
+	availability: number // The number of the option that is available
+	price: number // The price of the option
 }
 
 // Schema
-const orderSchema = new Schema<IOption>({
-    optionName: {
-        type: Schema.Types.String,
-        required: [true, 'OptionName er påkrævet'],
-        maxLength: [20, 'OptionName kan højest have 20 tegn']
-    },
-    description: {
-        type: Schema.Types.String,
-        required: [true, 'Description er påkrævet'],
-        maxLength: [50, 'Description kan højest have 50 tegn']
-    },
-    availability: {
-        type: Schema.Types.Number,
-        required: [true, 'Availability er påkrævet'],
-        min: [0, 'Availability skal være større eller lig med 0']
-    },
-    price: {
-        type: Schema.Types.Number,
-        required: [true, 'Price er påkrævet'],
-        min: [0, 'Price skal være større eller lig med 0']
-    },
-    maxQuantity: {
-        type: Schema.Types.Number,
-        required: [true, 'Max quantity er påkrævet'],
-        min: [1, 'Max quantity skal være større end 0']
-    }
+const optionSchema = new Schema<IOption>({
+	name: {
+		type: Schema.Types.String,
+		trim: true,
+		required: [true, 'Navnet er påkrævet'],
+		maxLength: [20, 'Navnet kan højest have 20 tegn']
+	},
+	description: {
+		type: Schema.Types.String,
+		trim: true,
+		required: [true, 'Beskrivelsen er påkrævet'],
+		maxLength: [50, 'Beskrivelsen kan højest have 50 tegn']
+	},
+	availability: {
+		type: Schema.Types.Number,
+		required: [true, 'Rådighed er påkrævet'],
+		min: [0, 'Rådighed skal være større eller lig med 0']
+	},
+	price: {
+		type: Schema.Types.Number,
+		required: [true, 'Prisen er påkrævet'],
+		min: [0, 'Prisen skal være større eller lig med 0']
+	},
+	maxOrderQuantity: {
+		type: Schema.Types.Number,
+		required: [true, 'Maksimal bestillingsmængde er påkrævet'],
+		min: [1, 'Maksimal bestillingsmængde skal være større end 0']
+	}
+}, {
+	timestamps: true
 })
+
+// Validations
+optionSchema.path('availability').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Rådighed skal være et heltal')
+
+optionSchema.path('maxOrderQuantity').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Maksimal bestillingsmængde skal være et heltal')
 
 // Adding indexes
 
 // Pre-save middleware
-orderSchema.pre('save', function (next) {
-    logger.silly('Saving order')
-    next()
+optionSchema.pre('save', function (next) {
+	logger.silly('Saving order')
+	next()
 })
 
 // Compile the schema into a model
-const OptionModel = model<IOption>('Option', orderSchema)
+const OptionModel = model<IOption>('Option', optionSchema)
 
 // Export the model
 export default OptionModel
