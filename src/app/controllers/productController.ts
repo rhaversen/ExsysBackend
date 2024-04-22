@@ -22,3 +22,40 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 		}
 	}
 }
+
+export async function getProducts (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting products')
+
+	try {
+		const products = await ProductModel.find({})
+		res.status(200).json(products)
+	} catch (error) {
+		next(error)
+	}
+}
+
+export async function patchProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Patching product')
+
+	try {
+		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		res.json(product)
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function deleteProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Deleting product')
+
+	try {
+		await ProductModel.findByIdAndDelete(req.params.id)
+		res.status(204).send()
+	} catch (error) {
+		next(error)
+	}
+}

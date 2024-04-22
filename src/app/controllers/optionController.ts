@@ -22,3 +22,40 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 		}
 	}
 }
+
+export async function getOptions (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting options')
+
+	try {
+		const options = await OptionModel.find({})
+		res.status(200).json(options)
+	} catch (error) {
+		next(error)
+	}
+}
+
+export async function patchOption (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Patching option')
+
+	try {
+		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		res.json(option)
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function deleteOption (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Deleting option')
+
+	try {
+		await OptionModel.findByIdAndDelete(req.params.id)
+		res.status(204).send()
+	} catch (error) {
+		next(error)
+	}
+}
