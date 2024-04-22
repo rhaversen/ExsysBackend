@@ -25,10 +25,7 @@ export interface IProduct extends Document {
 			minute: number
 		}
 	}
-	options?: Array<{
-		option: Types.ObjectId
-		quantity: number
-	}>
+	options?: Array<Types.ObjectId>
 	maxOrderQuantity: number
 }
 
