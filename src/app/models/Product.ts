@@ -88,17 +88,16 @@ const productSchema = new Schema<IProduct>({
 	},
 	orderWindow: {
 		type: orderWindowSubSchema,
-		required: [true, 'orderWindow is required'],
-		validate: {
-			validator: async function (v: any) {
-				const fromTotalMinutes = v.from.hour * 60 + v.from.minute
-				const toTotalMinutes = v.to.hour * 60 + v.to.minute
-				return fromTotalMinutes < toTotalMinutes
-			},
-			message: 'The "from" time must be before the "to" time'
-		}
+		required: [true, 'orderWindow is required']
 	}
 })
+
+// Validations
+productSchema.path('orderWindow').validate(function (v: { from: { hour: number, minute: number }, to: { hour: number, minute: number } }) {
+	const fromTotalMinutes = v.from.hour * 60 + v.from.minute
+	const toTotalMinutes = v.to.hour * 60 + v.to.minute
+	return fromTotalMinutes < toTotalMinutes
+}, 'The "from" time must be before the "to" time')
 
 // Adding indexes
 
