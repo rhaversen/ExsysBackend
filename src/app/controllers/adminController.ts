@@ -20,7 +20,7 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 		} = req.body as Record<string, unknown>
 
 		if (password !== confirmPassword) {
-			res.status(400).json({ error: 'Passwords do not match' })
+			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
 			return
 		}
 
@@ -58,7 +58,7 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		if (password !== undefined && confirmPassword !== undefined) {
 			if (password !== confirmPassword) {
-				res.status(400).json({ error: 'Passwords do not match' })
+				res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
 				return
 			}
 		}
@@ -76,6 +76,11 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 export async function deleteAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting admin')
+
+	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+		res.status(400).json({ error: 'Kræver konfirmering' })
+		return
+	}
 
 	try {
 		await AdminModel.findByIdAndDelete(req.params.id)

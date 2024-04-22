@@ -17,7 +17,6 @@ const router = Router()
  * @desc Create a new room
  * @access Public
  * @param {string} req.body.name - The name of the room.
- * @param {number} req.body.number - The number of the room.
  * @param {string} req.body.description - The description of the room.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created room.
@@ -43,7 +42,6 @@ router.get('/',
  * @access Public
  * @param {string} req.params.id - The id of the room to be patched.
  * @param {string} [req.body.name] - The name of the room (optional).
- * @param {number} [req.body.number] - The number of the room (optional).
  * @param {string} [req.body.description] - The description of the room (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The updated room.
@@ -57,6 +55,7 @@ router.patch('/:id',
  * @desc Delete a room
  * @access Public
  * @param {string} req.params.id - The id of the room to be deleted.
+ * @param {boolean} req.body.confirm - Confirm the deletion.
  * @return {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
