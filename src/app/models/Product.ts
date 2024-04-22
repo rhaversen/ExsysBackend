@@ -93,7 +93,10 @@ const productSchema = new Schema<IProduct>({
 })
 
 // Validations
-productSchema.path('orderWindow').validate(function (v: { from: { hour: number, minute: number }, to: { hour: number, minute: number } }) {
+productSchema.path('orderWindow').validate(function (v: {
+	from: { hour: number, minute: number }
+	to: { hour: number, minute: number }
+}) {
 	const fromTotalMinutes = v.from.hour * 60 + v.from.minute
 	const toTotalMinutes = v.to.hour * 60 + v.to.minute
 	return fromTotalMinutes < toTotalMinutes
