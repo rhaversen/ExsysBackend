@@ -43,8 +43,14 @@ describe('Order Model', function () {
 			description: 'A test product',
 			availability: 100,
 			orderWindow: {
-				from: { hour: 0, minute: 0 },
-				to: { hour: 23, minute: 59 }
+				from: {
+					hour: 0,
+					minute: 0
+				},
+				to: {
+					hour: 23,
+					minute: 59
+				}
 			},
 			maxOrderQuantity: 10
 		})
@@ -344,7 +350,10 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [
-					{ productId: testProduct._id, quantity: testProduct.maxOrderQuantity + 1 }
+					{
+						productId: testProduct._id,
+						quantity: testProduct.maxOrderQuantity + 1
+					}
 				]
 			})
 		} catch (err) {
@@ -484,7 +493,10 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [
-					{ optionId: testOption._id, quantity: testOption.maxOrderQuantity + 1 }
+					{
+						optionId: testOption._id,
+						quantity: testOption.maxOrderQuantity + 1
+					}
 				]
 			})
 		} catch (err) {
@@ -501,8 +513,14 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [
-					{ optionId: testOption._id, quantity: 1 },
-					{ optionId: testOption._id, quantity: 1 }
+					{
+						optionId: testOption._id,
+						quantity: 1
+					},
+					{
+						optionId: testOption._id,
+						quantity: 1
+					}
 				]
 			})
 		} catch (err) {
@@ -519,8 +537,14 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [
-					{ optionId: testOption._id, quantity: 1 },
-					{ optionId: new Types.ObjectId(), quantity: 1 }
+					{
+						optionId: testOption._id,
+						quantity: 1
+					},
+					{
+						optionId: new Types.ObjectId(),
+						quantity: 1
+					}
 				]
 			})
 		} catch (err) {
@@ -559,8 +583,14 @@ describe('Order Model', function () {
 				description: 'A test product',
 				availability: 100,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 12, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 12,
+						minute: 0
+					}
 				},
 				maxOrderQuantity: 10
 			})
@@ -571,8 +601,14 @@ describe('Order Model', function () {
 				description: 'A test product',
 				availability: 100,
 				orderWindow: {
-					from: { hour: 12, minute: 0 },
-					to: { hour: 23, minute: 59 }
+					from: {
+						hour: 12,
+						minute: 0
+					},
+					to: {
+						hour: 23,
+						minute: 59
+					}
 				},
 				maxOrderQuantity: 10
 			})

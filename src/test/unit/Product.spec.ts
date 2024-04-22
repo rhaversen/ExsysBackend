@@ -49,8 +49,14 @@ describe('Product Model', function () {
 			description: 'A test product',
 			availability: 100,
 			orderWindow: {
-				from: { hour: 0, minute: 0 },
-				to: { hour: 23, minute: 59 }
+				from: {
+					hour: 0,
+					minute: 0
+				},
+				to: {
+					hour: 23,
+					minute: 59
+				}
 			},
 			maxOrderQuantity: 10,
 			options: [testOption.id]
@@ -384,8 +390,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: undefined },
-						to: { hour: 23, minute: 59 }
+						from: {
+							hour: 0,
+							minute: undefined
+						},
+						to: {
+							hour: 23,
+							minute: 59
+						}
 					}
 				})
 			} catch (err) {
@@ -402,8 +414,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: 23, minute: undefined }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: 23,
+							minute: undefined
+						}
 					}
 				})
 			} catch (err) {
@@ -420,8 +438,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: undefined, minute: 0 },
-						to: { hour: 23, minute: 59 }
+						from: {
+							hour: undefined,
+							minute: 0
+						},
+						to: {
+							hour: 23,
+							minute: 59
+						}
 					}
 				})
 			} catch (err) {
@@ -438,8 +462,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: undefined, minute: 59 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: undefined,
+							minute: 59
+						}
 					}
 				})
 			} catch (err) {
@@ -456,8 +486,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 1.5 },
-						to: { hour: 23, minute: 59 }
+						from: {
+							hour: 0,
+							minute: 1.5
+						},
+						to: {
+							hour: 23,
+							minute: 59
+						}
 					}
 				})
 			} catch (err) {
@@ -474,8 +510,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: 23, minute: 49.5 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: 23,
+							minute: 49.5
+						}
 					}
 				})
 			} catch (err) {
@@ -492,8 +534,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 1.5, minute: 0 },
-						to: { hour: 23, minute: 59 }
+						from: {
+							hour: 1.5,
+							minute: 0
+						},
+						to: {
+							hour: 23,
+							minute: 59
+						}
 					}
 				})
 			} catch (err) {
@@ -510,8 +558,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: 22.5, minute: 59 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: 22.5,
+							minute: 59
+						}
 					}
 				})
 			} catch (err) {
@@ -559,8 +613,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 1, minute: 1 },
-						to: { hour: 0, minute: 0 }
+						from: {
+							hour: 1,
+							minute: 1
+						},
+						to: {
+							hour: 0,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -575,8 +635,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 1 },
-					to: { hour: 1, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 1
+					},
+					to: {
+						hour: 1,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -589,8 +655,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 1, minute: 1 },
-						to: { hour: 1, minute: 0 }
+						from: {
+							hour: 1,
+							minute: 1
+						},
+						to: {
+							hour: 1,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -607,8 +679,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 1, minute: 0 },
-						to: { hour: 0, minute: 1 }
+						from: {
+							hour: 1,
+							minute: 0
+						},
+						to: {
+							hour: 0,
+							minute: 1
+						}
 					}
 				})
 			} catch (err) {
@@ -623,8 +701,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 1, minute: 1 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 1
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -635,8 +719,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 1, minute: 0 },
-					to: { hour: 1, minute: 1 }
+					from: {
+						hour: 1,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 1
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -649,8 +739,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 1, minute: 1 },
-						to: { hour: 1, minute: 1 }
+						from: {
+							hour: 1,
+							minute: 1
+						},
+						to: {
+							hour: 1,
+							minute: 1
+						}
 					}
 				})
 			} catch (err) {
@@ -665,8 +761,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 1, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -679,8 +781,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 1, minute: 1 },
-						to: { hour: 1, minute: 1 }
+						from: {
+							hour: 1,
+							minute: 1
+						},
+						to: {
+							hour: 1,
+							minute: 1
+						}
 					}
 				})
 			} catch (err) {
@@ -697,8 +805,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: -1 },
-						to: { hour: 1, minute: 0 }
+						from: {
+							hour: 0,
+							minute: -1
+						},
+						to: {
+							hour: 1,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -715,8 +829,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: 1, minute: -1 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: 1,
+							minute: -1
+						}
 					}
 				})
 			} catch (err) {
@@ -733,8 +853,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: -1, minute: 0 },
-						to: { hour: 1, minute: 0 }
+						from: {
+							hour: -1,
+							minute: 0
+						},
+						to: {
+							hour: 1,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -751,8 +877,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: -1, minute: 0 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: -1,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -769,8 +901,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 60 },
-						to: { hour: 1, minute: 0 }
+						from: {
+							hour: 0,
+							minute: 60
+						},
+						to: {
+							hour: 1,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -787,8 +925,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: 1, minute: 60 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: 1,
+							minute: 60
+						}
 					}
 				})
 			} catch (err) {
@@ -805,8 +949,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 24, minute: 0 },
-						to: { hour: 1, minute: 0 }
+						from: {
+							hour: 24,
+							minute: 0
+						},
+						to: {
+							hour: 1,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -823,8 +973,14 @@ describe('Product Model', function () {
 				await ProductModel.create({
 					...testProductFields,
 					orderWindow: {
-						from: { hour: 0, minute: 0 },
-						to: { hour: 24, minute: 0 }
+						from: {
+							hour: 0,
+							minute: 0
+						},
+						to: {
+							hour: 24,
+							minute: 0
+						}
 					}
 				})
 			} catch (err) {
@@ -839,8 +995,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 1, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -851,8 +1013,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 1, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -863,8 +1031,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 1, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -875,8 +1049,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 0, minute: 1 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 0,
+						minute: 1
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -887,8 +1067,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 59 },
-					to: { hour: 1, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 59
+					},
+					to: {
+						hour: 1,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -899,8 +1085,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 1, minute: 59 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 1,
+						minute: 59
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -911,8 +1103,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 23, minute: 0 },
-					to: { hour: 23, minute: 1 }
+					from: {
+						hour: 23,
+						minute: 0
+					},
+					to: {
+						hour: 23,
+						minute: 1
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -923,8 +1121,14 @@ describe('Product Model', function () {
 			const product = await ProductModel.create({
 				...testProductFields,
 				orderWindow: {
-					from: { hour: 0, minute: 0 },
-					to: { hour: 23, minute: 0 }
+					from: {
+						hour: 0,
+						minute: 0
+					},
+					to: {
+						hour: 23,
+						minute: 0
+					}
 				}
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
