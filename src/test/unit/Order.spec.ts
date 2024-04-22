@@ -90,6 +90,57 @@ describe('Order Model', function () {
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options[0].quantity)
 	})
 
+	it('should not allow non-integer quantities for products', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				products: [{
+					productId: testProduct._id,
+					quantity: 1.5
+				}]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow non-integer quantities for options', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				options: [{
+					optionId: testOption._id,
+					quantity: 1.5
+				}]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow no requested delivery date', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				requestedDeliveryDate: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
 	it('should allow no options', async function () {
 		const order = await OrderModel.create({
 			...testOrderFields,
