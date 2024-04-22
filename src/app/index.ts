@@ -16,6 +16,10 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 // Routes
 import serviceRoutes from './routes/service.js'
 import orderRoutes from './routes/orders.js'
+import productRoutes from './routes/products.js'
+import adminRoutes from './routes/admins.js'
+import roomRoutes from './routes/rooms.js'
+import optionRoutes from './routes/options.js'
 
 // Logging environment
 logger.info(`Node environment: ${process.env.NODE_ENV}`)
@@ -46,6 +50,10 @@ const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Use all routes with medium sensitivity rate limiter
 app.use('/v1/orders', mediumSensitivityApiLimiter, orderRoutes)
+app.use('/v1/products', mediumSensitivityApiLimiter, productRoutes)
+app.use('/v1/admins', mediumSensitivityApiLimiter, adminRoutes)
+app.use('/v1/rooms', mediumSensitivityApiLimiter, roomRoutes)
+app.use('/v1/options', mediumSensitivityApiLimiter, optionRoutes)
 app.use('/service', mediumSensitivityApiLimiter, serviceRoutes)
 
 // Apply low sensitivity for service routes
@@ -53,6 +61,9 @@ app.use('/service', veryLowSensitivityApiLimiter)
 
 // Apply medium sensitivity for all database operation routes
 app.use('/v1/orders', mediumSensitivityApiLimiter)
+app.use('/v1/products', mediumSensitivityApiLimiter)
+app.use('/v1/admins', mediumSensitivityApiLimiter)
+app.use('/v1/rooms', mediumSensitivityApiLimiter)
 
 // Apply stricter rate limiters to routes
 // none
