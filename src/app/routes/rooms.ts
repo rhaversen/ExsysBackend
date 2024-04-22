@@ -7,7 +7,7 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { createRoom, getRooms, patchRoom, deleteRoom } from '../controllers/roomController.js'
+import { createRoom, deleteRoom, getRooms, patchRoom } from '../controllers/roomController.js'
 
 // Destructuring and global variables
 const router = Router()

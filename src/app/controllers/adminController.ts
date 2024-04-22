@@ -13,7 +13,11 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 
 	try {
 		// Destructuring passwords and the remaining fields
-		const { password, confirmPassword, ...rest } = req.body as Record<string, unknown>
+		const {
+			password,
+			confirmPassword,
+			...rest
+		} = req.body as Record<string, unknown>
 
 		if (password !== confirmPassword) {
 			res.status(400).json({ error: 'Passwords do not match' })
@@ -47,7 +51,10 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 	logger.silly('Patching admin')
 
 	try {
-		const { password, confirmPassword } = req.body
+		const {
+			password,
+			confirmPassword
+		} = req.body
 
 		if (password !== undefined && confirmPassword !== undefined) {
 			if (password !== confirmPassword) {
