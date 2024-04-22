@@ -5,6 +5,7 @@ import { type Document, model, Schema, type Types } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
+import OptionModel from './Option.js'
 
 // Destructuring and global variables
 
@@ -79,6 +80,7 @@ const productSchema = new Schema<IProduct>({
 	},
 	options: [{
 		type: Schema.Types.ObjectId,
+		unique: true,
 		ref: 'Option'
 	}],
 	maxOrderQuantity: {
@@ -101,6 +103,44 @@ productSchema.path('orderWindow').validate((v: {
 	const toTotalMinutes = v.to.hour * 60 + v.to.minute
 	return fromTotalMinutes < toTotalMinutes
 }, 'The "from" time must be before the "to" time')
+
+productSchema.path('availability').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Availability must be an integer')
+
+productSchema.path('maxOrderQuantity').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Max order quantity must be an integer')
+
+productSchema.path('maxOrderQuantity').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Max order quantity must be an integer')
+
+productSchema.path('orderWindow.from.hour').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Hours must be an integer')
+
+productSchema.path('orderWindow.from.minute').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Minutes must be an integer')
+
+productSchema.path('orderWindow.to.hour').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Hours must be an integer')
+
+productSchema.path('orderWindow.to.minute').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Minutes must be an integer')
+
+productSchema.path('options').validate(async function (v: Types.ObjectId[]) {
+	const options = await OptionModel.find({ _id: { $in: v } })
+	return options.length === v.length
+}, 'Tilvalget eksisterer ikke')
+
+productSchema.path('options').validate(function (v: Types.ObjectId[]) {
+	const unique = new Set(v.map(v => v))
+	return unique.size === v.length
+}, 'Produkterne skal være unikke')
 
 // Adding indexes
 
