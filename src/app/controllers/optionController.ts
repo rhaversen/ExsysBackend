@@ -5,8 +5,8 @@ import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
 // Own modules
-import OptionModel from '../models/Option'
-import logger from '../utils/logger'
+import OptionModel from '../models/Option.js'
+import logger from '../utils/logger.js'
 
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating option')
