@@ -47,6 +47,15 @@ const optionSchema = new Schema<IOption>({
 	}
 })
 
+// Validations
+optionSchema.path('availability').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'Availability skal være et heltal')
+
+optionSchema.path('maxOrderQuantity').validate((v: number) => {
+	return Number.isInteger(v)
+}, 'maxOrderQuantity skal være et heltal')
+
 // Adding indexes
 
 // Pre-save middleware
