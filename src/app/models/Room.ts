@@ -13,6 +13,7 @@ export interface IRoom extends Document {
 	_id: Types.ObjectId
 	roomName: string // The name of the room
 	roomNumber: number // The number of the room
+	roomDescription: string // A description of the room
 }
 
 // Schema
@@ -25,6 +26,10 @@ const roomSchema = new Schema<IRoom>({
 		type: Number,
 		required: [true, 'Room number is required'],
 		unique: true
+	},
+	roomDescription: {
+		type: String,
+		required: [true, 'Room description is required']
 	}
 })
 
