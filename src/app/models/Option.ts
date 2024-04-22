@@ -47,6 +47,8 @@ const optionSchema = new Schema<IOption>({
 		required: [true, 'Maksimal bestillingsmængde er påkrævet'],
 		min: [1, 'Maksimal bestillingsmængde skal være større end 0']
 	}
+}, {
+	timestamps: true
 })
 
 // Validations

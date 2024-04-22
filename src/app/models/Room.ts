@@ -34,6 +34,8 @@ const roomSchema = new Schema<IRoom>({
 		trim: true,
 		required: [true, 'Beskrivelse er påkrævet']
 	}
+}, {
+	timestamps: true
 })
 
 // Validations

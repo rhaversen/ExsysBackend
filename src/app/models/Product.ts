@@ -94,6 +94,8 @@ const productSchema = new Schema<IProduct>({
 		type: orderWindowSubSchema,
 		required: [true, 'Bestillingsvindue er påkrævet']
 	}
+}, {
+	timestamps: true
 })
 
 // Validations
