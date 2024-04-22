@@ -19,7 +19,7 @@ export interface IOption extends Document {
 }
 
 // Schema
-const orderSchema = new Schema<IOption>({
+const optionSchema = new Schema<IOption>({
 	optionName: {
 		type: Schema.Types.String,
 		required: [true, 'OptionName er påkrævet'],
@@ -50,13 +50,13 @@ const orderSchema = new Schema<IOption>({
 // Adding indexes
 
 // Pre-save middleware
-orderSchema.pre('save', function (next) {
+optionSchema.pre('save', function (next) {
 	logger.silly('Saving order')
 	next()
 })
 
 // Compile the schema into a model
-const OptionModel = model<IOption>('Option', orderSchema)
+const OptionModel = model<IOption>('Option', optionSchema)
 
 // Export the model
 export default OptionModel
