@@ -29,7 +29,33 @@ export interface IProduct extends Document {
 	maxOrderQuantity: number
 }
 
-// Schema
+// Sub-schema for hours and minutes
+const hourMinuteSubSchema = new Schema({
+	hour: {
+		type: Schema.Types.Number,
+		required: [true, 'Start hour is required'],
+		min: [0, 'Start hour must be between 0 and 23'],
+		max: [23, 'Start hour must be between 0 and 23']
+	},
+	minute: {
+		type: Schema.Types.Number,
+		required: [true, 'Start minute is required'],
+		min: [0, 'Start minute must be between 0 and 59'],
+		max: [59, 'Start minute must be between 0 and 59']
+	}
+})
+
+// Sub-schema for orderWindow
+const orderWindowSubSchema = new Schema({
+	from: {
+		type: hourMinuteSubSchema
+	},
+	to: {
+		type: hourMinuteSubSchema
+	}
+})
+
+// Main product schema
 const productSchema = new Schema<IProduct>({
 	name: {
 		type: Schema.Types.String,
@@ -61,7 +87,7 @@ const productSchema = new Schema<IProduct>({
 		min: [1, 'Max order quantity must be greater than 0']
 	},
 	orderWindow: {
-		type: Schema.Types.Mixed,
+		type: orderWindowSubSchema,
 		required: [true, 'orderWindow is required'],
 		validate: {
 			validator: async function (v: any) {
@@ -70,36 +96,6 @@ const productSchema = new Schema<IProduct>({
 				return fromTotalMinutes < toTotalMinutes
 			},
 			message: 'The "from" time must be before the "to" time'
-		},
-		from: {
-			type: Schema.Types.Mixed,
-			hour: {
-				type: Schema.Types.Number,
-				required: [true, 'Start hour is required'],
-				min: [0, 'Start hour must be between 0 and 23'],
-				max: [23, 'Start hour must be between 0 and 23']
-			},
-			minute: {
-				type: Schema.Types.Number,
-				required: [true, 'Start minute is required'],
-				min: [0, 'Start minute must be between 0 and 59'],
-				max: [59, 'Start minute must be between 0 and 59']
-			}
-		},
-		to: {
-			type: Schema.Types.Mixed,
-			hour: {
-				type: Schema.Types.Number,
-				required: [true, 'End hour is required'],
-				min: [0, 'End hour must be between 0 and 23'],
-				max: [23, 'End hour must be between 0 and 23']
-			},
-			minute: {
-				type: Schema.Types.Number,
-				required: [true, 'End minute is required'],
-				min: [0, 'End minute must be between 0 and 59'],
-				max: [59, 'End minute must be between 0 and 59']
-			}
 		}
 	}
 })
