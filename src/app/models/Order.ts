@@ -120,7 +120,7 @@ orderSchema.path('products').validate(async function (v: Array<{ productId: Type
 	}
 
 	return true
-}, 'Kan ikke bestille flere produkter end der er tilgængelige')
+}, 'Kan ikke bestille flere produkter end der er til rådighed')
 
 orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
 	for (const product of v) {
@@ -200,7 +200,7 @@ orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.
 	}
 
 	return true
-}, 'Kan ikke bestille flere tilvalg end der er tilgængelige')
+}, 'Kan ikke bestille flere tilvalg end der er til rådighed')
 
 orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
 	for (const option of v) {

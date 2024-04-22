@@ -23,40 +23,40 @@ const optionSchema = new Schema<IOption>({
 	name: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'OptionName er påkrævet'],
-		maxLength: [20, 'OptionName kan højest have 20 tegn']
+		required: [true, 'Navnet er påkrævet'],
+		maxLength: [20, 'Navnet kan højest have 20 tegn']
 	},
 	description: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'Description er påkrævet'],
-		maxLength: [50, 'Description kan højest have 50 tegn']
+		required: [true, 'Beskrivelsen er påkrævet'],
+		maxLength: [50, 'Beskrivelsen kan højest have 50 tegn']
 	},
 	availability: {
 		type: Schema.Types.Number,
-		required: [true, 'Availability er påkrævet'],
-		min: [0, 'Availability skal være større eller lig med 0']
+		required: [true, 'Rådighed er påkrævet'],
+		min: [0, 'Rådighed skal være større eller lig med 0']
 	},
 	price: {
 		type: Schema.Types.Number,
-		required: [true, 'Price er påkrævet'],
-		min: [0, 'Price skal være større eller lig med 0']
+		required: [true, 'Prisen er påkrævet'],
+		min: [0, 'Prisen skal være større eller lig med 0']
 	},
 	maxOrderQuantity: {
 		type: Schema.Types.Number,
-		required: [true, 'Max quantity er påkrævet'],
-		min: [1, 'Max quantity skal være større end 0']
+		required: [true, 'Maksimal bestillingsmængde er påkrævet'],
+		min: [1, 'Maksimal bestillingsmængde skal være større end 0']
 	}
 })
 
 // Validations
 optionSchema.path('availability').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Availability skal være et heltal')
+}, 'Rådighed skal være et heltal')
 
 optionSchema.path('maxOrderQuantity').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'maxOrderQuantity skal være et heltal')
+}, 'Maksimal bestillingsmængde skal være et heltal')
 
 // Adding indexes
 

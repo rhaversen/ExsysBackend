@@ -34,15 +34,15 @@ export interface IProduct extends Document {
 const hourMinuteSubSchema = new Schema({
 	hour: {
 		type: Schema.Types.Number,
-		required: [true, 'Start hour is required'],
-		min: [0, 'Start hour must be between 0 and 23'],
-		max: [23, 'Start hour must be between 0 and 23']
+		required: [true, 'Fra-time er påkrævet'],
+		min: [0, 'Fra-time skal være mere end eller lig 0'],
+		max: [23, 'Fra-time skal være mindre end eller lig 23']
 	},
 	minute: {
 		type: Schema.Types.Number,
-		required: [true, 'Start minute is required'],
-		min: [0, 'Start minute must be between 0 and 59'],
-		max: [59, 'Start minute must be between 0 and 59']
+		required: [true, 'Til-minut er påkrævet'],
+		min: [0, 'Til-minut skal være mere end eller lig 0'],
+		max: [59, 'Til-minut skal være mindre end eller lig 59']
 	}
 })
 
@@ -61,24 +61,24 @@ const productSchema = new Schema<IProduct>({
 	name: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'Product name is required'],
-		maxLength: [20, 'Produkt navn må maks være 20 tegn lang']
+		required: [true, 'Navn er påkrævet'],
+		maxLength: [20, 'Navnet må maks være 20 tegn lang']
 	},
 	price: {
 		type: Schema.Types.Number,
-		required: [true, 'Product price is required'],
-		min: [0, 'Pris skal være 0 eller over']
+		required: [true, 'Pris er påkrævet'],
+		min: [0, 'prisen skal være større end eller lig 0']
 	},
 	description: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'Product description is required'],
+		required: [true, 'Produkt beskrivelse er påkrævet'],
 		maxLength: [50, 'Produkt beskrivelse må maks være 50 tegn lang']
 	},
 	availability: {
 		type: Schema.Types.Number,
-		required: [true, 'Product availability is required'],
-		min: [0, 'Availability cannot be negative']
+		required: [true, 'Produkt rådighed er påkrævet'],
+		min: [0, 'Rådighed skal være større end eller lig 0']
 	},
 	options: [{
 		type: Schema.Types.ObjectId,
@@ -87,12 +87,12 @@ const productSchema = new Schema<IProduct>({
 	}],
 	maxOrderQuantity: {
 		type: Schema.Types.Number,
-		required: [true, 'Max order quantity is required'],
-		min: [1, 'Max order quantity must be greater than 0']
+		required: [true, 'Maksimal bestillingsmængde er påkrævet'],
+		min: [1, 'Maksimal bestillingsmængde skal være større end eller lig 0']
 	},
 	orderWindow: {
 		type: orderWindowSubSchema,
-		required: [true, 'orderWindow is required']
+		required: [true, 'Bestillingsvindue er påkrævet']
 	}
 })
 
@@ -104,35 +104,31 @@ productSchema.path('orderWindow').validate((v: {
 	const fromTotalMinutes = v.from.hour * 60 + v.from.minute
 	const toTotalMinutes = v.to.hour * 60 + v.to.minute
 	return fromTotalMinutes < toTotalMinutes
-}, 'The "from" time must be before the "to" time')
+}, 'Fra-tid skal være før til-tid')
 
 productSchema.path('availability').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Availability must be an integer')
+}, 'Rådighed skal være et heltal')
 
 productSchema.path('maxOrderQuantity').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Max order quantity must be an integer')
-
-productSchema.path('maxOrderQuantity').validate((v: number) => {
-	return Number.isInteger(v)
-}, 'Max order quantity must be an integer')
+}, 'Maksimal bestillingsmængde skal være et heltal')
 
 productSchema.path('orderWindow.from.hour').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Hours must be an integer')
+}, 'Fra-time skal være et heltal')
 
 productSchema.path('orderWindow.from.minute').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Minutes must be an integer')
+}, 'Fra-minut skal være et heltal')
 
 productSchema.path('orderWindow.to.hour').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Hours must be an integer')
+}, 'Til-time skal være et heltal')
 
 productSchema.path('orderWindow.to.minute').validate((v: number) => {
 	return Number.isInteger(v)
-}, 'Minutes must be an integer')
+}, 'Til-minut skal være et heltal')
 
 productSchema.path('options').validate(async function (v: Types.ObjectId[]) {
 	const options = await OptionModel.find({ _id: { $in: v } })

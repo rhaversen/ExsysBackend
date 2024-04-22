@@ -21,16 +21,16 @@ const roomSchema = new Schema<IRoom>({
 	name: {
 		type: String,
 		trim: true,
-		required: [true, 'Room name is required']
+		required: [true, 'Navn er påkrævet']
 	},
 	number: {
 		type: Number,
-		required: [true, 'Room number is required'],
+		required: [true, 'Nummer er påkrævet'],
 		unique: true
 	},
 	description: {
 		type: String,
-		required: [true, 'Room description is required']
+		required: [true, 'Beskrivelse er påkrævet']
 	}
 })
 
