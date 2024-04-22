@@ -26,7 +26,7 @@ describe('Order Model', function () {
 			productId: Types.ObjectId
 			quantity: number
 		}>
-		options: Array<{
+		options?: Array<{
 			optionId: Types.ObjectId
 			quantity: number
 		}>
@@ -86,8 +86,8 @@ describe('Order Model', function () {
 		expect(order.roomId).to.equal(testRoom._id)
 		expect(order.products[0].productId).to.equal(testOrderFields.products[0].productId)
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(order.options?.[0].optionId).to.equal(testOrderFields.options[0].optionId)
-		expect(order.options?.[0].quantity).to.equal(testOrderFields.options[0].quantity)
+		expect(order.options?.[0].optionId).to.equal(testOrderFields.options?.[0].optionId)
+		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
 	})
 
 	it('should not allow non-integer quantities for products', async function () {
@@ -504,6 +504,24 @@ describe('Order Model', function () {
 				options: [
 					{ optionId: testOption._id, quantity: 1 },
 					{ optionId: testOption._id, quantity: 1 }
+				]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow a real and a non-existent option in an order', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				options: [
+					{ optionId: testOption._id, quantity: 1 },
+					{ optionId: new Types.ObjectId(), quantity: 1 }
 				]
 			})
 		} catch (err) {
