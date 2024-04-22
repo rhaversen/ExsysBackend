@@ -13,7 +13,6 @@ import '../testSetup.js'
 describe('Room Model', function () {
 	const testRoomField = {
 		name: 'TestRoom',
-		number: 1,
 		description: 'TestDescription'
 	}
 
@@ -22,7 +21,6 @@ describe('Room Model', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(room).to.exist
 		expect(room.name).to.equal(testRoomField.name)
-		expect(room.number).to.equal(testRoomField.number)
 		expect(room.description).to.equal(testRoomField.description)
 	})
 
@@ -46,7 +44,7 @@ describe('Room Model', function () {
 		expect(room.description).to.equal('TestDescription')
 	})
 
-	it('should not create a room with the same number', async function () {
+	it('should not create a room with the same name', async function () {
 		let errorOccurred = false
 		try {
 			await RoomModel.create(testRoomField)
@@ -74,42 +72,12 @@ describe('Room Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create a room without a number', async function () {
-		let errorOccurred = false
-		try {
-			await RoomModel.create({
-				...testRoomField,
-				number: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create a room without a description', async function () {
 		let errorOccurred = false
 		try {
 			await RoomModel.create({
 				...testRoomField,
 				description: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create a room with a negative number', async function () {
-		let errorOccurred = false
-		try {
-			await RoomModel.create({
-				...testRoomField,
-				number: -1
 			})
 		} catch (err) {
 			// The promise was rejected as expected
