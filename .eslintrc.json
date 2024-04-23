@@ -8,6 +8,7 @@
 		"ecmaVersion": "latest",
 		"sourceType": "module"
 	},
+	"plugins": ["import", "n", "promise", "@typescript-eslint"],
 	"rules": {
 		"semi": ["error", "never"],
 		"quotes": ["error", "single"],
