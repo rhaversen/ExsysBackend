@@ -12,7 +12,6 @@ import logger from '../utils/logger.js'
 export interface IRoom extends Document {
 	_id: Types.ObjectId
 	name: string // The name of the room
-	number: number // The number of the room
 	description: string // A description of the room
 }
 
@@ -21,13 +20,8 @@ const roomSchema = new Schema<IRoom>({
 	name: {
 		type: String,
 		trim: true,
-		required: [true, 'Navn er påkrævet']
-	},
-	number: {
-		type: Number,
-		required: [true, 'Nummer er påkrævet'],
 		unique: true,
-		min: [0, 'Nummer skal være større end 0']
+		required: [true, 'Navn er påkrævet']
 	},
 	description: {
 		type: String,
@@ -39,10 +33,10 @@ const roomSchema = new Schema<IRoom>({
 })
 
 // Validations
-roomSchema.path('number').validate(async (v: string) => {
-	const foundRoomWithNumber = await RoomModel.findOne({ number: v })
-	return foundRoomWithNumber === null || foundRoomWithNumber === undefined
-}, 'Nummeret er allerede i brug')
+roomSchema.path('name').validate(async (v: string) => {
+	const foundRoomWithName = await RoomModel.findOne({ name: v })
+	return foundRoomWithName === null || foundRoomWithName === undefined
+}, 'Navnet er allerede i brug')
 
 // Adding indexes
 
