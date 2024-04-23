@@ -3,11 +3,12 @@
 		"browser": true,
 		"es2021": true
 	},
-	"extends": "standard-with-typescript",
+	"extends": ["eslint-config-love"],
 	"parserOptions": {
 		"ecmaVersion": "latest",
 		"sourceType": "module"
 	},
+	"plugins": ["import", "n", "promise", "@typescript-eslint"],
 	"rules": {
 		"semi": ["error", "never"],
 		"quotes": ["error", "single"],

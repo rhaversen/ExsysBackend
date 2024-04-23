@@ -22,3 +22,25 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		}
 	}
 }
+
+export async function getOrdersForToday (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting today\'s orders')
+	// Always use UTC time
+
+	const start = new Date()
+	start.setUTCHours(0, 0, 0, 0)
+	const end = new Date()
+	end.setUTCHours(23, 59, 59, 999)
+
+	try {
+		const orders = await OrderModel.find({
+			requestedDeliveryDate: {
+				$gte: start,
+				$lte: end
+			}
+		})
+		res.status(200).json(orders)
+	} catch (error) {
+		next(error)
+	}
+}
