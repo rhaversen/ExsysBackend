@@ -23,11 +23,11 @@ spec:
                 - name: backend-deployment
                   resources:
                       limits:
-                          cpu: "0.1"
-                          memory: "100Mi"
+                          cpu: "400m"
+                          memory: "300M"
                       requests:
-                          cpu: "0.05"
-                          memory: "50Mi"
+                          cpu: "250m"
+                          memory: "200M"
                   image: "rhaversen/exsys-backend:${GITHUB_SHA}"
                   imagePullPolicy: Always
                   livenessProbe:
