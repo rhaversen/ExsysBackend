@@ -82,7 +82,6 @@ const productSchema = new Schema<IProduct>({
 	},
 	options: [{
 		type: Schema.Types.ObjectId,
-		unique: true,
 		ref: 'Option'
 	}],
 	maxOrderQuantity: {
