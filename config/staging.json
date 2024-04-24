@@ -42,5 +42,8 @@
 	},
 	"bcrypt": {
 		"saltRounds": 1
+	},
+	"cors": {
+		"origin": "https://staging.kantine.nyskivehus.dk"
 	}
 }
