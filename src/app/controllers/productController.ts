@@ -12,7 +12,7 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 	logger.silly('Creating product')
 
 	try {
-		const newProduct = await ProductModel.create(req.body as Record<string, unknown>)
+		const newProduct = await ProductModel.create(req.body.data as Record<string, unknown>)
 		res.status(201).json(newProduct)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -38,7 +38,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 	logger.silly('Patching product')
 
 	try {
-		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body.data as Record<string, unknown>, { new: true })
 		res.json(product)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -52,7 +52,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 export async function deleteProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting product')
 
-	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+	if (typeof req.body.data.confirm !== 'boolean' || req.body.data.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}

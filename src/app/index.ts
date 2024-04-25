@@ -6,6 +6,7 @@ import mongoSanitize from 'express-mongo-sanitize'
 import helmet from 'helmet'
 import mongoose from 'mongoose'
 import RateLimit from 'express-rate-limit'
+import cors from 'cors'
 
 // Own Modules
 import databaseConnector from './utils/databaseConnector.js'
@@ -28,11 +29,13 @@ logger.info(`Node environment: ${process.env.NODE_ENV}`)
 const {
 	veryLowSensitivityApiLimiterConfig,
 	mediumSensitivityApiLimiterConfig,
-	expressPort
+	expressPort,
+	corsConfig
 } = config
 
 // Global variables and setup
 const app = express()
+app.use(cors(corsConfig))
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {

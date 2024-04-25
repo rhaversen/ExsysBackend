@@ -5,6 +5,7 @@ import config from 'config'
 import { type Options as RateLimitOptions } from 'express-rate-limit'
 import logger from './logger.js'
 import { type ConnectOptions } from 'mongoose'
+import { type CorsOptions } from 'cors'
 
 // Convert config object to a plain object and then stringify it
 const configString = JSON.stringify(config.util.toObject(config), null, 4)
@@ -26,7 +27,8 @@ const AppConfig = {
 	retryWrites: config.get('mongoose.options.retryWrites') as string,
 	w: config.get('mongoose.options.w') as string,
 	appName: config.get('mongoose.options.appName') as string,
-	bcryptSaltRounds: config.get('bcrypt.saltRounds') as number
+	bcryptSaltRounds: config.get('bcrypt.saltRounds') as number,
+	corsConfig: config.get('cors') as CorsOptions
 }
 
 export default AppConfig
