@@ -106,8 +106,7 @@ orderSchema.path('products').validate(function (v: Array<{ productId: Types.Obje
 
 orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
 	for (const product of v) {
-		const productModel = await ProductModel.findById(product.productId)
-
+		const productModel = await ProductModel.findOne({ _id: product.productId })
 		if (productModel === null || productModel === undefined) {
 			return false
 		}
@@ -124,7 +123,7 @@ orderSchema.path('products').validate(async function (v: Array<{ productId: Type
 
 orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
 	for (const product of v) {
-		const productModel = await ProductModel.findById(product.productId)
+		const productModel = await ProductModel.findOne({ _id: product.productId })
 
 		if (productModel === null || productModel === undefined) {
 			return false
