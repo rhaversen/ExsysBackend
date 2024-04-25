@@ -42,7 +42,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 	logger.silly('Patching product')
 
 	try {
-		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true, runValidators: true })
 
 		if (product === null || product === undefined) {
 			res.status(404).json({ error: 'Produkt ikke fundet' })

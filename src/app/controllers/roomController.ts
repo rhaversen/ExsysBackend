@@ -42,7 +42,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 	logger.silly('Patching room')
 
 	try {
-		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true, runValidators: true })
 
 		if (room === null || room === undefined) {
 			res.status(404).json({ error: 'Rum ikke fundet' })
