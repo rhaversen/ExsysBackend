@@ -81,7 +81,7 @@ const orderSchema = new Schema({
 
 // Validations
 orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
-	const now = new Date();
+	const now = new Date()
 	const dateUTC = new Date(
 		Date.UTC(
 			now.getUTCFullYear(),
@@ -90,9 +90,9 @@ orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
 			now.getUTCHours(),
 			now.getUTCMinutes()
 		)
-	);
+	)
 	return v >= dateUTC
-}, 'Leveringstidspunkt skal være i fremtiden');
+}, 'Leveringstidspunkt skal være i fremtiden')
 
 orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
 	const currentDate = new Date().setUTCHours(0, 0, 0, 0)
