@@ -26,7 +26,7 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 
 		// Creating a new admin with the password and the remaining fields
 		const newAdmin = await AdminModel.create({ password, ...rest })
-		res.status(201).json(newAdmin)
+		res.status(201).json({ name: newAdmin.name, email: newAdmin.email })
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
 			res.status(400).json({ error: error.message })
@@ -41,7 +41,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 
 	try {
 		const admins = await AdminModel.find({})
-		res.status(200).json(admins)
+		res.status(200).json(admins.map(admin => ({ name: admin.name, email: admin.email })))
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
 			res.status(400).json({ error: error.message })
