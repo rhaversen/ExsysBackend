@@ -11,6 +11,16 @@ import logger from '../utils/logger.js'
 export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
 	try {
+		// Filter out products with quantity 0
+		if (req.body.products !== undefined && req.body.products.length !== null) {
+			req.body.products = req.body.products.filter((product: { productId: string, quantity: number }) => product.quantity !== 0)
+		}
+
+		// Filter out options with quantity 0
+		if (req.body.options !== undefined && req.body.options.length !== null) {
+			req.body.options = req.body.options.filter((option: { productId: string, quantity: number }) => option.quantity !== 0)
+		}
+
 		const newOrder = await OrderModel.create(req.body as Record<string, unknown>)
 		res.status(201).json(newOrder)
 	} catch (error) {
