@@ -12,7 +12,7 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 	logger.silly('Creating room')
 
 	try {
-		const newRoom = await RoomModel.create(req.body.data as Record<string, unknown>)
+		const newRoom = await RoomModel.create(req.body as Record<string, unknown>)
 		res.status(201).json(newRoom)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -38,7 +38,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 	logger.silly('Patching room')
 
 	try {
-		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body.data as Record<string, unknown>, { new: true })
+		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
 		res.status(200).json(room)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
