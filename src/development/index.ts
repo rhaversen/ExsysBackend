@@ -1,4 +1,4 @@
-import '../app/index.js'
+await import('../app/index.js')
 import connectToMongoDB from '../test/mongoMemoryReplSetConnector.js'
-import './seedDatabase.js'
 await connectToMongoDB()
+await import('./seedDatabase.js')

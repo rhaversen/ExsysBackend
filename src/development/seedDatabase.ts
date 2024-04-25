@@ -4,33 +4,33 @@ import RoomModel from '../app/models/Room.js'
 await ProductModel.create({
 	name: 'Burger',
 	price: 50,
-	description: 'A delicious burger',
+	description: 'A delicious burger all day',
 	availability: 100,
 	orderWindow: {
 		from: {
-			hour: 10,
+			hour: 0,
 			minute: 0
 		},
 		to: {
-			hour: 15,
-			minute: 0
+			hour: 23,
+			minute: 59
 		}
 	},
 	maxOrderQuantity: 10
 })
 
 await ProductModel.create({
-	name: 'Pizza',
+	name: 'Coffe',
 	price: 100,
-	description: 'A delicious pizza',
+	description: 'A delicious morning coffee',
 	availability: 50,
 	orderWindow: {
 		from: {
-			hour: 15,
+			hour: 0,
 			minute: 0
 		},
 		to: {
-			hour: 20,
+			hour: 12,
 			minute: 0
 		}
 	},
@@ -38,18 +38,18 @@ await ProductModel.create({
 })
 
 await ProductModel.create({
-	name: 'Salad',
+	name: 'Cake',
 	price: 30,
-	description: 'A delicious salad',
+	description: 'A delicious afternoon cake',
 	availability: 100,
 	orderWindow: {
 		from: {
-			hour: 10,
+			hour: 12,
 			minute: 0
 		},
 		to: {
-			hour: 20,
-			minute: 0
+			hour: 23,
+			minute: 59
 		}
 	},
 	maxOrderQuantity: 20
