@@ -106,7 +106,7 @@ orderSchema.path('roomId').validate(async function (v: Types.ObjectId) {
 }, 'Rummet eksisterer ikke')
 
 orderSchema.path('products').validate(function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
-	const unique = new Set(v.map(v => v.productId.id))
+	const unique = new Set(v.map(v => v.productId))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
