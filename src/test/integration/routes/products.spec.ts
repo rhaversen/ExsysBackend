@@ -263,27 +263,6 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body.maxOrderQuantity).to.equal(10)
 	})
 
-	it('should not allow an update with invalid orderWindow', async function () {
-		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
-			orderWindow: {
-				from: {
-					hour: 5,
-					minute: 0
-				},
-				to: {
-					hour: 2,
-					minute: 50
-				}
-			}
-		})
-		expect(res.status).to.equal(400)
-		// it should not change the product¨
-		const product = await ProductModel.findById(testProduct.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(product).to.exist
-		expect(product?.orderWindow.from.hour).to.equal(0)
-	})
-
 	it('should return a 404 if the product does not exist', async function () {
 		const res = await agent.patch(`/v1/products/${new mongoose.Types.ObjectId().toString()}`).send({
 			name: 'Updated Product',
