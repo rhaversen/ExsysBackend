@@ -53,3 +53,13 @@ export async function getOrdersForToday (req: Request, res: Response, next: Next
 		next(error)
 	}
 }
+
+export async function getOrders (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting orders')
+	try {
+		const orders = await OrderModel.find()
+		res.status(200).json(orders)
+	} catch (error) {
+		next(error)
+	}
+}
