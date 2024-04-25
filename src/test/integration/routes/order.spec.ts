@@ -12,7 +12,7 @@ import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 
-describe('Order Route', function () {
+describe('POST /v1/orders', function () {
 	let testProduct1: IProduct
 	let testRoom: IRoom
 	let testOption: IOption
