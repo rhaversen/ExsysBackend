@@ -66,11 +66,13 @@ const orderSchema = new Schema({
 		required: [true, 'Rum er påkrevet']
 	},
 	products: {
+		_id: false,
 		type: [productsSubSchema],
 		required: [true, 'Produkter er påkrævet'],
 		unique: true
 	},
 	options: {
+		_id: false,
 		type: [optionsSubSchema],
 		unique: true,
 		default: undefined
