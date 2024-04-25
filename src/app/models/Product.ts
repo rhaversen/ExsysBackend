@@ -49,9 +49,11 @@ const hourMinuteSubSchema = new Schema({
 // Sub-schema for orderWindow
 const orderWindowSubSchema = new Schema({
 	from: {
+		_id: false,
 		type: hourMinuteSubSchema
 	},
 	to: {
+		_id: false,
 		type: hourMinuteSubSchema
 	}
 })
@@ -90,6 +92,7 @@ const productSchema = new Schema<IProduct>({
 		min: [1, 'Maksimal bestillingsmængde skal være større end eller lig 0']
 	},
 	orderWindow: {
+		_id: false,
 		type: orderWindowSubSchema,
 		required: [true, 'Bestillingsvindue er påkrævet']
 	}
