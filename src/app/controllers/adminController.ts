@@ -63,7 +63,7 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 			}
 		}
 
-		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body.data as Record<string, unknown>, { new: true })
+		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
 		res.status(200).json(admin)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
