@@ -52,7 +52,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 export async function deleteRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting room')
 
-	if (typeof req.body.data.confirm !== 'boolean' || req.body.data.confirm !== true) {
+	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
