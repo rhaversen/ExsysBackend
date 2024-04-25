@@ -68,6 +68,12 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 		}
 
 		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+
+		if (admin === null || admin === undefined) {
+			res.status(404).json({ error: 'Admin ikke fundet' })
+			return
+		}
+
 		res.status(200).json(admin)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -87,7 +93,13 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
-		await AdminModel.findByIdAndDelete(req.params.id)
+		const admin = await AdminModel.findByIdAndDelete(req.params.id)
+
+		if (admin === null || admin === undefined) {
+			res.status(404).json({ error: 'Admin ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {

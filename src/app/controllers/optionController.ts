@@ -43,6 +43,12 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 
 	try {
 		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+
+		if (option === null || option === undefined) {
+			res.status(404).json({ error: 'Tilvalg ikke fundet' })
+			return
+		}
+
 		res.json(option)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -62,7 +68,13 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 	}
 
 	try {
-		await OptionModel.findByIdAndDelete(req.params.id)
+		const option = await OptionModel.findByIdAndDelete(req.params.id)
+
+		if (option === null || option === undefined) {
+			res.status(404).json({ error: 'Tilvalg ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {

@@ -43,6 +43,12 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 
 	try {
 		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+
+		if (room === null || room === undefined) {
+			res.status(404).json({ error: 'Rum ikke fundet' })
+			return
+		}
+
 		res.status(200).json(room)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -62,7 +68,13 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 	}
 
 	try {
-		await RoomModel.findByIdAndDelete(req.params.id)
+		const room = await RoomModel.findByIdAndDelete(req.params.id)
+
+		if (room === null || room === undefined) {
+			res.status(404).json({ error: 'Rum ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {

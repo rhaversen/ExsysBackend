@@ -43,6 +43,12 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 
 	try {
 		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+
+		if (product === null || product === undefined) {
+			res.status(404).json({ error: 'Produkt ikke fundet' })
+			return
+		}
+
 		res.json(product)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -62,7 +68,13 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 	}
 
 	try {
-		await ProductModel.findByIdAndDelete(req.params.id)
+		const product = await ProductModel.findByIdAndDelete(req.params.id)
+
+		if (product === null || product === undefined) {
+			res.status(404).json({ error: 'Produkt ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
