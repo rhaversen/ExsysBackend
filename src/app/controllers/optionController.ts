@@ -30,7 +30,11 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 		const options = await OptionModel.find({})
 		res.status(200).json(options)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -38,7 +42,13 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 	logger.silly('Patching option')
 
 	try {
-		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true, runValidators: true })
+
+		if (option === null || option === undefined) {
+			res.status(404).json({ error: 'Tilvalg ikke fundet' })
+			return
+		}
+
 		res.json(option)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -52,15 +62,25 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 export async function deleteOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting option')
 
-	if (typeof req.body.data.confirm !== 'boolean' || req.body.data.confirm !== true) {
+	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
 	try {
-		await OptionModel.findByIdAndDelete(req.params.id)
+		const option = await OptionModel.findByIdAndDelete(req.params.id)
+
+		if (option === null || option === undefined) {
+			res.status(404).json({ error: 'Tilvalg ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }

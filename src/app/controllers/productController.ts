@@ -30,7 +30,11 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 		const products = await ProductModel.find({})
 		res.status(200).json(products)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -38,7 +42,13 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 	logger.silly('Patching product')
 
 	try {
-		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true, runValidators: true })
+
+		if (product === null || product === undefined) {
+			res.status(404).json({ error: 'Produkt ikke fundet' })
+			return
+		}
+
 		res.json(product)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -52,15 +62,25 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 export async function deleteProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting product')
 
-	if (typeof req.body.data.confirm !== 'boolean' || req.body.data.confirm !== true) {
+	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
 	try {
-		await ProductModel.findByIdAndDelete(req.params.id)
+		const product = await ProductModel.findByIdAndDelete(req.params.id)
+
+		if (product === null || product === undefined) {
+			res.status(404).json({ error: 'Produkt ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }

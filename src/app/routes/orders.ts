@@ -7,7 +7,7 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { createOrder, getOrdersForToday } from '../controllers/orderController.js'
+import { createOrder, getOrdersForToday, getOrders } from '../controllers/orderController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -28,13 +28,24 @@ router.post('/',
 )
 
 /**
+ * @route GET api/v1/orders/
+ * @desc Get all orders
+ * @access Public
+ * @return {number} res.status - The status code of the HTTP response.
+ * @return {Array<object>} res.body - The orders matching the date.
+ */
+router.get('/',
+	asyncErrorHandler(getOrders)
+)
+
+/**
  * @route GET api/v1/orders/today
  * @desc Get orders for today
  * @access Public
  * @return {number} res.status - The status code of the HTTP response.
  * @return {Array<object>} res.body - The orders matching the date.
  */
-router.get('/',
+router.get('/today',
 	asyncErrorHandler(getOrdersForToday)
 )
 
