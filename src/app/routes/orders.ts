@@ -45,7 +45,7 @@ router.get('/',
  * @return {number} res.status - The status code of the HTTP response.
  * @return {Array<object>} res.body - The orders matching the date.
  */
-router.get('/',
+router.get('/today',
 	asyncErrorHandler(getOrdersForToday)
 )
 
