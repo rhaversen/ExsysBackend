@@ -30,7 +30,11 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 		const rooms = await RoomModel.find({})
 		res.status(200).json(rooms)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -61,6 +65,10 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 		await RoomModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }

@@ -30,7 +30,11 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 		const products = await ProductModel.find({})
 		res.status(200).json(products)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -61,6 +65,10 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 		await ProductModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }

@@ -43,7 +43,11 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 		const admins = await AdminModel.find({})
 		res.status(200).json(admins)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -86,6 +90,10 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 		await AdminModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }

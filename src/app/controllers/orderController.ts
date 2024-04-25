@@ -50,7 +50,11 @@ export async function getOrdersForToday (req: Request, res: Response, next: Next
 		})
 		res.status(200).json(orders)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -60,6 +64,10 @@ export async function getOrders (req: Request, res: Response, next: NextFunction
 		const orders = await OrderModel.find()
 		res.status(200).json(orders)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }

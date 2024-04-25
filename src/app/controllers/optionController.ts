@@ -30,7 +30,11 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 		const options = await OptionModel.find({})
 		res.status(200).json(options)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -61,6 +65,10 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 		await OptionModel.findByIdAndDelete(req.params.id)
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
