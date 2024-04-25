@@ -105,9 +105,7 @@ productSchema.path('orderWindow').validate((v: {
 	from: { hour: number, minute: number }
 	to: { hour: number, minute: number }
 }) => {
-	const fromTotalMinutes = v.from.hour * 60 + v.from.minute
-	const toTotalMinutes = v.to.hour * 60 + v.to.minute
-	return fromTotalMinutes < toTotalMinutes
+	return !(v.from.hour === v.to.hour && v.from.minute === v.to.minute)
 }, 'Fra-tid skal være før til-tid')
 
 productSchema.path('availability').validate((v: number) => {
