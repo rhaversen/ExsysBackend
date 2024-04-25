@@ -81,8 +81,18 @@ const orderSchema = new Schema({
 
 // Validations
 orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
-	return v >= new Date()
-}, 'Leveringstidspunkt skal være i fremtiden')
+	const now = new Date();
+	const dateUTC = new Date(
+		Date.UTC(
+			now.getUTCFullYear(),
+			now.getUTCMonth(),
+			now.getUTCDate(),
+			now.getUTCHours(),
+			now.getUTCMinutes()
+		)
+	);
+	return v >= dateUTC
+}, 'Leveringstidspunkt skal være i fremtiden');
 
 orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
 	const currentDate = new Date().setUTCHours(0, 0, 0, 0)
@@ -96,7 +106,7 @@ orderSchema.path('roomId').validate(async function (v: Types.ObjectId) {
 }, 'Rummet eksisterer ikke')
 
 orderSchema.path('products').validate(function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
-	const unique = new Set(v.map(v => v.productId.id))
+	const unique = new Set(v.map(v => v.productId))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
@@ -106,8 +116,7 @@ orderSchema.path('products').validate(function (v: Array<{ productId: Types.Obje
 
 orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
 	for (const product of v) {
-		const productModel = await ProductModel.findById(product.productId)
-
+		const productModel = await ProductModel.findOne({ _id: product.productId })
 		if (productModel === null || productModel === undefined) {
 			return false
 		}
@@ -124,7 +133,7 @@ orderSchema.path('products').validate(async function (v: Array<{ productId: Type
 
 orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
 	for (const product of v) {
-		const productModel = await ProductModel.findById(product.productId)
+		const productModel = await ProductModel.findOne({ _id: product.productId })
 
 		if (productModel === null || productModel === undefined) {
 			return false

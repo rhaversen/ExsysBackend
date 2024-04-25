@@ -12,7 +12,7 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 	logger.silly('Creating option')
 
 	try {
-		const newOption = await OptionModel.create(req.body as Record<string, unknown>)
+		const newOption = await OptionModel.create(req.body.data as Record<string, unknown>)
 		res.status(201).json(newOption)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -38,7 +38,7 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 	logger.silly('Patching option')
 
 	try {
-		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body.data as Record<string, unknown>, { new: true })
 		res.json(option)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -52,7 +52,7 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 export async function deleteOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting option')
 
-	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+	if (typeof req.body.data.confirm !== 'boolean' || req.body.data.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}

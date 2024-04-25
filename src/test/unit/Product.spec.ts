@@ -79,6 +79,49 @@ describe('Product Model', function () {
 		expect(product.options?.[0].toString()).to.equal(testOption.id)
 	})
 
+	it('should allow two products with no options', async function () {
+		const testProductFields2 = {
+			name: 'Burger',
+			price: 50,
+			description: 'A delicious burger',
+			availability: 100,
+			orderWindow: {
+				from: {
+					hour: 10,
+					minute: 0
+				},
+				to: {
+					hour: 15,
+					minute: 0
+				}
+			},
+			maxOrderQuantity: 10
+		}
+		const testProductFields3 = {
+			name: 'Pizza',
+			price: 100,
+			description: 'A delicious pizza',
+			availability: 50,
+			orderWindow: {
+				from: {
+					hour: 15,
+					minute: 0
+				},
+				to: {
+					hour: 20,
+					minute: 0
+				}
+			},
+			maxOrderQuantity: 5
+		}
+		const product1 = await ProductModel.create(testProductFields2)
+		const product2 = await ProductModel.create(testProductFields3)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(product1).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(product2).to.exist
+	})
+
 	it('should trim the name', async function () {
 		const product = await ProductModel.create({
 			...testProductFields,
