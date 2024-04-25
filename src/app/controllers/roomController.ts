@@ -30,7 +30,11 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 		const rooms = await RoomModel.find({})
 		res.status(200).json(rooms)
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
 
@@ -38,7 +42,13 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 	logger.silly('Patching room')
 
 	try {
-		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true })
+		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true, runValidators: true })
+
+		if (room === null || room === undefined) {
+			res.status(404).json({ error: 'Rum ikke fundet' })
+			return
+		}
+
 		res.status(200).json(room)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -52,15 +62,25 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 export async function deleteRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting room')
 
-	if (typeof req.body.data.confirm !== 'boolean' || req.body.data.confirm !== true) {
+	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
 	try {
-		await RoomModel.findByIdAndDelete(req.params.id)
+		const room = await RoomModel.findByIdAndDelete(req.params.id)
+
+		if (room === null || room === undefined) {
+			res.status(404).json({ error: 'Rum ikke fundet' })
+			return
+		}
+
 		res.status(204).send()
 	} catch (error) {
-		next(error)
+		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
 	}
 }
