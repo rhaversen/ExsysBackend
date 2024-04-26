@@ -42,7 +42,7 @@ roomSchema.path('name').validate(async (v: string) => {
 
 // Pre-save middleware
 roomSchema.pre('save', function (next) {
-	logger.silly('Saving order')
+	logger.silly('Saving room')
 	next()
 })
 
