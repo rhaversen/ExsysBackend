@@ -63,4 +63,29 @@ await RoomModel.create({
 	description: 'A room'
 })
 
+await RoomModel.create({
+	name: 'Library Room',
+	description: 'Another room'
+})
+
+await RoomModel.create({
+	name: 'Conservatory Room',
+	description: 'Yet another room'
+})
+
+await RoomModel.create({
+	name: 'Dining Room',
+	description: 'A room for dining'
+})
+
+await RoomModel.create({
+	name: 'Kitchen Room',
+	description: 'A room for cooking'
+})
+
+await RoomModel.create({
+	name: 'Ballroom Room',
+	description: 'A room for dancing'
+})
+
 logger.info('Database seeded')
