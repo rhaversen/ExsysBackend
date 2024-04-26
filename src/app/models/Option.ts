@@ -64,7 +64,7 @@ optionSchema.path('maxOrderQuantity').validate((v: number) => {
 
 // Pre-save middleware
 optionSchema.pre('save', function (next) {
-	logger.silly('Saving order')
+	logger.silly('Saving option')
 	next()
 })
 
