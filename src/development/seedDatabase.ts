@@ -1,5 +1,8 @@
 import ProductModel from '../app/models/Product.js'
 import RoomModel from '../app/models/Room.js'
+import logger from '../app/utils/logger.js'
+
+logger.info('Seeding database')
 
 await ProductModel.create({
 	name: 'Burger',
@@ -59,3 +62,5 @@ await RoomModel.create({
 	name: 'Room 1',
 	description: 'A room'
 })
+
+logger.info('Database seeded')
