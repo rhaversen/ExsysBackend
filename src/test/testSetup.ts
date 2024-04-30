@@ -35,6 +35,8 @@ const cleanDatabase = async function (): Promise<void> {
 
 before(async function () {
 	this.timeout(10000)
+	// Setting environment
+	process.env.NODE_ENV = 'test'
 	// Connect to the database
 	const database = await import('./mongoMemoryReplSetConnector.js')
 	await database.default()
