@@ -126,6 +126,15 @@ process.on('SIGTERM', (): void => {
 	})
 })
 
+// Assigning shutdown function to SIGKILL signal
+process.on('SIGKILL', (): void => {
+	logger.info('Received SIGKILL')
+	shutDown().catch((err): void => {
+		logger.error('An error occurred during shutdown:', err)
+		process.exit(1)
+	})
+})
+
 // Shutdown function
 export async function shutDown (exitCode?: number | undefined): Promise<void> {
 	try {
