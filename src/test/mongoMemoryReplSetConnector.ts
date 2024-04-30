@@ -11,7 +11,7 @@ import { shutDown } from '../app/index.js'
 
 const { mongooseOpts } = config
 
-export default async function connectToMongoDB (): Promise<void> {
+export default async function connectToInMemoryMongoDB (): Promise<void> {
 	logger.info('Attempting connection to in-memory MongoDB')
 
 	try {
