@@ -9,6 +9,7 @@ import logger from '../app/utils/logger.js'
 import config from '../app/utils/setupConfig.js'
 
 const { mongooseOpts } = config
+let replSet: MongoMemoryReplSet
 
 export default async function connectToInMemoryMongoDB (): Promise<void> {
 	logger.info('Attempting connection to in-memory MongoDB')
@@ -24,5 +25,15 @@ export default async function connectToInMemoryMongoDB (): Promise<void> {
 	} catch (error: any) {
 		logger.error(`Error connecting to in-memory MongoDB: ${error.message !== undefined ? error.message : error}`)
 		process.exit(1)
+	}
+}
+
+export async function disconnectFromInMemoryMongoDB (): Promise<void> {
+	try {
+		logger.info('Stopping memory database replica set...')
+		await replSet.stop()
+		logger.info('Memory database replica set stopped')
+	} catch (error: any) {
+		logger.error(`Error disconnecting from in-memory MongoDB: ${error.message !== undefined ? error.message : error}`)
 	}
 }
