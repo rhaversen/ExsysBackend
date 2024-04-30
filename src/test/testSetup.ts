@@ -53,8 +53,11 @@ afterEach(async function () {
 	await cleanDatabase()
 })
 
-after(function () {
-	void app.shutDown()
+after(async function () {
+	await app.shutDown()
+
+	// exit the process after 1 second
+	setTimeout(() => process.exit(0), 1000)
 })
 
 export { chaiAppServer }
