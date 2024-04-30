@@ -16,15 +16,15 @@ process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 
 // Global variables
 const chaiHttpObject = chai.use(chaiHttp)
-let app: { shutDown: (exitCode?: number) => Promise<void>, server: Server }
+let app: { shutDown: () => Promise<void>, server: Server }
 let chaiAppServer: ChaiHttp.Agent
 
 const cleanDatabase = async function (): Promise<void> {
 	/// ////////////////////////////////////////////
 	/// ///////////////////////////////////////////
 	if (process.env.NODE_ENV !== 'test') {
-		logger.error('Database wipe attempted in non-test environment! Shutting down.')
-		await app.shutDown(1)
+		logger.warn('Database wipe attempted in non-test environment! Shutting down.')
+		await app.shutDown()
 		return
 	}
 	/// ////////////////////////////////////////////
@@ -35,6 +35,8 @@ const cleanDatabase = async function (): Promise<void> {
 
 before(async function () {
 	this.timeout(10000)
+	// Setting environment
+	process.env.NODE_ENV = 'test'
 	// Connect to the database
 	const database = await import('./mongoMemoryReplSetConnector.js')
 	await database.default()
@@ -51,8 +53,11 @@ afterEach(async function () {
 	await cleanDatabase()
 })
 
-after(function () {
-	void app.shutDown()
+after(async function () {
+	await app.shutDown()
+
+	// exit the process after 1 second
+	setTimeout(() => process.exit(0), 1000)
 })
 
 export { chaiAppServer }
