@@ -15,9 +15,7 @@ export default async function connectToInMemoryMongoDB (): Promise<void> {
 	logger.info('Attempting connection to in-memory MongoDB')
 
 	try {
-		const replSet = new MongoMemoryReplSet({
-			replSet: { storageEngine: 'wiredTiger' }
-		})
+		replSet = new MongoMemoryReplSet()
 
 		await replSet.start()
 		await replSet.waitUntilRunning()
