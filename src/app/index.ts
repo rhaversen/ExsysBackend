@@ -137,19 +137,14 @@ process.on('SIGKILL', (): void => {
 
 // Shutdown function
 export async function shutDown (exitCode?: number | undefined): Promise<void> {
-	try {
-		logger.info('Closing server...')
-		server.close()
-		logger.info('Server closed')
-		logger.info('Starting database disconnection...')
-		await mongoose.disconnect()
-		logger.info('Database disconnected')
-		logger.info('Shutdown completed')
-		process.exit(exitCode ?? 0)
-	} catch (error) {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1) // Exit with code 1 indicating termination with error
-	}
+	logger.info('Closing server...')
+	server.close()
+	logger.info('Server closed')
+	logger.info('Starting database disconnection...')
+	await mongoose.disconnect()
+	logger.info('Database disconnected')
+	logger.info('Shutdown completed')
+	process.exit(exitCode ?? 0)
 }
 
 export default app
