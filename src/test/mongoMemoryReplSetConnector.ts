@@ -7,7 +7,6 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server'
 // Own modules
 import logger from '../app/utils/logger.js'
 import config from '../app/utils/setupConfig.js'
-import { shutDown } from '../app/index.js'
 
 const { mongooseOpts } = config
 
