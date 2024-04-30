@@ -145,9 +145,9 @@ export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
-	logger.info('Starting database disconnection...')
-	await mongoose.disconnect()
-	logger.info('Database disconnected')
+	logger.info('Closing database connection...')
+	await mongoose.connection.close()
+	logger.info('Database connection closed')
 	logger.info('Shutdown completed')
 }
 
