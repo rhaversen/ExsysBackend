@@ -16,7 +16,7 @@ process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 
 // Global variables
 const chaiHttpObject = chai.use(chaiHttp)
-let app: { shutDown: (exitCode?: number) => Promise<void>, server: Server }
+let app: { shutDown: () => Promise<void>, server: Server }
 let chaiAppServer: ChaiHttp.Agent
 
 const cleanDatabase = async function (): Promise<void> {
