@@ -23,7 +23,12 @@ import roomRoutes from './routes/rooms.js'
 import optionRoutes from './routes/options.js'
 
 // Logging environment
-logger.info(`Node environment: ${process.env.NODE_ENV}`)
+if (typeof process.env.NODE_ENV !== 'undefined') {
+	logger.info(`Node environment: ${process.env.NODE_ENV}`)
+} else {
+	logger.warn('Node environment is undefined. Shutting down...')
+	process.exit(1)
+}
 
 // Configs
 const {
