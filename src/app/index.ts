@@ -134,8 +134,8 @@ process.on('SIGTERM', (): void => {
 // Assigning shutdown function to SIGKILL signal
 process.on('SIGKILL', (): void => {
 	logger.info('Received SIGKILL')
-	shutDown().catch((err): void => {
-		logger.error('An error occurred during shutdown:', err)
+	shutDown().catch(error => {
+		logger.error('An error occurred during shutdown:', error)
 		process.exit(1)
 	})
 })
