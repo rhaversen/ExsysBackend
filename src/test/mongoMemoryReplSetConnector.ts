@@ -26,6 +26,6 @@ export default async function connectToInMemoryMongoDB (): Promise<void> {
 		logger.info('Connected to in-memory MongoDB')
 	} catch (error: any) {
 		logger.error(`Error connecting to in-memory MongoDB: ${error.message !== undefined ? error.message : error}`)
-		await shutDown(1)
+		process.exit(1)
 	}
 }

@@ -24,7 +24,7 @@ const cleanDatabase = async function (): Promise<void> {
 	/// ///////////////////////////////////////////
 	if (process.env.NODE_ENV !== 'test') {
 		logger.error('Database wipe attempted in non-test environment! Shutting down.')
-		await app.shutDown(1)
+		await app.shutDown()
 		return
 	}
 	/// ////////////////////////////////////////////

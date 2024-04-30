@@ -50,7 +50,7 @@ async function connectToMongoDB (): Promise<void> {
 
 	// Exhausted retries
 	logger.error(`Failed to connect to MongoDB after ${maxRetryAttempts} attempts. Shutting down.`)
-	await shutDown(1)
+	await shutDown()
 }
 
 const databaseConnector = {

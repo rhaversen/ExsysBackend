@@ -91,7 +91,7 @@ process.on('unhandledRejection', (reason, promise): void => {
 	// Log the detailed error message
 	logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
 
-	shutDown(1).catch(error => {
+	shutDown().catch(error => {
 		// If 'error' is an Error object, log its stack trace; otherwise, convert to string
 		const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
 		logger.error(`An error occurred during shutdown: ${errorDetail}`)
@@ -102,7 +102,7 @@ process.on('unhandledRejection', (reason, promise): void => {
 // Handle uncaught exceptions outside middleware
 process.on('uncaughtException', (err): void => {
 	logger.error('Uncaught exception:', err)
-	shutDown(1).catch(error => {
+	shutDown().catch(error => {
 		logger.error('An error occurred during shutdown:', error)
 		process.exit(1)
 	})
@@ -136,7 +136,7 @@ process.on('SIGKILL', (): void => {
 })
 
 // Shutdown function
-export async function shutDown (exitCode?: number | undefined): Promise<void> {
+export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
@@ -144,7 +144,6 @@ export async function shutDown (exitCode?: number | undefined): Promise<void> {
 	await mongoose.disconnect()
 	logger.info('Database disconnected')
 	logger.info('Shutdown completed')
-	process.exit(exitCode ?? 0)
 }
 
 export default app
