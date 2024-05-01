@@ -94,7 +94,7 @@ productSchema.path('orderWindow').validate((v: {
 	to: { hour: number, minute: number }
 }) => {
 	return !(v.from.hour === v.to.hour && v.from.minute === v.to.minute)
-}, 'Fra-tid skal være før til-tid')
+}, 'Fra-tid kan ikke være det samme som til-tid')
 
 productSchema.path('orderWindow.from.hour').validate((v: number) => {
 	return Number.isInteger(v)
