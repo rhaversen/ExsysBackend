@@ -9,7 +9,7 @@ import OrderModel from '../models/Order.js'
 import logger from '../utils/logger.js'
 
 interface OrderItem {
-	productId: string
+	id: string
 	quantity: number
 }
 
@@ -23,7 +23,7 @@ interface CreateOrderRequest extends Request {
 function combineItems (items: OrderItem[] | undefined): OrderItem[] | undefined {
 	return items?.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
 		// Find if the item already exists in the accumulator
-		const existingItem = accumulator.find((item: OrderItem) => item.productId === currentItem.productId)
+		const existingItem = accumulator.find((item: OrderItem) => item.id === currentItem.id)
 		if (existingItem !== null && existingItem !== undefined) {
 			// If the item exists, add the quantities
 			existingItem.quantity += currentItem.quantity

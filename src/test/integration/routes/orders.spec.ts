@@ -20,11 +20,11 @@ describe('POST /v1/orders', function () {
 	let testOrderFields: {
 		roomId: Types.ObjectId
 		products: Array<{
-			productId: Types.ObjectId
+			id: Types.ObjectId
 			quantity: number
 		}>
 		options?: Array<{
-			optionId: Types.ObjectId
+			id: Types.ObjectId
 			quantity: number
 		}>
 	}
@@ -60,11 +60,11 @@ describe('POST /v1/orders', function () {
 		testOrderFields = {
 			roomId: testRoom.id,
 			products: [{
-				productId: testProduct1.id,
+				id: testProduct1.id,
 				quantity: 1
 			}],
 			options: [{
-				optionId: testOption.id,
+				id: testOption1.id,
 				quantity: 1
 			}]
 		}
@@ -76,9 +76,9 @@ describe('POST /v1/orders', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order?.roomId.toString()).to.equal(testRoom.id)
-		expect(order?.products[0].productId.toString()).to.equal(testOrderFields.products[0].productId)
+		expect(order?.products[0].id.toString()).to.equal(testOrderFields.products[0].id)
 		expect(order?.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(order?.options?.[0].optionId.toString()).to.equal(testOrderFields.options?.[0].optionId)
+		expect(order?.options?.[0].id.toString()).to.equal(testOrderFields.options?.[0].id)
 		expect(order?.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
 	})
 
@@ -87,9 +87,9 @@ describe('POST /v1/orders', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.roomId.toString()).to.equal(testRoom.id)
-		expect(res.body.products[0].productId).to.equal(testOrderFields.products[0].productId)
+		expect(res.body.products[0].id).to.equal(testOrderFields.products[0].id)
 		expect(res.body.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(res.body.options?.[0].optionId).to.equal(testOrderFields.options?.[0].optionId)
+		expect(res.body.options?.[0].id).to.equal(testOrderFields.options?.[0].id)
 		expect(res.body.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
 	})
 
@@ -117,7 +117,7 @@ describe('POST /v1/orders', function () {
 
 			it('should create a order with a product with quantity 0', async function () {
 				testOrderFields.products.push({
-					productId: testProduct2.id,
+					id: testProduct2.id,
 					quantity: 0
 				})
 				await agent.post('/v1/orders').send(testOrderFields)
@@ -128,7 +128,7 @@ describe('POST /v1/orders', function () {
 
 			it('should remove products with quantity 0', async function () {
 				testOrderFields.products.push({
-					productId: testProduct2.id,
+					id: testProduct2.id,
 					quantity: 0
 				})
 				await agent.post('/v1/orders').send(testOrderFields)
@@ -138,7 +138,7 @@ describe('POST /v1/orders', function () {
 
 			it('should combine products with the same product id', async function () {
 				testOrderFields.products.push({
-					productId: testProduct1.id,
+					id: testProduct1.id,
 					quantity: 1
 				})
 				await agent.post('/v1/orders').send(testOrderFields)
@@ -160,7 +160,7 @@ describe('POST /v1/orders', function () {
 
 			it('should create a order with a option with quantity 0', async function () {
 				testOrderFields.options?.push({
-					optionId: testOption2.id,
+					id: testOption2.id,
 					quantity: 0
 				})
 				await agent.post('/v1/orders').send(testOrderFields)
@@ -171,7 +171,7 @@ describe('POST /v1/orders', function () {
 
 			it('should remove options with quantity 0', async function () {
 				testOrderFields.options?.push({
-					optionId: testOption2.id,
+					id: testOption2.id,
 					quantity: 0
 				})
 				await agent.post('/v1/orders').send(testOrderFields)
@@ -181,7 +181,7 @@ describe('POST /v1/orders', function () {
 
 			it('should combine options with the same option id', async function () {
 				testOrderFields.options?.push({
-					optionId: testOption.id,
+					id: testOption.id,
 					quantity: 1
 				})
 				await agent.post('/v1/orders').send(testOrderFields)
@@ -248,11 +248,11 @@ describe('GET /v1/orders', function () {
 		await OrderModel.create({
 			roomId: testRoom.id,
 			products: [{
-				productId: testProduct1.id,
+				id: testProduct1.id,
 				quantity: 1
 			}],
 			options: [{
-				optionId: testOption.id,
+				id: testOption.id,
 				quantity: 1
 			}]
 		})
@@ -260,11 +260,11 @@ describe('GET /v1/orders', function () {
 		await OrderModel.create({
 			roomId: testRoom.id,
 			products: [{
-				productId: testProduct2.id,
+				id: testProduct2.id,
 				quantity: 1
 			}],
 			options: [{
-				optionId: testOption.id,
+				id: testOption.id,
 				quantity: 1
 			}]
 		})
@@ -275,14 +275,14 @@ describe('GET /v1/orders', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body[0].roomId).to.equal(testRoom.id)
-		expect(res.body[0].products[0].productId).to.equal(testProduct1.id)
+		expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 		expect(res.body[0].products[0].quantity).to.equal(1)
-		expect(res.body[0].options[0].optionId).to.equal(testOption.id)
+		expect(res.body[0].options[0].id).to.equal(testOption.id)
 		expect(res.body[0].options[0].quantity).to.equal(1)
 		expect(res.body[1].roomId).to.equal(testRoom.id)
-		expect(res.body[1].products[0].productId).to.equal(testProduct2.id)
+		expect(res.body[1].products[0].id).to.equal(testProduct2.id)
 		expect(res.body[1].products[0].quantity).to.equal(1)
-		expect(res.body[1].options[0].optionId).to.equal(testOption.id)
+		expect(res.body[1].options[0].id).to.equal(testOption.id)
 		expect(res.body[1].options[0].quantity).to.equal(1)
 		expect(res.body.length).to.equal(2)
 	})
@@ -329,11 +329,11 @@ describe('GET /v1/orders', function () {
 				await OrderModel.create({
 					roomId: testRoom.id,
 					products: [{
-						productId: testProduct1.id,
+						id: testProduct1.id,
 						quantity: 1
 					}],
 					options: [{
-						optionId: testOption3.id,
+						id: testOption3.id,
 						quantity: 1
 					}]
 				})
@@ -341,11 +341,11 @@ describe('GET /v1/orders', function () {
 				await OrderModel.create({
 					roomId: testRoom.id,
 					products: [{
-						productId: testProduct2.id,
+						id: testProduct2.id,
 						quantity: 1
 					}],
 					options: [{
-						optionId: testOption4.id,
+						id: testOption4.id,
 						quantity: 1
 					}]
 				})
@@ -356,8 +356,8 @@ describe('GET /v1/orders', function () {
 				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].options[0].optionId).to.equal(testOption3.id)
-				expect(res.body[1].options[0].optionId).to.equal(testOption4.id)
+				expect(res.body[0].options[0].id).to.equal(testOption3.id)
+				expect(res.body[1].options[0].id).to.equal(testOption4.id)
 			})
 		})
 	})
