@@ -20,14 +20,13 @@ describe('Order Model', function () {
 	let testRoom: IRoom
 	let testOption: IOption
 	let testOrderFields: {
-		requestedDeliveryDate: Date
 		roomId: Types.ObjectId
 		products: Array<{
-			productId: Types.ObjectId
+			id: Types.ObjectId
 			quantity: number
 		}>
 		options?: Array<{
-			optionId: Types.ObjectId
+			id: Types.ObjectId
 			quantity: number
 		}>
 	}
@@ -66,14 +65,13 @@ describe('Order Model', function () {
 		})
 
 		testOrderFields = {
-			requestedDeliveryDate: new Date('2024-04-21T15:00:00Z'),
 			roomId: testRoom._id,
 			products: [{
-				productId: testProduct._id,
+				id: testProduct._id,
 				quantity: 1
 			}],
 			options: [{
-				optionId: testOption._id,
+				id: testOption._id,
 				quantity: 1
 			}]
 		}
@@ -83,11 +81,10 @@ describe('Order Model', function () {
 		const order = await OrderModel.create(testOrderFields)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
-		expect(order.requestedDeliveryDate.getTime()).to.equal(new Date(testOrderFields.requestedDeliveryDate).getTime())
 		expect(order.roomId).to.equal(testRoom._id)
-		expect(order.products[0].productId).to.equal(testOrderFields.products[0].productId)
+		expect(order.products[0].id).to.equal(testOrderFields.products[0].id)
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(order.options?.[0].optionId).to.equal(testOrderFields.options?.[0].optionId)
+		expect(order.options?.[0].id).to.equal(testOrderFields.options?.[0].id)
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
 	})
 
@@ -97,7 +94,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProduct._id,
+					id: testProduct._id,
 					quantity: 1.5
 				}]
 			})
@@ -115,24 +112,9 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [{
-					optionId: testOption._id,
+					id: testOption._id,
 					quantity: 1.5
 				}]
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not allow no requested delivery date', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				requestedDeliveryDate: undefined
 			})
 		} catch (err) {
 			// The promise was rejected as expected
@@ -149,36 +131,6 @@ describe('Order Model', function () {
 		})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
-	})
-
-	it('should require a requested delivery date', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				requestedDeliveryDate: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not allow a requested delivery date in the past', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				requestedDeliveryDate: new Date().setDate(new Date().getDate() - 1000)
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
 	})
 
 	it('should require a room', async function () {
@@ -232,7 +184,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: new Types.ObjectId(),
+					id: new Types.ObjectId(),
 					quantity: 1
 				}]
 			})
@@ -251,11 +203,11 @@ describe('Order Model', function () {
 				...testOrderFields,
 				products: [
 					{
-						productId: testProduct._id,
+						id: testProduct._id,
 						quantity: 1
 					},
 					{
-						productId: testProduct._id,
+						id: testProduct._id,
 						quantity: 1
 					}
 				]
@@ -274,7 +226,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProduct._id,
+					id: testProduct._id,
 					quantity: undefined
 				}]
 			})
@@ -292,7 +244,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProduct._id,
+					id: testProduct._id,
 					quantity: 0
 				}]
 			})
@@ -310,7 +262,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProduct._id,
+					id: testProduct._id,
 					quantity: -1
 				}]
 			})
@@ -337,7 +289,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [{
-					optionId: new Types.ObjectId(),
+					id: new Types.ObjectId(),
 					quantity: 1
 				}]
 			})
@@ -356,11 +308,11 @@ describe('Order Model', function () {
 				...testOrderFields,
 				options: [
 					{
-						optionId: testOption._id,
+						id: testOption._id,
 						quantity: 1
 					},
 					{
-						optionId: testOption._id,
+						id: testOption._id,
 						quantity: 1
 					}
 				]
@@ -379,7 +331,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [{
-					optionId: testOption._id,
+					id: testOption._id,
 					quantity: undefined
 				}]
 			})
@@ -397,7 +349,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [{
-					optionId: testOption._id,
+					id: testOption._id,
 					quantity: 0
 				}]
 			})
@@ -415,7 +367,7 @@ describe('Order Model', function () {
 			await OrderModel.create({
 				...testOrderFields,
 				options: [{
-					optionId: testOption._id,
+					id: testOption._id,
 					quantity: -1
 				}]
 			})
@@ -434,11 +386,11 @@ describe('Order Model', function () {
 				...testOrderFields,
 				options: [
 					{
-						optionId: testOption._id,
+						id: testOption._id,
 						quantity: 1
 					},
 					{
-						optionId: testOption._id,
+						id: testOption._id,
 						quantity: 1
 					}
 				]
@@ -458,29 +410,14 @@ describe('Order Model', function () {
 				...testOrderFields,
 				options: [
 					{
-						optionId: testOption._id,
+						id: testOption._id,
 						quantity: 1
 					},
 					{
-						optionId: new Types.ObjectId(),
+						id: new Types.ObjectId(),
 						quantity: 1
 					}
 				]
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not allow a requested delivery date after the current day', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				requestedDeliveryDate: new Date('2024-04-22T10:00:00Z') // 24 hours after the fake time
 			})
 		} catch (err) {
 			// The promise was rejected as expected
@@ -540,7 +477,7 @@ describe('Order Model', function () {
 				await OrderModel.create({
 					...testOrderFields,
 					products: [{
-						productId: testProductAfterLunch._id,
+						id: testProductAfterLunch._id,
 						quantity: 1
 					}]
 				})
@@ -562,7 +499,7 @@ describe('Order Model', function () {
 				await OrderModel.create({
 					...testOrderFields,
 					products: [{
-						productId: testProductBeforeLunch._id,
+						id: testProductBeforeLunch._id,
 						quantity: 1
 					}]
 				})
@@ -582,7 +519,7 @@ describe('Order Model', function () {
 			const order = await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProductBeforeLunch._id,
+					id: testProductBeforeLunch._id,
 					quantity: 1
 				}]
 			})
@@ -598,7 +535,7 @@ describe('Order Model', function () {
 			const order = await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProductAfterLunch._id,
+					id: testProductAfterLunch._id,
 					quantity: 1
 				}]
 			})
@@ -614,7 +551,7 @@ describe('Order Model', function () {
 			const order = await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProductBeforeLunch._id,
+					id: testProductBeforeLunch._id,
 					quantity: 1
 				}]
 			})
@@ -630,7 +567,7 @@ describe('Order Model', function () {
 			const order = await OrderModel.create({
 				...testOrderFields,
 				products: [{
-					productId: testProductAfterLunch._id,
+					id: testProductAfterLunch._id,
 					quantity: 1
 				}]
 			})

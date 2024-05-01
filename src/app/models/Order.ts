@@ -14,21 +14,20 @@ import RoomModel from './Room.js'
 // Interfaces
 export interface IOrder extends Document {
 	_id: Types.ObjectId
-	requestedDeliveryDate: Date // The date the order is supposed to be delivered
 	roomId: Types.ObjectId // Reference to the Room document
 	products: Array<{
-		productId: Types.ObjectId
+		id: Types.ObjectId
 		quantity: number
 	}> // The products and their quantities
 	options?: Array<{
-		optionId: Types.ObjectId
+		id: Types.ObjectId
 		quantity: number
 	}> // Additional options for the order
 }
 
 // Sub-schema for products
 const productsSubSchema = new Schema({
-	productId: {
+	id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
 		required: [true, 'Produkt er påkrevet']
@@ -42,7 +41,7 @@ const productsSubSchema = new Schema({
 
 // Sub-schema for options
 const optionsSubSchema = new Schema({
-	optionId: {
+	id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Option',
 		required: [true, 'Tilvalg er påkrevet']
@@ -56,10 +55,6 @@ const optionsSubSchema = new Schema({
 
 // Main order schema
 const orderSchema = new Schema({
-	requestedDeliveryDate: {
-		type: Schema.Types.Date,
-		required: [true, 'Leveringstidspunkt er påkrevet']
-	},
 	roomId: {
 		type: Schema.Types.ObjectId,
 		ref: 'Room',
@@ -82,46 +77,26 @@ const orderSchema = new Schema({
 })
 
 // Validations
-orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
-	const now = new Date()
-	const dateUTC = new Date(
-		Date.UTC(
-			now.getUTCFullYear(),
-			now.getUTCMonth(),
-			now.getUTCDate(),
-			now.getUTCHours(),
-			now.getUTCMinutes()
-		)
-	)
-	return v >= dateUTC
-}, 'Leveringstidspunkt skal være i fremtiden')
-
-orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
-	const currentDate = new Date().setUTCHours(0, 0, 0, 0)
-	const requestedDeliveryDate = new Date(v).setUTCHours(0, 0, 0, 0)
-	return currentDate === requestedDeliveryDate
-}, 'Leveringstidspunkt skal være i dag')
-
 orderSchema.path('roomId').validate(async function (v: Types.ObjectId) {
 	const room = await RoomModel.findById(v)
 	return room !== null && room !== undefined
 }, 'Rummet eksisterer ikke')
 
-orderSchema.path('products').validate(function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
-	const unique = new Set(v.map(v => v.productId))
+orderSchema.path('products').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
+	const unique = new Set(v.map(v => v.id))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
-orderSchema.path('products').validate(function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
+orderSchema.path('products').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
 	return v.length > 0
 }, 'Mindst et produkt er påkrævet')
 
-orderSchema.path('products.productId').validate(async function (v: Types.ObjectId) {
+orderSchema.path('products.id').validate(async function (v: Types.ObjectId) {
 	const product = await ProductModel.findById(v)
 	return product !== null && product !== undefined
 }, 'Produktet eksisterer ikke')
 
-orderSchema.path('products.productId').validate(async function (v: Types.ObjectId) {
+orderSchema.path('products.id').validate(async function (v: Types.ObjectId) {
 	const product = await ProductModel.findById(v)
 
 	if (product === null || product === undefined) {
@@ -146,12 +121,12 @@ orderSchema.path('products.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Produkt mængde skal være et heltal')
 
-orderSchema.path('options').validate(function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
-	const unique = new Set(v.map(v => v.optionId.id))
+orderSchema.path('options').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
+	const unique = new Set(v.map(v => v.id.id))
 	return unique.size === v.length
 }, 'Tilvalgene skal være unikke')
 
-orderSchema.path('options.optionId').validate(async function (v: Types.ObjectId) {
+orderSchema.path('options.id').validate(async function (v: Types.ObjectId) {
 	const option = await OptionModel.findById(v)
 	return option !== null && option !== undefined
 }, 'Tilvalget eksisterer ikke')
@@ -161,7 +136,7 @@ orderSchema.path('options.quantity').validate(function (v: number) {
 }, 'Tilvalg mængde skal være et heltal')
 
 // Adding indexes
-orderSchema.index({ requestedDeliveryDate: -1 })
+orderSchema.index({ createdAt: 1 })
 
 // Pre-save middleware
 orderSchema.pre('save', function (next) {

@@ -33,7 +33,10 @@ describe('POST /v1/admins', function () {
 	})
 
 	it('should not require a name', async function () {
-		const response = await agent.post('/v1/admins').send({ ...testAdminFields1, name: undefined })
+		const response = await agent.post('/v1/admins').send({
+			...testAdminFields1,
+			name: undefined
+		})
 		expect(response).to.have.status(201)
 	})
 
@@ -44,13 +47,19 @@ describe('POST /v1/admins', function () {
 	})
 
 	it('should return an error if the passwords do not match', async function () {
-		const response = await agent.post('/v1/admins').send({ ...testAdminFields1, confirmPassword: 'password2' })
+		const response = await agent.post('/v1/admins').send({
+			...testAdminFields1,
+			confirmPassword: 'password2'
+		})
 
 		expect(response).to.have.status(400)
 	})
 
 	it('should return an error if the confirm password is missing', async function () {
-		const response = await agent.post('/v1/admins').send({ ...testAdminFields1, confirmPassword: undefined })
+		const response = await agent.post('/v1/admins').send({
+			...testAdminFields1,
+			confirmPassword: undefined
+		})
 
 		expect(response).to.have.status(400)
 	})
