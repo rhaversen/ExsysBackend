@@ -8,14 +8,38 @@ import mongoose from 'mongoose'
 import OrderModel from '../models/Order.js'
 import logger from '../utils/logger.js'
 
+interface OrderItem {
+	productId: string
+	quantity: number
+}
+
+function combineItems (items: OrderItem[] | undefined): OrderItem[] | undefined {
+	return items?.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
+		// Find if the item already exists in the accumulator
+		const existingItem = accumulator.find((item: OrderItem) => item.productId === currentItem.productId)
+		if (existingItem !== null && existingItem !== undefined) {
+			// If the item exists, add the quantities
+			existingItem.quantity += currentItem.quantity
+		} else {
+			// If the item doesn't exist, add it to the accumulator
+			accumulator.push(currentItem)
+		}
+		return accumulator
+	}, [])
+}
+
 export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
 	try {
 		// Filter out products with quantity 0
-		req.body.products = req.body.products?.filter((product: { productId: string, quantity: number }) => product.quantity !== 0)
+		req.body.products = req.body.products?.filter((product: { quantity: number }) => product.quantity !== 0)
 
 		// Filter out options with quantity 0
-		req.body.options = req.body.options?.filter((option: { productId: string, quantity: number }) => option.quantity !== 0)
+		req.body.options = req.body.options?.filter((option: { quantity: number }) => option.quantity !== 0)
+
+		// Combine products and options with same id and add together their quantities
+		req.body.products = combineItems(req.body.products)
+		req.body.options = combineItems(req.body.options)
 
 		const newOrder = await OrderModel.create(req.body as Record<string, unknown>)
 		res.status(201).json(newOrder)

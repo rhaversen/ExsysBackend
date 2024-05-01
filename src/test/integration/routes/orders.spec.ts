@@ -135,6 +135,16 @@ describe('POST /v1/orders', function () {
 				const order = await OrderModel.findOne({})
 				expect(order?.products.length).to.equal(1)
 			})
+
+			it('should combine products with the same product id', async function () {
+				testOrderFields.products.push({
+					productId: testProduct1.id,
+					quantity: 1
+				})
+				await agent.post('/v1/orders').send(testOrderFields)
+				const order = await OrderModel.findOne({})
+				expect(order?.products[0].quantity).to.equal(2)
+			})
 		})
 
 		describe('Option', function () {
@@ -167,6 +177,16 @@ describe('POST /v1/orders', function () {
 				await agent.post('/v1/orders').send(testOrderFields)
 				const order = await OrderModel.findOne({})
 				expect(order?.options?.length).to.equal(1)
+			})
+
+			it('should combine options with the same option id', async function () {
+				testOrderFields.options?.push({
+					optionId: testOption.id,
+					quantity: 1
+				})
+				await agent.post('/v1/orders').send(testOrderFields)
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.[0].quantity).to.equal(2)
 			})
 		})
 	})
