@@ -20,6 +20,13 @@ interface CreateOrderRequest extends Request {
 	}
 }
 
+interface GetOrdersWithDateRangeRequest extends Request {
+	query: {
+		fromDate?: string
+		toDate?: string
+	}
+}
+
 function combineItems (items: OrderItem[] | undefined): OrderItem[] | undefined {
 	return items?.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
 		// Find if the item already exists in the accumulator
@@ -59,41 +66,32 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 	}
 }
 
-export async function getOrdersForToday (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting today\'s orders')
-	// Always use UTC time
-
-	const start = new Date()
-	start.setUTCHours(0, 0, 0, 0)
-	const end = new Date()
-	end.setUTCHours(23, 59, 59, 999)
-
-	try {
-		const orders = await OrderModel.find({
-			createdAt: {
-				$gte: start,
-				$lte: end
-			}
-		})
-		res.status(200).json(orders)
-	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
-			res.status(400).json({ error: error.message })
-		} else {
-			next(error)
+export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
+	const { fromDate, toDate } = req.query
+	const query: {
+		createdAt?: {
+			$gte?: string
+			$lte?: string
 		}
-	}
-}
+	} = {}
 
-export async function getOrders (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting orders')
+	if (fromDate !== undefined && fromDate !== '') {
+		query.createdAt = query.createdAt ?? {}
+		query.createdAt.$gte = fromDate
+	}
+	if (toDate !== undefined && toDate !== '') {
+		query.createdAt = query.createdAt ?? {}
+		query.createdAt.$lte = toDate
+	}
+
 	try {
-		const orders = await OrderModel.find()
+		const orders = await OrderModel.find(query)
 		res.status(200).json(orders)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
 			res.status(400).json({ error: error.message })
 		} else {
+			logger.error(error)
 			next(error)
 		}
 	}
