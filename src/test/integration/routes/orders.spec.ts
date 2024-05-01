@@ -90,6 +90,32 @@ describe('POST /v1/orders', function () {
 		expect(res.body.options?.[0].quantity).to.equal(1)
 	})
 
+	it('should handle orders with undefined options', async function () {
+		await agent.post('/v1/orders').send({
+			roomId: testRoom.id,
+			products: [{
+				id: testProduct1.id,
+				quantity: 1
+			}]
+		})
+		const order = await OrderModel.findOne({})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(order).to.exist
+	})
+
+	it('should handle orders with undefined products', async function () {
+		await agent.post('/v1/orders').send({
+			roomId: testRoom.id,
+			options: [{
+				id: testOption1.id,
+				quantity: 1
+			}]
+		})
+		const order = await OrderModel.findOne({})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(order).to.not.exist
+	})
+
 	describe('Quantity validation', function () {
 		describe('Product', function () {
 			let testProduct2: IProduct
@@ -160,6 +186,79 @@ describe('POST /v1/orders', function () {
 				const order = await OrderModel.findOne({})
 				expect(order?.products[0].quantity).to.equal(2)
 			})
+
+			it('should handle two duplicate and a unique products', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 2
+					},
+					{
+						id: testProduct1.id,
+						quantity: 1
+					},
+					{
+						id: testProduct2.id,
+						quantity: 1
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.products.length).to.equal(2)
+				expect(order?.products[0].quantity).to.equal(3)
+				expect(order?.products[1].quantity).to.equal(1)
+			})
+
+			it('should handle unique products with different quantities', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					},
+					{
+						id: testProduct2.id,
+						quantity: 2
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.products.length).to.equal(2)
+				expect(order?.products[0].quantity).to.equal(1)
+				expect(order?.products[1].quantity).to.equal(2)
+			})
+
+			it('should handle products with quantity 0 and products with quantity 1', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					},
+					{
+						id: testProduct2.id,
+						quantity: 0
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.products.length).to.equal(1)
+				expect(order?.products[0].quantity).to.equal(1)
+			})
+
+			it('should handle products with quantity 1 and products with undefined quantity', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					},
+					{
+						id: testProduct2.id
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.products.length).to.equal(1)
+				expect(order?.products[0].quantity).to.equal(1)
+			})
 		})
 
 		describe('Option', function () {
@@ -171,6 +270,27 @@ describe('POST /v1/orders', function () {
 					price: 50,
 					description: 'A test option'
 				})
+			})
+
+			it('should create a order with a option with quantity 0 and option with quantity 1', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 0
+					},
+					{
+						id: testOption2.id,
+						quantity: 1
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+				expect(order).to.exist
 			})
 
 			it('should create a order with a option with quantity 0', async function () {
@@ -188,6 +308,22 @@ describe('POST /v1/orders', function () {
 				const order = await OrderModel.findOne({})
 				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				expect(order).to.exist
+			})
+
+			it('should remove option with quantity 0', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 0
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.length).to.equal(0)
 			})
 
 			it('should remove options with quantity 0', async function () {
@@ -228,6 +364,115 @@ describe('POST /v1/orders', function () {
 				})
 				const order = await OrderModel.findOne({})
 				expect(order?.options?.[0].quantity).to.equal(2)
+			})
+
+			it('should handle two duplicate options with different quantities', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 2
+					},
+					{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.[0].quantity).to.equal(3)
+			})
+
+			it('should handle two duplicate and a unique option', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 2
+					},
+					{
+						id: testOption1.id,
+						quantity: 1
+					},
+					{
+						id: testOption2.id,
+						quantity: 1
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.length).to.equal(2)
+				expect(order?.options?.[0].quantity).to.equal(3)
+				expect(order?.options?.[1].quantity).to.equal(1)
+			})
+
+			it('should handle unique options with different quantities', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					},
+					{
+						id: testOption2.id,
+						quantity: 2
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.length).to.equal(2)
+				expect(order?.options?.[0].quantity).to.equal(1)
+				expect(order?.options?.[1].quantity).to.equal(2)
+			})
+
+			it('should handle options with quantity 0 and options with quantity 1', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					},
+					{
+						id: testOption2.id,
+						quantity: 0
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.length).to.equal(1)
+				expect(order?.options?.[0].quantity).to.equal(1)
+			})
+
+			it('should handle options with quantity 1 and options with undefined quantity', async function () {
+				await agent.post('/v1/orders').send({
+					roomId: testRoom.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					},
+					{
+						id: testOption2.id
+					}]
+				})
+				const order = await OrderModel.findOne({})
+				expect(order?.options?.length).to.equal(1)
+				expect(order?.options?.[0].quantity).to.equal(1)
 			})
 		})
 	})
