@@ -7,6 +7,7 @@ import helmet from 'helmet'
 import mongoose from 'mongoose'
 import RateLimit from 'express-rate-limit'
 import cors from 'cors'
+import gracefulShutdown from 'http-graceful-shutdown'
 
 // Own Modules
 import databaseConnector from './utils/databaseConnector.js'
@@ -23,7 +24,12 @@ import roomRoutes from './routes/rooms.js'
 import optionRoutes from './routes/options.js'
 
 // Logging environment
-logger.info(`Node environment: ${process.env.NODE_ENV}`)
+if (typeof process.env.NODE_ENV !== 'undefined') {
+	logger.info(`Node environment: ${process.env.NODE_ENV}`)
+} else {
+	logger.warn('Node environment is undefined. Shutting down...')
+	process.exit(1)
+}
 
 // Configs
 const {
@@ -91,7 +97,7 @@ process.on('unhandledRejection', (reason, promise): void => {
 	// Log the detailed error message
 	logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
 
-	shutDown(1).catch(error => {
+	shutDown().catch(error => {
 		// If 'error' is an Error object, log its stack trace; otherwise, convert to string
 		const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
 		logger.error(`An error occurred during shutdown: ${errorDetail}`)
@@ -102,24 +108,6 @@ process.on('unhandledRejection', (reason, promise): void => {
 // Handle uncaught exceptions outside middleware
 process.on('uncaughtException', (err): void => {
 	logger.error('Uncaught exception:', err)
-	shutDown(1).catch(error => {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1)
-	})
-})
-
-// Assigning shutdown function to SIGINT signal
-process.on('SIGINT', (): void => {
-	logger.info('Received SIGINT')
-	shutDown().catch(error => {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1)
-	})
-})
-
-// Assigning shutdown function to SIGTERM signal
-process.on('SIGTERM', (): void => {
-	logger.info('Received SIGTERM')
 	shutDown().catch(error => {
 		logger.error('An error occurred during shutdown:', error)
 		process.exit(1)
@@ -127,20 +115,32 @@ process.on('SIGTERM', (): void => {
 })
 
 // Shutdown function
-export async function shutDown (exitCode?: number | undefined): Promise<void> {
-	try {
-		logger.info('Closing server...')
-		server.close()
-		logger.info('Server closed')
-		logger.info('Starting database disconnection...')
-		await mongoose.disconnect()
-		logger.info('Database disconnected')
-		logger.info('Shutdown completed')
-		process.exit(exitCode ?? 0)
-	} catch (error) {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1) // Exit with code 1 indicating termination with error
+export async function shutDown (): Promise<void> {
+	logger.info('Closing server...')
+	server.close()
+	logger.info('Server closed')
+	logger.info('Closing database connection...')
+	await mongoose.connection.close()
+	logger.info('Database connection closed')
+
+	if (databaseConnector.isMemoryDatabase()) {
+		const mongoMemoryReplSetConnector = await import('../test/mongoMemoryReplSetConnector.js')
+		await mongoMemoryReplSetConnector.disconnectFromInMemoryMongoDB()
 	}
+
+	logger.info('Shutdown completed')
 }
+
+gracefulShutdown(server,
+	{
+		signals: 'SIGINT SIGTERM',
+		timeout: 10000,							// Timeout in ms
+		forceExit: true,						// Trigger process.exit() at the end of shutdown process
+		development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
+		// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
+		onShutdown: shutDown					// Shutdown function (async) - e.g. for cleanup DB, ...
+		// finally: finalFunction				// Finally function (sync) - e.g. for logging
+	}
+)
 
 export default app

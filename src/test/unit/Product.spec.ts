@@ -19,7 +19,6 @@ describe('Product Model', function () {
 		name: string
 		price: number
 		description: string
-		availability: number
 		orderWindow: {
 			from: {
 				hour: number
@@ -30,7 +29,6 @@ describe('Product Model', function () {
 				minute: number
 			}
 		}
-		maxOrderQuantity: number
 		options?: Types.ObjectId[]
 	}
 
@@ -38,16 +36,13 @@ describe('Product Model', function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50,
-			description: 'A test option',
-			availability: 100,
-			maxOrderQuantity: 10
+			description: 'A test option'
 		})
 
 		testProductFields = {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -58,7 +53,6 @@ describe('Product Model', function () {
 					minute: 59
 				}
 			},
-			maxOrderQuantity: 10,
 			options: [testOption.id]
 		}
 	})
@@ -70,12 +64,10 @@ describe('Product Model', function () {
 		expect(product.name).to.equal(testProductFields.name)
 		expect(product.price).to.equal(testProductFields.price)
 		expect(product.description).to.equal(testProductFields.description)
-		expect(product.availability).to.equal(testProductFields.availability)
 		expect(product.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(product.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(product.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
 		expect(product.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
-		expect(product.maxOrderQuantity).to.equal(testProductFields.maxOrderQuantity)
 		expect(product.options?.[0].toString()).to.equal(testOption.id)
 	})
 
@@ -84,7 +76,6 @@ describe('Product Model', function () {
 			name: 'Burger',
 			price: 50,
 			description: 'A delicious burger',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 10,
@@ -94,14 +85,12 @@ describe('Product Model', function () {
 					hour: 15,
 					minute: 0
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		}
 		const testProductFields3 = {
 			name: 'Pizza',
 			price: 100,
 			description: 'A delicious pizza',
-			availability: 50,
 			orderWindow: {
 				from: {
 					hour: 15,
@@ -111,8 +100,7 @@ describe('Product Model', function () {
 					hour: 20,
 					minute: 0
 				}
-			},
-			maxOrderQuantity: 5
+			}
 		}
 		const product1 = await ProductModel.create(testProductFields2)
 		const product2 = await ProductModel.create(testProductFields3)
@@ -166,9 +154,7 @@ describe('Product Model', function () {
 		const testOption2 = await OptionModel.create({
 			name: 'Test Option 2',
 			price: 75,
-			description: 'A test option 2',
-			availability: 50,
-			maxOrderQuantity: 5
+			description: 'A test option 2'
 		})
 
 		const product = await ProductModel.create({
@@ -236,36 +222,6 @@ describe('Product Model', function () {
 		expect(product.price).to.equal(100.5)
 	})
 
-	it('should not create a product with a non-integer availability', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				availability: 100.5
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create a product with a non-integer maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				maxOrderQuantity: 10.5
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create a product with no name', async function () {
 		let errorOccurred = false
 		try {
@@ -311,21 +267,6 @@ describe('Product Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create a product with no availability', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				availability: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create a product with no orderWindow', async function () {
 		let errorOccurred = false
 		try {
@@ -341,82 +282,12 @@ describe('Product Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create a product with no maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				maxOrderQuantity: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create a product with a negative price', async function () {
 		let errorOccurred = false
 		try {
 			await ProductModel.create({
 				...testProductFields,
 				price: -1
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should create a product with zero availability', async function () {
-		const product = await ProductModel.create({
-			...testProductFields,
-			availability: 0
-		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(product).to.exist
-		expect(product.availability).to.equal(0)
-	})
-
-	it('should not create a product with a negative availability', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				availability: -1
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create a product with a negative maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				maxOrderQuantity: -1
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create a product with zero maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				maxOrderQuantity: 0
 			})
 		} catch (err) {
 			// The promise was rejected as expected

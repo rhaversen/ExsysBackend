@@ -35,7 +35,6 @@ describe('POST /v1/orders', function () {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -45,8 +44,7 @@ describe('POST /v1/orders', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 
 		testRoom = await RoomModel.create({
@@ -57,9 +55,7 @@ describe('POST /v1/orders', function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50,
-			description: 'A test option',
-			availability: 100,
-			maxOrderQuantity: 10
+			description: 'A test option'
 		})
 
 		testOrderFields = {
@@ -110,7 +106,6 @@ describe('POST /v1/orders', function () {
 					name: 'Test Product1',
 					price: 100,
 					description: 'A test product',
-					availability: 100,
 					orderWindow: {
 						from: {
 							hour: 0,
@@ -120,8 +115,7 @@ describe('POST /v1/orders', function () {
 							hour: 23,
 							minute: 59
 						}
-					},
-					maxOrderQuantity: 10
+					}
 				})
 			})
 
@@ -154,9 +148,7 @@ describe('POST /v1/orders', function () {
 				testOption2 = await OptionModel.create({
 					name: 'Test Option1',
 					price: 50,
-					description: 'A test option',
-					availability: 100,
-					maxOrderQuantity: 10
+					description: 'A test option'
 				})
 			})
 
@@ -200,7 +192,6 @@ describe('GET /v1/orders', function () {
 			name: 'Test Product1',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -210,15 +201,13 @@ describe('GET /v1/orders', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 
 		testProduct2 = await ProductModel.create({
 			name: 'Test Product2',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -228,8 +217,7 @@ describe('GET /v1/orders', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 
 		testRoom = await RoomModel.create({
@@ -240,9 +228,7 @@ describe('GET /v1/orders', function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50,
-			description: 'A test option',
-			availability: 100,
-			maxOrderQuantity: 10
+			description: 'A test option'
 		})
 
 		testOrder1 = await OrderModel.create({
@@ -321,17 +307,13 @@ describe('GET /v1/orders', function () {
 				testOption3 = await OptionModel.create({
 					name: 'Test Option3',
 					price: 50,
-					description: 'A test option',
-					availability: 100,
-					maxOrderQuantity: 10
+					description: 'A test option'
 				})
 
 				testOption4 = await OptionModel.create({
 					name: 'Test Option4',
 					price: 50,
-					description: 'A test option',
-					availability: 100,
-					maxOrderQuantity: 10
+					description: 'A test option'
 				})
 
 				await OrderModel.create({
