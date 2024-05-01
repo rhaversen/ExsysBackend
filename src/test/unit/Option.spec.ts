@@ -15,17 +15,13 @@ describe('Option Model', function () {
 		name: string
 		price: number
 		description: string
-		availability: number
-		maxOrderQuantity: number
 	}
 
 	beforeEach(async function () {
 		testOptionFields = {
 			name: 'TestOption',
 			price: 100,
-			description: 'TestDescription',
-			availability: 10,
-			maxOrderQuantity: 5
+			description: 'TestDescription'
 		}
 	})
 
@@ -36,8 +32,6 @@ describe('Option Model', function () {
 		expect(option.name).to.equal(testOptionFields.name)
 		expect(option.price).to.equal(testOptionFields.price)
 		expect(option.description).to.equal(testOptionFields.description)
-		expect(option.availability).to.equal(testOptionFields.availability)
-		expect(option.maxOrderQuantity).to.equal(testOptionFields.maxOrderQuantity)
 	})
 
 	it('should trim the name', async function () {
@@ -68,36 +62,6 @@ describe('Option Model', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.price).to.equal(100.5)
-	})
-
-	it('should not create an option with a non-integer availability', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				availability: 10.5
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create an option with a non-integer maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				maxOrderQuantity: 5.5
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
 	})
 
 	it('should not create an option with no name', async function () {
@@ -155,87 +119,12 @@ describe('Option Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create an option with no availability', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				availability: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create an option with no maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				maxOrderQuantity: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create an option with a negative price', async function () {
 		let errorOccurred = false
 		try {
 			await OptionModel.create({
 				...testOptionFields,
 				price: -1
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create an option with a negative availability', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				availability: -1
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create an option with a negative maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				maxOrderQuantity: -1
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create an option with zero maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				maxOrderQuantity: 0
 			})
 		} catch (err) {
 			// The promise was rejected as expected

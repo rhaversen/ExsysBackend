@@ -17,7 +17,6 @@ describe('POST /v1/products', function () {
 		name: string
 		price: number
 		description: string
-		availability: number
 		orderWindow: {
 			from: {
 				hour: number
@@ -28,7 +27,6 @@ describe('POST /v1/products', function () {
 				minute: number
 			}
 		}
-		maxOrderQuantity: number
 		options?: Types.ObjectId[]
 	}
 
@@ -36,16 +34,13 @@ describe('POST /v1/products', function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50,
-			description: 'A test option',
-			availability: 100,
-			maxOrderQuantity: 10
+			description: 'A test option'
 		})
 
 		testProductFields = {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -56,7 +51,6 @@ describe('POST /v1/products', function () {
 					minute: 59
 				}
 			},
-			maxOrderQuantity: 10,
 			options: [testOption.id]
 		}
 	})
@@ -69,12 +63,10 @@ describe('POST /v1/products', function () {
 		expect(order?.name).to.equal(testProductFields.name)
 		expect(order?.price).to.equal(testProductFields.price)
 		expect(order?.description).to.equal(testProductFields.description)
-		expect(order?.availability).to.equal(testProductFields.availability)
 		expect(order?.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(order?.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(order?.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 		expect(order?.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
-		expect(order?.maxOrderQuantity).to.equal(testProductFields.maxOrderQuantity)
 		expect(order?.options?.[0].toString()).to.equal(testOption.id)
 	})
 
@@ -85,12 +77,10 @@ describe('POST /v1/products', function () {
 		expect(res.body.name).to.equal(testProductFields.name)
 		expect(res.body.price).to.equal(testProductFields.price)
 		expect(res.body.description).to.equal(testProductFields.description)
-		expect(res.body.availability).to.equal(testProductFields.availability)
 		expect(res.body.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(res.body.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(res.body.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 		expect(res.body.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
-		expect(res.body.maxOrderQuantity).to.equal(testProductFields.maxOrderQuantity)
 		expect(res.body.options[0].toString()).to.equal(testOption.id)
 	})
 
@@ -98,9 +88,7 @@ describe('POST /v1/products', function () {
 		const testOption2 = await OptionModel.create({
 			name: 'Test Option 2',
 			price: 50,
-			description: 'A test option',
-			availability: 100,
-			maxOrderQuantity: 10
+			description: 'A test option'
 		})
 
 		testProductFields.options?.push(testOption2.id as Types.ObjectId)
@@ -112,12 +100,10 @@ describe('POST /v1/products', function () {
 		expect(order?.name).to.equal(testProductFields.name)
 		expect(order?.price).to.equal(testProductFields.price)
 		expect(order?.description).to.equal(testProductFields.description)
-		expect(order?.availability).to.equal(testProductFields.availability)
 		expect(order?.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(order?.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(order?.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 		expect(order?.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
-		expect(order?.maxOrderQuantity).to.equal(testProductFields.maxOrderQuantity)
 		expect(order?.options?.[0].toString()).to.equal(testOption.id)
 		expect(order?.options?.[1].toString()).to.equal(testOption2.id)
 	})
@@ -131,7 +117,6 @@ describe('GET /v1/products', function () {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -141,8 +126,7 @@ describe('GET /v1/products', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 	})
 
@@ -155,12 +139,10 @@ describe('GET /v1/products', function () {
 		expect(res.body[0].name).to.equal(testProduct.name)
 		expect(res.body[0].price).to.equal(testProduct.price)
 		expect(res.body[0].description).to.equal(testProduct.description)
-		expect(res.body[0].availability).to.equal(testProduct.availability)
 		expect(res.body[0].orderWindow.from.hour).to.equal(testProduct.orderWindow.from.hour)
 		expect(res.body[0].orderWindow.from.minute).to.equal(testProduct.orderWindow.from.minute)
 		expect(res.body[0].orderWindow.to.hour).to.equal(testProduct.orderWindow.to.hour)
 		expect(res.body[0].orderWindow.to.minute).to.equal(testProduct.orderWindow.to.minute)
-		expect(res.body[0].maxOrderQuantity).to.equal(testProduct.maxOrderQuantity)
 	})
 
 	it('should get all products', async function () {
@@ -168,7 +150,6 @@ describe('GET /v1/products', function () {
 			name: 'Test Product 2',
 			price: 200,
 			description: 'A test product 2',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -178,8 +159,7 @@ describe('GET /v1/products', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 
 		const res = await agent.get('/v1/products')
@@ -200,7 +180,6 @@ describe('PATCH /v1/products/:id', function () {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -210,8 +189,7 @@ describe('PATCH /v1/products/:id', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 	})
 
@@ -220,7 +198,6 @@ describe('PATCH /v1/products/:id', function () {
 			name: 'Updated Product',
 			price: 200,
 			description: 'An updated product',
-			availability: 50,
 			orderWindow: {
 				from: {
 					hour: 1,
@@ -230,20 +207,17 @@ describe('PATCH /v1/products/:id', function () {
 					hour: 22,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 5
+			}
 		})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
 		expect(res.body.price).to.equal(200)
 		expect(res.body.description).to.equal('An updated product')
-		expect(res.body.availability).to.equal(50)
 		expect(res.body.orderWindow.from.hour).to.equal(1)
 		expect(res.body.orderWindow.from.minute).to.equal(0)
 		expect(res.body.orderWindow.to.hour).to.equal(22)
 		expect(res.body.orderWindow.to.minute).to.equal(59)
-		expect(res.body.maxOrderQuantity).to.equal(5)
 	})
 
 	it('should allow a partial update', async function () {
@@ -255,12 +229,10 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body.name).to.equal('Updated Product')
 		expect(res.body.price).to.equal(100)
 		expect(res.body.description).to.equal('A test product')
-		expect(res.body.availability).to.equal(100)
 		expect(res.body.orderWindow.from.hour).to.equal(0)
 		expect(res.body.orderWindow.from.minute).to.equal(0)
 		expect(res.body.orderWindow.to.hour).to.equal(23)
 		expect(res.body.orderWindow.to.minute).to.equal(59)
-		expect(res.body.maxOrderQuantity).to.equal(10)
 	})
 
 	it('should return a 404 if the product does not exist', async function () {
@@ -268,7 +240,6 @@ describe('PATCH /v1/products/:id', function () {
 			name: 'Updated Product',
 			price: 200,
 			description: 'An updated product',
-			availability: 50,
 			orderWindow: {
 				from: {
 					hour: 1,
@@ -278,8 +249,7 @@ describe('PATCH /v1/products/:id', function () {
 					hour: 22,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 5
+			}
 		})
 		expect(res.status).to.equal(404)
 	})
@@ -293,7 +263,6 @@ describe('DELETE /v1/products/:id', function () {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -303,8 +272,7 @@ describe('DELETE /v1/products/:id', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 	})
 

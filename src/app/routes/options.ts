@@ -17,9 +17,7 @@ const router = Router()
  * @desc Create a new option
  * @access Public
  * @param {string} req.body.name - The name of the option.
- * @param {number} req.body.maxOrderQuantity - The maximum quantity of the option that can be ordered.
  * @param {string} req.body.description - The description of the option.
- * @param {number} req.body.availability - The number of the option that is available.
  * @param {number} req.body.price - The price of the option.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created option.
@@ -45,9 +43,7 @@ router.get('/',
  * @access Public
  * @param {string} req.params.id - The id of the option to be patched.
  * @param {string} [req.body.name] - The name of the option (optional).
- * @param {number} [req.body.maxOrderQuantity] - The maximum quantity of the option that can be ordered (optional).
  * @param {string} [req.body.description] - The description of the option (optional).
- * @param {number} [req.body.availability] - The number of the option that is available (optional).
  * @param {number} [req.body.price] - The price of the option (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The updated option.
