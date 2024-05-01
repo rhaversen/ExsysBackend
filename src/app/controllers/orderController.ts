@@ -43,7 +43,7 @@ export async function getOrdersForToday (req: Request, res: Response, next: Next
 
 	try {
 		const orders = await OrderModel.find({
-			requestedDeliveryDate: {
+			createdAt: {
 				$gte: start,
 				$lte: end
 			}

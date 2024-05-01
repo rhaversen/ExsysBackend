@@ -161,7 +161,7 @@ orderSchema.path('options.quantity').validate(function (v: number) {
 }, 'Tilvalg mængde skal være et heltal')
 
 // Adding indexes
-orderSchema.index({ requestedDeliveryDate: -1 })
+orderSchema.index({ createdAt: 1 })
 
 // Pre-save middleware
 orderSchema.pre('save', function (next) {
