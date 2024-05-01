@@ -486,7 +486,7 @@ describe('GET /v1/orders', function () {
 
 	let testRoom: IRoom
 	let testOption: IOption
-	
+
 	let clock: sinon.SinonFakeTimers
 
 	let date05: Date

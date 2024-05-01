@@ -67,7 +67,10 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 }
 
 export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
-	const { fromDate, toDate } = req.query
+	const {
+		fromDate,
+		toDate
+	} = req.query
 	const query: {
 		createdAt?: {
 			$gte?: string

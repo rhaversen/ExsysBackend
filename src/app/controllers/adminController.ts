@@ -26,7 +26,10 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 
 		// Creating a new admin with the password and the remaining fields
 		const newAdmin = await AdminModel.create({ password, ...rest })
-		res.status(201).json({ name: newAdmin.name, email: newAdmin.email })
+		res.status(201).json({
+			name: newAdmin.name,
+			email: newAdmin.email
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
 			res.status(400).json({ error: error.message })
@@ -41,7 +44,10 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 
 	try {
 		const admins = await AdminModel.find({})
-		res.status(200).json(admins.map(admin => ({ name: admin.name, email: admin.email })))
+		res.status(200).json(admins.map(admin => ({
+			name: admin.name,
+			email: admin.email
+		})))
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
 			res.status(400).json({ error: error.message })
@@ -67,7 +73,10 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 			}
 		}
 
-		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, { new: true, runValidators: true })
+		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
+			new: true,
+			runValidators: true
+		})
 
 		if (admin === null || admin === undefined) {
 			res.status(404).json({ error: 'Admin ikke fundet' })
