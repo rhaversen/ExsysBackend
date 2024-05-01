@@ -13,6 +13,13 @@ interface OrderItem {
 	quantity: number
 }
 
+interface CreateOrderRequest extends Request {
+	body: {
+		products?: OrderItem[]
+		options?: OrderItem[]
+	}
+}
+
 function combineItems (items: OrderItem[] | undefined): OrderItem[] | undefined {
 	return items?.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
 		// Find if the item already exists in the accumulator
@@ -28,14 +35,14 @@ function combineItems (items: OrderItem[] | undefined): OrderItem[] | undefined 
 	}, [])
 }
 
-export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function createOrder (req: CreateOrderRequest, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
 	try {
 		// Filter out products with quantity 0
-		req.body.products = req.body.products?.filter((product: { quantity: number }) => product.quantity !== 0)
+		req.body.products = req.body.products?.filter((product) => product.quantity !== 0)
 
 		// Filter out options with quantity 0
-		req.body.options = req.body.options?.filter((option: { quantity: number }) => option.quantity !== 0)
+		req.body.options = req.body.options?.filter((option) => option.quantity !== 0)
 
 		// Combine products and options with same id and add together their quantities
 		req.body.products = combineItems(req.body.products)
