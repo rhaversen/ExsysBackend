@@ -43,7 +43,6 @@
 		"helmet": "^7.1.0",
 		"http-graceful-shutdown": "^3.1.13",
 		"mongoose": "^8.3.3",
-		"nanoid": "^5.0.7",
 		"validator": "^13.11.0",
 		"winston": "^3.13.0"
 	},
@@ -60,7 +59,6 @@
 		"@typescript-eslint/eslint-plugin": "^7.8.0",
 		"chai": "^5.1.0",
 		"chai-http": "^4.4.0",
-		"cross-env": "^7.0.3",
 		"depcheck": "^1.4.7",
 		"eslint": "^8.57.0",
 		"eslint-config-love": "^47.0.0",
