@@ -116,41 +116,6 @@ orderSchema.path('products').validate(function (v: Array<{ productId: Types.Obje
 	return v.length > 0
 }, 'Mindst et produkt er påkrævet')
 
-orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
-	for (const product of v) {
-		const productModel = await ProductModel.findOne({ _id: product.productId })
-		if (productModel === null || productModel === undefined) {
-			return false
-		}
-
-		const availability = productModel.availability
-
-		if (product.quantity > availability) {
-			return false
-		}
-	}
-
-	return true
-}, 'Kan ikke bestille flere produkter end der er til rådighed')
-
-orderSchema.path('products').validate(async function (v: Array<{ productId: Types.ObjectId, quantity: number }>) {
-	for (const product of v) {
-		const productModel = await ProductModel.findOne({ _id: product.productId })
-
-		if (productModel === null || productModel === undefined) {
-			return false
-		}
-
-		const maxOrderQuantity = productModel.maxOrderQuantity
-
-		if (product.quantity > maxOrderQuantity) {
-			return false
-		}
-	}
-
-	return true
-}, 'Kan ikke bestille så mange produkter på en gang')
-
 orderSchema.path('products.productId').validate(async function (v: Types.ObjectId) {
 	const product = await ProductModel.findById(v)
 	return product !== null && product !== undefined
@@ -194,42 +159,6 @@ orderSchema.path('options.optionId').validate(async function (v: Types.ObjectId)
 orderSchema.path('options.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Tilvalg mængde skal være et heltal')
-
-orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
-	for (const option of v) {
-		const optionModel = await OptionModel.findById(option.optionId)
-
-		if (optionModel === null || optionModel === undefined) {
-			return false
-		}
-
-		const availability = optionModel.availability
-
-		if (option.quantity > availability) {
-			return false
-		}
-	}
-
-	return true
-}, 'Kan ikke bestille flere tilvalg end der er til rådighed')
-
-orderSchema.path('options').validate(async function (v: Array<{ optionId: Types.ObjectId, quantity: number }>) {
-	for (const option of v) {
-		const optionModel = await OptionModel.findById(option.optionId)
-
-		if (optionModel === null || optionModel === undefined) {
-			return false
-		}
-
-		const maxOrderQuantity = optionModel.maxOrderQuantity
-
-		if (option.quantity > maxOrderQuantity) {
-			return false
-		}
-	}
-
-	return true
-}, 'Kan ikke bestille så mange tilvalg på en gang')
 
 // Adding indexes
 orderSchema.index({ requestedDeliveryDate: -1 })

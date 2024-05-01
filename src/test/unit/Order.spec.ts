@@ -41,7 +41,6 @@ describe('Order Model', function () {
 			name: 'Test Product',
 			price: 100,
 			description: 'A test product',
-			availability: 100,
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -51,8 +50,7 @@ describe('Order Model', function () {
 					hour: 23,
 					minute: 59
 				}
-			},
-			maxOrderQuantity: 10
+			}
 		})
 
 		testRoom = await RoomModel.create({
@@ -64,9 +62,7 @@ describe('Order Model', function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50,
-			description: 'A test option',
-			availability: 100,
-			maxOrderQuantity: 10
+			description: 'A test option'
 		})
 
 		testOrderFields = {
@@ -326,44 +322,6 @@ describe('Order Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not allow a product quantity greater than available', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				products: [{
-					productId: testProduct._id,
-					quantity: testProduct.availability + 1
-				}]
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not allow a product quantity greater than maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				products: [
-					{
-						productId: testProduct._id,
-						quantity: testProduct.maxOrderQuantity + 1
-					}
-				]
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not require options', async function () {
 		const order = await OrderModel.create({
 			...testOrderFields,
@@ -469,44 +427,6 @@ describe('Order Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not allow a option quantity greater than available', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				options: [{
-					optionId: testOption._id,
-					quantity: testOption.availability + 1
-				}]
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not allow a option quantity greater than maxOrderQuantity', async function () {
-		let errorOccurred = false
-		try {
-			await OrderModel.create({
-				...testOrderFields,
-				options: [
-					{
-						optionId: testOption._id,
-						quantity: testOption.maxOrderQuantity + 1
-					}
-				]
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not allow duplicate options in an order', async function () {
 		let errorOccurred = false
 		try {
@@ -581,7 +501,6 @@ describe('Order Model', function () {
 				name: 'Before Lunch',
 				price: 100,
 				description: 'A test product',
-				availability: 100,
 				orderWindow: {
 					from: {
 						hour: 0,
@@ -591,15 +510,13 @@ describe('Order Model', function () {
 						hour: 12,
 						minute: 0
 					}
-				},
-				maxOrderQuantity: 10
+				}
 			})
 
 			testProductAfterLunch = await ProductModel.create({
 				name: 'After Lunch',
 				price: 100,
 				description: 'A test product',
-				availability: 100,
 				orderWindow: {
 					from: {
 						hour: 12,
@@ -609,8 +526,7 @@ describe('Order Model', function () {
 						hour: 23,
 						minute: 59
 					}
-				},
-				maxOrderQuantity: 10
+				}
 			})
 		})
 

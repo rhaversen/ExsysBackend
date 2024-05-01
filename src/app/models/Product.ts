@@ -15,7 +15,6 @@ export interface IProduct extends Document {
 	name: string
 	price: number
 	description: string
-	availability: number
 	orderWindow: {
 		from: {
 			hour: number
@@ -27,7 +26,6 @@ export interface IProduct extends Document {
 		}
 	}
 	options?: Types.ObjectId[]
-	maxOrderQuantity: number
 }
 
 // Sub-schema for hours and minutes
@@ -77,20 +75,10 @@ const productSchema = new Schema<IProduct>({
 		required: [true, 'Produkt beskrivelse er påkrævet'],
 		maxLength: [50, 'Produkt beskrivelse må maks være 50 tegn lang']
 	},
-	availability: {
-		type: Schema.Types.Number,
-		required: [true, 'Produkt rådighed er påkrævet'],
-		min: [0, 'Rådighed skal være større end eller lig 0']
-	},
 	options: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Option'
 	}],
-	maxOrderQuantity: {
-		type: Schema.Types.Number,
-		required: [true, 'Maksimal bestillingsmængde er påkrævet'],
-		min: [1, 'Maksimal bestillingsmængde skal være større end eller lig 0']
-	},
 	orderWindow: {
 		_id: false,
 		type: orderWindowSubSchema,
@@ -107,14 +95,6 @@ productSchema.path('orderWindow').validate((v: {
 }) => {
 	return !(v.from.hour === v.to.hour && v.from.minute === v.to.minute)
 }, 'Fra-tid skal være før til-tid')
-
-productSchema.path('availability').validate((v: number) => {
-	return Number.isInteger(v)
-}, 'Rådighed skal være et heltal')
-
-productSchema.path('maxOrderQuantity').validate((v: number) => {
-	return Number.isInteger(v)
-}, 'Maksimal bestillingsmængde skal være et heltal')
 
 productSchema.path('orderWindow.from.hour').validate((v: number) => {
 	return Number.isInteger(v)
