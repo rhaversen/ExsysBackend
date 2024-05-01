@@ -16,7 +16,6 @@ const router = Router()
  * @route POST api/v1/orders
  * @desc Create a new order
  * @access Public
- * @param {Date} req.body.requestedDeliveryDate - The date the order is supposed to be delivered
  * @param {Types.ObjectId} req.body.roomId - Reference to the Room document
  * @param {Array<{product: Types.ObjectId, quantity: number}>} req.body.products - The products and their quantities
  * @param {Array<{option: Types.ObjectId, quantity: number}>} [req.body.options] - Additional options for the order (optional)

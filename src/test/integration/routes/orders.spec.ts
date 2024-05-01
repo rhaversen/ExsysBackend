@@ -8,7 +8,7 @@ import { chaiAppServer as agent } from '../../testSetup.js'
 import sinon from 'sinon'
 
 // Own modules
-import OrderModel, { type IOrder } from '../../../app/models/Order.js'
+import OrderModel from '../../../app/models/Order.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
@@ -18,7 +18,6 @@ describe('POST /v1/orders', function () {
 	let testRoom: IRoom
 	let testOption: IOption
 	let testOrderFields: {
-		requestedDeliveryDate: Date
 		roomId: Types.ObjectId
 		products: Array<{
 			productId: Types.ObjectId
@@ -59,7 +58,6 @@ describe('POST /v1/orders', function () {
 		})
 
 		testOrderFields = {
-			requestedDeliveryDate: new Date(),
 			roomId: testRoom.id,
 			products: [{
 				productId: testProduct1.id,
@@ -77,7 +75,6 @@ describe('POST /v1/orders', function () {
 		const order = await OrderModel.findOne({})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
-		expect(order?.requestedDeliveryDate.getTime()).to.equal(new Date(testOrderFields.requestedDeliveryDate).getTime())
 		expect(order?.roomId.toString()).to.equal(testRoom.id)
 		expect(order?.products[0].productId.toString()).to.equal(testOrderFields.products[0].productId)
 		expect(order?.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
@@ -89,7 +86,6 @@ describe('POST /v1/orders', function () {
 		const res = await agent.post('/v1/orders').send(testOrderFields)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		expect(new Date(res.body.requestedDeliveryDate as string).getTime()).to.equal(new Date(testOrderFields.requestedDeliveryDate).getTime())
 		expect(res.body.roomId.toString()).to.equal(testRoom.id)
 		expect(res.body.products[0].productId).to.equal(testOrderFields.products[0].productId)
 		expect(res.body.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
@@ -181,8 +177,6 @@ describe('GET /v1/orders', function () {
 	let testProduct2: IProduct
 	let testRoom: IRoom
 	let testOption: IOption
-	let testOrder1: IOrder
-	let testOrder2: IOrder
 	let clock: sinon.SinonFakeTimers
 
 	beforeEach(async function () {
@@ -231,8 +225,7 @@ describe('GET /v1/orders', function () {
 			description: 'A test option'
 		})
 
-		testOrder1 = await OrderModel.create({
-			requestedDeliveryDate: new Date(clock.now + 5 * 60 * 60 * 1000), // 5 hours later
+		await OrderModel.create({
 			roomId: testRoom.id,
 			products: [{
 				productId: testProduct1.id,
@@ -244,8 +237,7 @@ describe('GET /v1/orders', function () {
 			}]
 		})
 
-		testOrder2 = await OrderModel.create({
-			requestedDeliveryDate: new Date(clock.now + 5 * 60 * 60 * 1000), // 5 hours later
+		await OrderModel.create({
 			roomId: testRoom.id,
 			products: [{
 				productId: testProduct2.id,
@@ -262,13 +254,11 @@ describe('GET /v1/orders', function () {
 		const res = await agent.get('/v1/orders')
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		expect(res.body[0].requestedDeliveryDate).to.equal(testOrder1.requestedDeliveryDate.toISOString())
 		expect(res.body[0].roomId).to.equal(testRoom.id)
 		expect(res.body[0].products[0].productId).to.equal(testProduct1.id)
 		expect(res.body[0].products[0].quantity).to.equal(1)
 		expect(res.body[0].options[0].optionId).to.equal(testOption.id)
 		expect(res.body[0].options[0].quantity).to.equal(1)
-		expect(res.body[1].requestedDeliveryDate).to.equal(testOrder2.requestedDeliveryDate.toISOString())
 		expect(res.body[1].roomId).to.equal(testRoom.id)
 		expect(res.body[1].products[0].productId).to.equal(testProduct2.id)
 		expect(res.body[1].products[0].quantity).to.equal(1)
@@ -317,7 +307,6 @@ describe('GET /v1/orders', function () {
 				})
 
 				await OrderModel.create({
-					requestedDeliveryDate: new Date(clock.now + 5 * 60 * 60 * 1000), // 5 hours later
 					roomId: testRoom.id,
 					products: [{
 						productId: testProduct1.id,
@@ -330,7 +319,6 @@ describe('GET /v1/orders', function () {
 				})
 
 				await OrderModel.create({
-					requestedDeliveryDate: new Date(clock.now + 5 * 60 * 60 * 1000), // 5 hours later
 					roomId: testRoom.id,
 					products: [{
 						productId: testProduct2.id,

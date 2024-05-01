@@ -14,7 +14,6 @@ import RoomModel from './Room.js'
 // Interfaces
 export interface IOrder extends Document {
 	_id: Types.ObjectId
-	requestedDeliveryDate: Date // The date the order is supposed to be delivered
 	roomId: Types.ObjectId // Reference to the Room document
 	products: Array<{
 		productId: Types.ObjectId
@@ -56,10 +55,6 @@ const optionsSubSchema = new Schema({
 
 // Main order schema
 const orderSchema = new Schema({
-	requestedDeliveryDate: {
-		type: Schema.Types.Date,
-		required: [true, 'Leveringstidspunkt er påkrevet']
-	},
 	roomId: {
 		type: Schema.Types.ObjectId,
 		ref: 'Room',
@@ -82,26 +77,6 @@ const orderSchema = new Schema({
 })
 
 // Validations
-orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
-	const now = new Date()
-	const dateUTC = new Date(
-		Date.UTC(
-			now.getUTCFullYear(),
-			now.getUTCMonth(),
-			now.getUTCDate(),
-			now.getUTCHours(),
-			now.getUTCMinutes()
-		)
-	)
-	return v >= dateUTC
-}, 'Leveringstidspunkt skal være i fremtiden')
-
-orderSchema.path('requestedDeliveryDate').validate(function (v: Date) {
-	const currentDate = new Date().setUTCHours(0, 0, 0, 0)
-	const requestedDeliveryDate = new Date(v).setUTCHours(0, 0, 0, 0)
-	return currentDate === requestedDeliveryDate
-}, 'Leveringstidspunkt skal være i dag')
-
 orderSchema.path('roomId').validate(async function (v: Types.ObjectId) {
 	const room = await RoomModel.findById(v)
 	return room !== null && room !== undefined
