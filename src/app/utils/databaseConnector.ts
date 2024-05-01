@@ -23,15 +23,6 @@ function isMemoryDatabase (): boolean {
 	return mongoose.connection.host.toString() === '127.0.0.1'
 }
 
-async function disconnectFromMongoDB (): Promise<void> {
-	try {
-		await mongoose.disconnect()
-		logger.info('Disconnected from MongoDB')
-	} catch (error: any) {
-		logger.error(`Error disconnecting from MongoDB: ${error.message !== undefined ? error.message : error}`)
-	}
-}
-
 async function connectToMongoDB (): Promise<void> {
 	if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') return
 
@@ -50,12 +41,11 @@ async function connectToMongoDB (): Promise<void> {
 
 	// Exhausted retries
 	logger.error(`Failed to connect to MongoDB after ${maxRetryAttempts} attempts. Shutting down.`)
-	await shutDown(1)
+	await shutDown()
 }
 
 const databaseConnector = {
 	isMemoryDatabase,
-	disconnectFromMongoDB,
 	connectToMongoDB
 }
 

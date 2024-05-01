@@ -13,9 +13,7 @@ describe('POST /v1/options', function () {
 	const testOptionFields1 = {
 		name: 'Option 1',
 		description: 'Description for Option 1',
-		price: 10,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 10
 	}
 
 	it('should create a new option', async function () {
@@ -43,17 +41,13 @@ describe('GET /v1/options', function () {
 	const testOptionFields1 = {
 		name: 'Option 1',
 		description: 'Description for Option 1',
-		price: 10,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 10
 	}
 
 	const testOptionFields2 = {
 		name: 'Option 2',
 		description: 'Description for Option 2',
-		price: 20,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 20
 	}
 
 	beforeEach(async function () {
@@ -92,17 +86,13 @@ describe('PATCH /v1/options/:id', function () {
 	const testOptionFields1 = {
 		name: 'Option 1',
 		description: 'Description for Option 1',
-		price: 10,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 10
 	}
 
 	const testOptionFields2 = {
 		name: 'Option 2',
 		description: 'Description for Option 2',
-		price: 20,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 20
 	}
 
 	beforeEach(async function () {
@@ -158,17 +148,13 @@ describe('DELETE /v1/options/:id', function () {
 	const testOptionFields1 = {
 		name: 'Option 1',
 		description: 'Description for Option 1',
-		price: 10,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 10
 	}
 
 	const testOptionFields2 = {
 		name: 'Option 2',
 		description: 'Description for Option 2',
-		price: 20,
-		maxOrderQuantity: 5,
-		availability: 5
+		price: 20
 	}
 
 	beforeEach(async function () {
