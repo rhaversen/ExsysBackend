@@ -5,6 +5,7 @@ import sinon from 'sinon'
 import chaiHttp from 'chai-http'
 import * as chai from 'chai'
 import mongoose from 'mongoose'
+import gracefulShutdown from 'http-graceful-shutdown'
 import { type Server } from 'http'
 
 // Own modules
@@ -18,13 +19,14 @@ process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 const chaiHttpObject = chai.use(chaiHttp)
 let app: { shutDown: () => Promise<void>, server: Server }
 let chaiAppServer: ChaiHttp.Agent
+let gracefulShutdownFunction: () => Promise<void>
 
 const cleanDatabase = async function (): Promise<void> {
 	/// ////////////////////////////////////////////
 	/// ///////////////////////////////////////////
 	if (process.env.NODE_ENV !== 'test') {
 		logger.warn('Database wipe attempted in non-test environment! Shutting down.')
-		await app.shutDown()
+		await gracefulShutdownFunction()
 		return
 	}
 	/// ////////////////////////////////////////////
@@ -37,11 +39,26 @@ before(async function () {
 	this.timeout(10000)
 	// Setting environment
 	process.env.NODE_ENV = 'test'
+
 	// Connect to the database
 	const database = await import('./mongoMemoryReplSetConnector.js')
 	await database.default()
 
+	// Importing and starting the app
 	app = await import('../app/index.js')
+
+	// Graceful shutdown setup
+	gracefulShutdownFunction = gracefulShutdown(app.server,
+		{
+			signals: 'SIGINT SIGTERM',
+			timeout: 10000,							// Timeout in ms
+			forceExit: false,						// Trigger process.exit() at the end of shutdown process
+			development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
+			// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
+			onShutdown: app.shutDown				// Shutdown function (async) - e.g. for cleanup DB, ...
+			// finally: finalFunction				// Finally function (sync) - e.g. for logging
+		}
+	)
 })
 
 beforeEach(async function () {
@@ -54,7 +71,7 @@ afterEach(async function () {
 })
 
 after(async function () {
-	await app.shutDown()
+	await gracefulShutdownFunction()
 
 	// exit the process after 1 second
 	setTimeout(() => process.exit(0), 1000)

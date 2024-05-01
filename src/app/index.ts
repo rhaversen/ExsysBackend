@@ -7,6 +7,7 @@ import helmet from 'helmet'
 import mongoose from 'mongoose'
 import RateLimit from 'express-rate-limit'
 import cors from 'cors'
+import gracefulShutdown from 'http-graceful-shutdown'
 
 // Own Modules
 import databaseConnector from './utils/databaseConnector.js'
@@ -113,24 +114,6 @@ process.on('uncaughtException', (err): void => {
 	})
 })
 
-// Assigning shutdown function to SIGINT signal
-process.on('SIGINT', (): void => {
-	logger.info('Received SIGINT')
-	shutDown().catch(error => {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1)
-	})
-})
-
-// Assigning shutdown function to SIGTERM signal
-process.on('SIGTERM', (): void => {
-	logger.info('Received SIGTERM')
-	shutDown().catch(error => {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1)
-	})
-})
-
 // Shutdown function
 export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
@@ -147,5 +130,17 @@ export async function shutDown (): Promise<void> {
 
 	logger.info('Shutdown completed')
 }
+
+gracefulShutdown(server,
+	{
+		signals: 'SIGINT SIGTERM',
+		timeout: 10000,							// Timeout in ms
+		forceExit: true,						// Trigger process.exit() at the end of shutdown process
+		development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
+		// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
+		onShutdown: shutDown					// Shutdown function (async) - e.g. for cleanup DB, ...
+		// finally: finalFunction				// Finally function (sync) - e.g. for logging
+	}
+)
 
 export default app
