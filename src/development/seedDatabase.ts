@@ -1,3 +1,4 @@
+import OptionModel from '../app/models/Option.js'
 import ProductModel from '../app/models/Product.js'
 import RoomModel from '../app/models/Room.js'
 import logger from '../app/utils/logger.js'
@@ -222,6 +223,63 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150'
 })
 
+// Products with no image
+await ProductModel.create({
+	name: 'No image product morning',
+	price: 10,
+	orderWindow: {
+		from: { hour: 0, minute: 0 },
+		to: { hour: 12, minute: 0 }
+	}
+})
+await ProductModel.create({
+	name: 'No image product afternoon',
+	price: 10,
+	orderWindow: {
+		from: { hour: 12, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+
+// Options
+const option1 = await OptionModel.create({
+	name: 'Option 1',
+	price: 1,
+	imageURL: 'https://via.placeholder.com/150'
+})
+const option2 = await OptionModel.create({
+	name: 'Option 2',
+	price: 2,
+	imageURL: 'https://via.placeholder.com/150'
+})
+const option3 = await OptionModel.create({
+	name: 'Option 3',
+	price: 3,
+	imageURL: 'https://via.placeholder.com/150'
+})
+
+// Products with options
+await ProductModel.create({
+	name: 'Product with one option',
+	price: 10,
+	imageURL: 'https://via.placeholder.com/150',
+	options: [option1.id],
+	orderWindow: {
+		from: { hour: 0, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+await ProductModel.create({
+	name: 'Product with two options',
+	price: 10,
+	imageURL: 'https://via.placeholder.com/150',
+	options: [option1.id, option2.id, option3.id],
+	orderWindow: {
+		from: { hour: 0, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+
 // Rooms
 await RoomModel.create({
 	name: 'Billiard Room',
@@ -246,6 +304,18 @@ await RoomModel.create({
 await RoomModel.create({
 	name: 'Ballroom Room',
 	description: 'A room for dancing'
+})
+await RoomModel.create({
+	name: 'Hall Room',
+	description: 'A room for entering'
+})
+await RoomModel.create({
+	name: 'Study Room',
+	description: 'A room for studying'
+})
+await RoomModel.create({
+	name: 'Lounge Room',
+	description: 'A room for lounging'
 })
 
 logger.info('Database seeded')
