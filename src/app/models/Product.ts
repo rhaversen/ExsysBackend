@@ -29,13 +29,29 @@ export interface IProduct extends Document {
 	options?: Types.ObjectId[]
 }
 
-// Sub-schema for hours and minutes
-const hourMinuteSubSchema = new Schema({
+// Sub-schema for fromTime
+const fromTimeSubSchema = new Schema({
 	hour: {
 		type: Schema.Types.Number,
 		required: [true, 'Fra-time er påkrævet'],
 		min: [0, 'Fra-time skal være mere end eller lig 0'],
 		max: [23, 'Fra-time skal være mindre end eller lig 23']
+	},
+	minute: {
+		type: Schema.Types.Number,
+		required: [true, 'Fra-minut er påkrævet'],
+		min: [0, 'Fra-minut skal være mere end eller lig 0'],
+		max: [59, 'Fra-minut skal være mindre end eller lig 59']
+	}
+})
+
+// Sub-schema for toTime
+const toTimeSubSchema = new Schema({
+	hour: {
+		type: Schema.Types.Number,
+		required: [true, 'Til-time er påkrævet'],
+		min: [0, 'Til-time skal være mere end eller lig 0'],
+		max: [23, 'Til-time skal være mindre end eller lig 23']
 	},
 	minute: {
 		type: Schema.Types.Number,
@@ -49,11 +65,11 @@ const hourMinuteSubSchema = new Schema({
 const orderWindowSubSchema = new Schema({
 	from: {
 		_id: false,
-		type: hourMinuteSubSchema
+		type: fromTimeSubSchema
 	},
 	to: {
 		_id: false,
-		type: hourMinuteSubSchema
+		type: toTimeSubSchema
 	}
 })
 
