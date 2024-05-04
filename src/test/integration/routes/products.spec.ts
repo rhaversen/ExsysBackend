@@ -16,6 +16,7 @@ describe('POST /v1/products', function () {
 	let testProductFields: {
 		name: string
 		price: number
+		imageURL: string
 		orderWindow: {
 			from: {
 				hour: number
@@ -32,12 +33,14 @@ describe('POST /v1/products', function () {
 	beforeEach(async function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
+			imageURL: 'https://example.com/image.jpg',
 			price: 50
 		})
 
 		testProductFields = {
 			name: 'Test Product',
 			price: 100,
+			imageURL: 'https://example.com/image.jpg',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -58,6 +61,7 @@ describe('POST /v1/products', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order?.name).to.equal(testProductFields.name)
+		expect(order?.imageURL).to.equal(testProductFields.imageURL)
 		expect(order?.price).to.equal(testProductFields.price)
 		expect(order?.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(order?.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
@@ -71,6 +75,7 @@ describe('POST /v1/products', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal(testProductFields.name)
+		expect(res.body.imageURL).to.equal(testProductFields.imageURL)
 		expect(res.body.price).to.equal(testProductFields.price)
 		expect(res.body.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(res.body.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
@@ -82,6 +87,7 @@ describe('POST /v1/products', function () {
 	it('should create a valid product with two options', async function () {
 		const testOption2 = await OptionModel.create({
 			name: 'Test Option 2',
+			imageURL: 'https://example.com/imageNew.jpg',
 			price: 50
 		})
 
@@ -92,6 +98,7 @@ describe('POST /v1/products', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order?.name).to.equal(testProductFields.name)
+		expect(order?.imageURL).to.equal(testProductFields.imageURL)
 		expect(order?.price).to.equal(testProductFields.price)
 		expect(order?.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(order?.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
@@ -109,6 +116,7 @@ describe('GET /v1/products', function () {
 		testProduct = await ProductModel.create({
 			name: 'Test Product',
 			price: 100,
+			imageURL: 'https://example.com/image.jpg',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -129,6 +137,7 @@ describe('GET /v1/products', function () {
 		expect(res.body).to.be.an('array')
 		expect(res.body).to.have.lengthOf(1)
 		expect(res.body[0].name).to.equal(testProduct.name)
+		expect(res.body[0].imageURL).to.equal(testProduct.imageURL)
 		expect(res.body[0].price).to.equal(testProduct.price)
 		expect(res.body[0].orderWindow.from.hour).to.equal(testProduct.orderWindow.from.hour)
 		expect(res.body[0].orderWindow.from.minute).to.equal(testProduct.orderWindow.from.minute)
@@ -139,6 +148,7 @@ describe('GET /v1/products', function () {
 	it('should get all products', async function () {
 		await ProductModel.create({
 			name: 'Test Product 2',
+			imageURL: 'https://example.com/image2.jpg',
 			price: 200,
 			orderWindow: {
 				from: {
@@ -158,7 +168,9 @@ describe('GET /v1/products', function () {
 		expect(res.body).to.be.an('array')
 		expect(res.body).to.have.lengthOf(2)
 		expect(res.body[0].name).to.equal(testProduct.name)
+		expect(res.body[0].imageURL).to.equal(testProduct.imageURL)
 		expect(res.body[1].name).to.equal('Test Product 2')
+		expect(res.body[1].imageURL).to.equal('https://example.com/image2.jpg')
 	})
 })
 
@@ -168,6 +180,7 @@ describe('PATCH /v1/products/:id', function () {
 	beforeEach(async function () {
 		testProduct = await ProductModel.create({
 			name: 'Test Product',
+			imageURL: 'https://example.com/image.jpg',
 			price: 100,
 			orderWindow: {
 				from: {
@@ -185,6 +198,7 @@ describe('PATCH /v1/products/:id', function () {
 	it('should update a product', async function () {
 		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 			name: 'Updated Product',
+			imageURL: 'https://example.com/imageNew.jpg',
 			price: 200,
 			orderWindow: {
 				from: {
@@ -200,6 +214,7 @@ describe('PATCH /v1/products/:id', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
+		expect(res.body.imageURL).to.equal('https://example.com/imageNew.jpg')
 		expect(res.body.price).to.equal(200)
 		expect(res.body.orderWindow.from.hour).to.equal(1)
 		expect(res.body.orderWindow.from.minute).to.equal(0)
@@ -214,6 +229,7 @@ describe('PATCH /v1/products/:id', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
+		expect(res.body.imageURL).to.equal('https://example.com/image.jpg')
 		expect(res.body.price).to.equal(100)
 		expect(res.body.orderWindow.from.hour).to.equal(0)
 		expect(res.body.orderWindow.from.minute).to.equal(0)
@@ -224,6 +240,7 @@ describe('PATCH /v1/products/:id', function () {
 	it('should return a 404 if the product does not exist', async function () {
 		const res = await agent.patch(`/v1/products/${new mongoose.Types.ObjectId().toString()}`).send({
 			name: 'Updated Product',
+			imageURL: 'https://example.com/imageNew.jpg',
 			price: 200,
 			orderWindow: {
 				from: {

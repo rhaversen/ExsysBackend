@@ -12,6 +12,7 @@ import OptionModel, { type IOption } from '../../../app/models/Option.js'
 describe('POST /v1/options', function () {
 	const testOptionFields1 = {
 		name: 'Option 1',
+		imageURL: 'https://example.com/image.jpg',
 		price: 10
 	}
 
@@ -22,6 +23,7 @@ describe('POST /v1/options', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option).to.have.property('name', testOptionFields1.name)
+		expect(option).to.have.property('imageURL', testOptionFields1.imageURL)
 		expect(option).to.have.property('price', testOptionFields1.price)
 	})
 
@@ -30,6 +32,7 @@ describe('POST /v1/options', function () {
 
 		expect(response).to.have.status(201)
 		expect(response.body).to.have.property('name', testOptionFields1.name)
+		expect(response.body).to.have.property('imageURL', testOptionFields1.imageURL)
 		expect(response.body).to.have.property('price', testOptionFields1.price)
 	})
 })
@@ -37,11 +40,13 @@ describe('POST /v1/options', function () {
 describe('GET /v1/options', function () {
 	const testOptionFields1 = {
 		name: 'Option 1',
+		imageURL: 'https://example.com/image1.jpg',
 		price: 10
 	}
 
 	const testOptionFields2 = {
 		name: 'Option 2',
+		imageURL: 'https://example.com/image2.jpg',
 		price: 20
 	}
 
@@ -57,8 +62,10 @@ describe('GET /v1/options', function () {
 		expect(response.body).to.be.an('array')
 		expect(response.body).to.have.length(2)
 		expect(response.body[0]).to.have.property('name', testOptionFields1.name)
+		expect(response.body[0]).to.have.property('imageURL', testOptionFields1.imageURL)
 		expect(response.body[0]).to.have.property('price', testOptionFields1.price)
 		expect(response.body[1]).to.have.property('name', testOptionFields2.name)
+		expect(response.body[1]).to.have.property('imageURL', testOptionFields2.imageURL)
 		expect(response.body[1]).to.have.property('price', testOptionFields2.price)
 	})
 
@@ -78,11 +85,13 @@ describe('PATCH /v1/options/:id', function () {
 
 	const testOptionFields1 = {
 		name: 'Option 1',
+		imageURL: 'https://example.com/image1.jpg',
 		price: 10
 	}
 
 	const testOptionFields2 = {
 		name: 'Option 2',
+		imageURL: 'https://example.com/image2.jpg',
 		price: 20
 	}
 
@@ -94,6 +103,7 @@ describe('PATCH /v1/options/:id', function () {
 	it('should update an option', async function () {
 		const updatedFields = {
 			name: 'Updated Option 1',
+			imageURL: 'https://example.com/imageNew.jpg',
 			price: 15
 		}
 
@@ -101,12 +111,14 @@ describe('PATCH /v1/options/:id', function () {
 
 		expect(response).to.have.status(200)
 		expect(response.body).to.have.property('name', updatedFields.name)
+		expect(response.body).to.have.property('imageURL', updatedFields.imageURL)
 		expect(response.body).to.have.property('price', updatedFields.price)
 	})
 
 	it('should return 404 if the option does not exist', async function () {
 		const updatedFields = {
 			name: 'Updated Option 1',
+			imageURL: 'https://example.com/imageNew.jpg',
 			price: 15
 		}
 
@@ -119,6 +131,7 @@ describe('PATCH /v1/options/:id', function () {
 	it('should return an error if the request is invalid', async function () {
 		const updatedFields = {
 			name: 'Updated Option 1',
+			imageURL: 'https://example.com/imageNew.jpg',
 			price: -15
 		}
 

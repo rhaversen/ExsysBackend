@@ -18,6 +18,7 @@ describe('Product Model', function () {
 	let testProductFields: {
 		name: string
 		price: number
+		imageURL?: string
 		orderWindow: {
 			from: {
 				hour: number
@@ -171,6 +172,36 @@ describe('Product Model', function () {
 			await ProductModel.create({
 				...testProductFields,
 				options: [testOption.id, testOption.id]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not create a product with a non-existent and a real option', async function () {
+		let errorOccurred = false
+		try {
+			await ProductModel.create({
+				...testProductFields,
+				options: [new Types.ObjectId(), testOption.id]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not create a product with an invalid image URL', async function () {
+		let errorOccurred = false
+		try {
+			await ProductModel.create({
+				...testProductFields,
+				imageURL: 'invalidURL'
 			})
 		} catch (err) {
 			// The promise was rejected as expected

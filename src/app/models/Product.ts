@@ -2,6 +2,7 @@
 
 // Third-party libraries
 import { type Document, model, Schema, type Types } from 'mongoose'
+import validator from 'validator'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -14,6 +15,7 @@ export interface IProduct extends Document {
 	_id: Types.ObjectId
 	name: string
 	price: number
+	imageURL?: string
 	orderWindow: {
 		from: {
 			hour: number
@@ -68,6 +70,11 @@ const productSchema = new Schema<IProduct>({
 		required: [true, 'Pris er påkrævet'],
 		min: [0, 'prisen skal være større end eller lig 0']
 	},
+	imageURL: {
+		type: Schema.Types.String,
+		trim: true,
+		maxLength: [200, 'Billede URL må maks være 200 tegn lang']
+	},
 	options: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Option'
@@ -114,6 +121,13 @@ productSchema.path('options').validate(function (v: Types.ObjectId[]) {
 	const unique = new Set(v.map(v => v))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
+
+productSchema.path('imageURL').validate(function (v: string) {
+	if (v !== undefined && v !== null && v !== '') {
+		return validator.isURL(v)
+	}
+	return true
+}, 'Billede URL skal være en URL addresse')
 
 // Adding indexes
 
