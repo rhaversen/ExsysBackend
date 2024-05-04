@@ -290,6 +290,36 @@ await ProductModel.create({
 	}
 })
 
+// Free products
+await ProductModel.create({
+	name: 'Free morning',
+	price: 0,
+	imageURL: 'https://via.placeholder.com/150',
+	orderWindow: {
+		from: { hour: 0, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+await ProductModel.create({
+	name: 'Free afternoon',
+	price: 0,
+	imageURL: 'https://via.placeholder.com/150',
+	orderWindow: {
+		from: { hour: 12, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+await ProductModel.create({
+	name: 'Free +options',
+	price: 0,
+	imageURL: 'https://via.placeholder.com/150',
+	options: [option1.id, option2.id, option3.id],
+	orderWindow: {
+		from: { hour: 0, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+
 // Rooms
 await RoomModel.create({
 	name: 'Billiard Room',
