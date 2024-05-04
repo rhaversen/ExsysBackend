@@ -61,6 +61,25 @@ jobs:
             - name: Unit tests
               run: npm run test:integration
 
+    test-developmentEnvironment:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup environment
+              uses: ./.github/actions/setup
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+
+            - name: Unit tests
+              run: npm run test:devEnv
+
     test-lint:
         runs-on: ubuntu-latest
         steps:
