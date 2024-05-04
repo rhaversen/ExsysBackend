@@ -225,7 +225,7 @@ await ProductModel.create({
 
 // Products with no image
 await ProductModel.create({
-	name: 'No image product morning',
+	name: 'No image morning',
 	price: 10,
 	orderWindow: {
 		from: { hour: 0, minute: 0 },
@@ -233,7 +233,7 @@ await ProductModel.create({
 	}
 })
 await ProductModel.create({
-	name: 'No image product afternoon',
+	name: 'No image afternoon',
 	price: 10,
 	orderWindow: {
 		from: { hour: 12, minute: 0 },
@@ -244,24 +244,24 @@ await ProductModel.create({
 // Options
 const option1 = await OptionModel.create({
 	name: 'Option 1',
-	price: 1,
+	price: 0,
 	imageURL: 'https://via.placeholder.com/150'
 })
 const option2 = await OptionModel.create({
 	name: 'Option 2',
-	price: 2,
+	price: 1,
 	imageURL: 'https://via.placeholder.com/150'
 })
 const option3 = await OptionModel.create({
 	name: 'Option 3',
-	price: 3,
+	price: 2,
 	imageURL: 'https://via.placeholder.com/150'
 })
 
 // Products with options
 await ProductModel.create({
-	name: 'Product with one option',
-	price: 10,
+	name: 'One option',
+	price: 5,
 	imageURL: 'https://via.placeholder.com/150',
 	options: [option1.id],
 	orderWindow: {
@@ -270,8 +270,18 @@ await ProductModel.create({
 	}
 })
 await ProductModel.create({
-	name: 'Product with two options',
+	name: 'Two options',
 	price: 10,
+	imageURL: 'https://via.placeholder.com/150',
+	options: [option1.id, option2.id],
+	orderWindow: {
+		from: { hour: 0, minute: 0 },
+		to: { hour: 23, minute: 59 }
+	}
+})
+await ProductModel.create({
+	name: 'Three options',
+	price: 15,
 	imageURL: 'https://via.placeholder.com/150',
 	options: [option1.id, option2.id, option3.id],
 	orderWindow: {
