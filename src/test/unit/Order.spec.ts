@@ -39,7 +39,6 @@ describe('Order Model', function () {
 		testProduct = await ProductModel.create({
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -60,8 +59,7 @@ describe('Order Model', function () {
 
 		testOption = await OptionModel.create({
 			name: 'Test Option',
-			price: 50,
-			description: 'A test option'
+			price: 50
 		})
 
 		testOrderFields = {
@@ -437,7 +435,6 @@ describe('Order Model', function () {
 			testProductBeforeLunch = await ProductModel.create({
 				name: 'Before Lunch',
 				price: 100,
-				description: 'A test product',
 				orderWindow: {
 					from: {
 						hour: 0,
@@ -453,7 +450,6 @@ describe('Order Model', function () {
 			testProductAfterLunch = await ProductModel.create({
 				name: 'After Lunch',
 				price: 100,
-				description: 'A test product',
 				orderWindow: {
 					from: {
 						hour: 12,

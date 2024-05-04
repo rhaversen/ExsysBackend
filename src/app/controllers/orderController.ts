@@ -27,7 +27,7 @@ interface GetOrdersWithDateRangeRequest extends Request {
 	}
 }
 
-function combineItems (items: OrderItem[] | undefined): OrderItem[] | undefined {
+function combineItemsById (items: OrderItem[] | undefined): OrderItem[] | undefined {
 	return items?.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
 		// Find if the item already exists in the accumulator
 		const existingItem = accumulator.find((item: OrderItem) => item.id === currentItem.id)
@@ -52,8 +52,8 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 		req.body.options = req.body.options?.filter((option) => option.quantity !== 0 && option.quantity !== undefined)
 
 		// Combine products and options with same id and add together their quantities
-		req.body.products = combineItems(req.body.products)
-		req.body.options = combineItems(req.body.options)
+		req.body.products = combineItemsById(req.body.products)
+		req.body.options = combineItemsById(req.body.options)
 
 		const newOrder = await OrderModel.create(req.body as Record<string, unknown>)
 		res.status(201).json(newOrder)
