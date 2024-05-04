@@ -237,6 +237,47 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body.orderWindow.to.minute).to.equal(59)
 	})
 
+	it('should update a product with an option', async function () {
+		const testOption = await OptionModel.create({
+			name: 'Test Option',
+			imageURL: 'https://example.com/image.jpg',
+			price: 50
+		})
+
+		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
+			options: [testOption.id]
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res.body.name).to.equal('Test Product')
+		expect(res.body.imageURL).to.equal('https://example.com/image.jpg')
+		expect(res.body.price).to.equal(100)
+		expect(res.body.orderWindow.from.hour).to.equal(0)
+		expect(res.body.orderWindow.from.minute).to.equal(0)
+		expect(res.body.orderWindow.to.hour).to.equal(23)
+		expect(res.body.orderWindow.to.minute).to.equal(59)
+		expect(res.body.options[0].toString()).to.equal(testOption.id)
+	})
+
+	it('should patch a field which is not present', async function () {
+		await ProductModel.findByIdAndUpdate(testProduct.id, { $unset: { imageURL: 1 } })
+		const updatedFields = {
+			imageURL: 'https://example.com/imageNew.jpg'
+		}
+
+		const res = await agent.patch(`/v1/products/${testProduct.id}`).send(updatedFields)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res).to.have.status(200)
+		expect(res.body.name).to.equal('Test Product')
+		expect(res.body.imageURL).to.equal('https://example.com/imageNew.jpg')
+		expect(res.body.price).to.equal(100)
+		expect(res.body.orderWindow.from.hour).to.equal(0)
+		expect(res.body.orderWindow.from.minute).to.equal(0)
+		expect(res.body.orderWindow.to.hour).to.equal(23)
+		expect(res.body.orderWindow.to.minute).to.equal(59)
+	})
+
 	it('should return a 404 if the product does not exist', async function () {
 		const res = await agent.patch(`/v1/products/${new mongoose.Types.ObjectId().toString()}`).send({
 			name: 'Updated Product',

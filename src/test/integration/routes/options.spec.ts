@@ -115,6 +115,35 @@ describe('PATCH /v1/options/:id', function () {
 		expect(response.body).to.have.property('price', updatedFields.price)
 	})
 
+	it('should allow a partial update', async function () {
+		const updatedFields = {
+			name: 'Updated Option 1'
+		}
+
+		const response = await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields)
+
+		expect(response).to.have.status(200)
+		expect(response.body).to.have.property('name', updatedFields.name)
+		expect(response.body).to.have.property('imageURL', testOptionFields1.imageURL)
+		expect(response.body).to.have.property('price', testOptionFields1.price)
+	})
+
+	it('should patch a field which is not present', async function () {
+		await OptionModel.findByIdAndUpdate(testOption1.id, { $unset: { imageURL: 1 } })
+		const updatedFields = {
+			imageURL: 'https://example.com/imageNew.jpg'
+		}
+
+		const response = await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields)
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(response.body).to.exist
+		expect(response).to.have.status(200)
+		expect(response.body).to.have.property('name', testOptionFields1.name)
+		expect(response.body).to.have.property('imageURL', updatedFields.imageURL)
+		expect(response.body).to.have.property('price', testOptionFields1.price)
+	})
+
 	it('should return 404 if the option does not exist', async function () {
 		const updatedFields = {
 			name: 'Updated Option 1',
