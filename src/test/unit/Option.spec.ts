@@ -13,15 +13,15 @@ import '../testSetup.js'
 describe('Option Model', function () {
 	let testOptionFields: {
 		name: string
+		imageURL: string
 		price: number
-		description: string
 	}
 
 	beforeEach(async function () {
 		testOptionFields = {
 			name: 'TestOption',
-			price: 100,
-			description: 'TestDescription'
+			imageURL: 'https://example.com/image.jpg',
+			price: 100
 		}
 	})
 
@@ -30,8 +30,8 @@ describe('Option Model', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.name).to.equal(testOptionFields.name)
+		expect(option.imageURL).to.equal(testOptionFields.imageURL)
 		expect(option.price).to.equal(testOptionFields.price)
-		expect(option.description).to.equal(testOptionFields.description)
 	})
 
 	it('should trim the name', async function () {
@@ -44,14 +44,14 @@ describe('Option Model', function () {
 		expect(option.name).to.equal('TestOption')
 	})
 
-	it('should trim the description', async function () {
+	it('should trim the imageURL', async function () {
 		const option = await OptionModel.create({
 			...testOptionFields,
-			description: '  TestDescription  '
+			imageURL: '  https://example.com/image.jpg  '
 		})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
-		expect(option.description).to.equal('TestDescription')
+		expect(option.imageURL).to.equal('https://example.com/image.jpg')
 	})
 
 	it('should create an option with a non-integer price', async function () {
@@ -62,6 +62,32 @@ describe('Option Model', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.price).to.equal(100.5)
+	})
+
+	it('should create an option with no image URL', async function () {
+		const option = await OptionModel.create({
+			...testOptionFields,
+			imageURL: undefined
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(option).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(option.imageURL).to.be.undefined
+	})
+
+	it('should not create an option with an invalid image URL', async function () {
+		let errorOccurred = false
+		try {
+			await OptionModel.create({
+				...testOptionFields,
+				imageURL: 'invalidURL'
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(errorOccurred).to.be.true
 	})
 
 	it('should not create an option with no name', async function () {
@@ -104,21 +130,6 @@ describe('Option Model', function () {
 		expect(option.price).to.equal(0)
 	})
 
-	it('should not create an option with no description', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				description: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create an option with a negative price', async function () {
 		let errorOccurred = false
 		try {
@@ -140,21 +151,6 @@ describe('Option Model', function () {
 			await OptionModel.create({
 				...testOptionFields,
 				name: 'a'.repeat(21)
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create an option with a too long description', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				description: 'a'.repeat(51)
 			})
 		} catch (err) {
 			// The promise was rejected as expected

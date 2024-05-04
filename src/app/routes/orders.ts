@@ -7,7 +7,7 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { createOrder, getOrdersForToday, getOrders } from '../controllers/orderController.js'
+import { createOrder, getOrdersWithQuery } from '../controllers/orderController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -16,7 +16,6 @@ const router = Router()
  * @route POST api/v1/orders
  * @desc Create a new order
  * @access Public
- * @param {Date} req.body.requestedDeliveryDate - The date the order is supposed to be delivered
  * @param {Types.ObjectId} req.body.roomId - Reference to the Room document
  * @param {Array<{product: Types.ObjectId, quantity: number}>} req.body.products - The products and their quantities
  * @param {Array<{option: Types.ObjectId, quantity: number}>} [req.body.options] - Additional options for the order (optional)
@@ -28,25 +27,16 @@ router.post('/',
 )
 
 /**
- * @route GET api/v1/orders/
- * @desc Get all orders
+ * @route GET api/v1/orders/?fromDate&toDate
+ * @desc Get orders with date range query
  * @access Public
+ * @param {string} req.query.fromDate - The start date of the range.
+ * @param {string} req.query.toDate - The end date of the range.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {Array<object>} res.body - The orders matching the date.
  */
 router.get('/',
-	asyncErrorHandler(getOrders)
-)
-
-/**
- * @route GET api/v1/orders/today
- * @desc Get orders for today
- * @access Public
- * @return {number} res.status - The status code of the HTTP response.
- * @return {Array<object>} res.body - The orders matching the date.
- */
-router.get('/today',
-	asyncErrorHandler(getOrdersForToday)
+	asyncErrorHandler(getOrdersWithQuery)
 )
 
 export default router
