@@ -4,6 +4,7 @@ import logger from '../app/utils/logger.js'
 
 logger.info('Seeding database')
 
+// Products for every hour of the day
 await ProductModel.create({
 	name: '0 Cake',
 	price: 2,
@@ -13,7 +14,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '1 Cake',
 	price: 2,
@@ -23,7 +23,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '2 Cake',
 	price: 2,
@@ -33,7 +32,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '3 Cake',
 	price: 2,
@@ -43,7 +41,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '4 Cake',
 	price: 2,
@@ -53,7 +50,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '5 Cake',
 	price: 2,
@@ -63,7 +59,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '6 Cake',
 	price: 2,
@@ -73,7 +68,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '7 Cake',
 	price: 2,
@@ -83,7 +77,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '8 Cake',
 	price: 2,
@@ -93,7 +86,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '9 Cake',
 	price: 2,
@@ -103,7 +95,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '10 Cake',
 	price: 2,
@@ -113,7 +104,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '11 Cake',
 	price: 2,
@@ -123,7 +113,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '12 Cake',
 	price: 2,
@@ -133,7 +122,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '13 Cake',
 	price: 2,
@@ -143,7 +131,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '14 Cake',
 	price: 2,
@@ -153,7 +140,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '15 Cake',
 	price: 2,
@@ -163,7 +149,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '16 Cake',
 	price: 2,
@@ -173,7 +158,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '17 Cake',
 	price: 2,
@@ -183,7 +167,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '18 Cake',
 	price: 2,
@@ -193,7 +176,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '19 Cake',
 	price: 2,
@@ -203,7 +185,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '20 Cake',
 	price: 2,
@@ -213,7 +194,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '21 Cake',
 	price: 2,
@@ -223,7 +203,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '22 Cake',
 	price: 2,
@@ -233,7 +212,6 @@ await ProductModel.create({
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
-
 await ProductModel.create({
 	name: '23 Cake',
 	price: 2,
@@ -244,31 +222,27 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150'
 })
 
+// Rooms
 await RoomModel.create({
 	name: 'Billiard Room',
 	description: 'A room for billiards'
 })
-
 await RoomModel.create({
 	name: 'Library Room',
 	description: 'A room for reading'
 })
-
 await RoomModel.create({
 	name: 'Conservatory Room',
 	description: 'A room for music'
 })
-
 await RoomModel.create({
 	name: 'Dining Room',
 	description: 'A room for dining'
 })
-
 await RoomModel.create({
 	name: 'Kitchen Room',
 	description: 'A room for cooking'
 })
-
 await RoomModel.create({
 	name: 'Ballroom Room',
 	description: 'A room for dancing'
