@@ -21,7 +21,6 @@ describe('POST /v1/orders', function () {
 		testProduct1 = await ProductModel.create({
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -41,8 +40,7 @@ describe('POST /v1/orders', function () {
 
 		testOption1 = await OptionModel.create({
 			name: 'Test Option',
-			price: 50,
-			description: 'A test option'
+			price: 50
 		})
 	})
 
@@ -124,7 +122,6 @@ describe('POST /v1/orders', function () {
 				testProduct2 = await ProductModel.create({
 					name: 'Test Product1',
 					price: 100,
-					description: 'A test product',
 					orderWindow: {
 						from: {
 							hour: 0,
@@ -267,8 +264,7 @@ describe('POST /v1/orders', function () {
 			beforeEach(async function () {
 				testOption2 = await OptionModel.create({
 					name: 'Test Option1',
-					price: 50,
-					description: 'A test option'
+					price: 50
 				})
 			})
 
@@ -513,7 +509,6 @@ describe('GET /v1/orders', function () {
 		testProduct1 = await ProductModel.create({
 			name: 'Test Product 1',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -529,7 +524,6 @@ describe('GET /v1/orders', function () {
 		testProduct2 = await ProductModel.create({
 			name: 'Test Product 2',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -545,7 +539,6 @@ describe('GET /v1/orders', function () {
 		testProduct3 = await ProductModel.create({
 			name: 'Test Product 3',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -561,7 +554,6 @@ describe('GET /v1/orders', function () {
 		testProduct4 = await ProductModel.create({
 			name: 'Test Product 4',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -581,8 +573,7 @@ describe('GET /v1/orders', function () {
 
 		testOption = await OptionModel.create({
 			name: 'Test Option',
-			price: 50,
-			description: 'A test option'
+			price: 50
 		})
 
 		await OrderModel.create({

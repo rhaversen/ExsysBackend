@@ -16,7 +16,6 @@ describe('POST /v1/products', function () {
 	let testProductFields: {
 		name: string
 		price: number
-		description: string
 		orderWindow: {
 			from: {
 				hour: number
@@ -33,14 +32,12 @@ describe('POST /v1/products', function () {
 	beforeEach(async function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
-			price: 50,
-			description: 'A test option'
+			price: 50
 		})
 
 		testProductFields = {
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -62,7 +59,6 @@ describe('POST /v1/products', function () {
 		expect(order).to.exist
 		expect(order?.name).to.equal(testProductFields.name)
 		expect(order?.price).to.equal(testProductFields.price)
-		expect(order?.description).to.equal(testProductFields.description)
 		expect(order?.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(order?.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(order?.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
@@ -76,7 +72,6 @@ describe('POST /v1/products', function () {
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal(testProductFields.name)
 		expect(res.body.price).to.equal(testProductFields.price)
-		expect(res.body.description).to.equal(testProductFields.description)
 		expect(res.body.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(res.body.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(res.body.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
@@ -87,8 +82,7 @@ describe('POST /v1/products', function () {
 	it('should create a valid product with two options', async function () {
 		const testOption2 = await OptionModel.create({
 			name: 'Test Option 2',
-			price: 50,
-			description: 'A test option'
+			price: 50
 		})
 
 		testProductFields.options?.push(testOption2.id as Types.ObjectId)
@@ -99,7 +93,6 @@ describe('POST /v1/products', function () {
 		expect(order).to.exist
 		expect(order?.name).to.equal(testProductFields.name)
 		expect(order?.price).to.equal(testProductFields.price)
-		expect(order?.description).to.equal(testProductFields.description)
 		expect(order?.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(order?.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(order?.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
@@ -116,7 +109,6 @@ describe('GET /v1/products', function () {
 		testProduct = await ProductModel.create({
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -138,7 +130,6 @@ describe('GET /v1/products', function () {
 		expect(res.body).to.have.lengthOf(1)
 		expect(res.body[0].name).to.equal(testProduct.name)
 		expect(res.body[0].price).to.equal(testProduct.price)
-		expect(res.body[0].description).to.equal(testProduct.description)
 		expect(res.body[0].orderWindow.from.hour).to.equal(testProduct.orderWindow.from.hour)
 		expect(res.body[0].orderWindow.from.minute).to.equal(testProduct.orderWindow.from.minute)
 		expect(res.body[0].orderWindow.to.hour).to.equal(testProduct.orderWindow.to.hour)
@@ -149,7 +140,6 @@ describe('GET /v1/products', function () {
 		await ProductModel.create({
 			name: 'Test Product 2',
 			price: 200,
-			description: 'A test product 2',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -179,7 +169,6 @@ describe('PATCH /v1/products/:id', function () {
 		testProduct = await ProductModel.create({
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -197,7 +186,6 @@ describe('PATCH /v1/products/:id', function () {
 		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 			name: 'Updated Product',
 			price: 200,
-			description: 'An updated product',
 			orderWindow: {
 				from: {
 					hour: 1,
@@ -213,7 +201,6 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
 		expect(res.body.price).to.equal(200)
-		expect(res.body.description).to.equal('An updated product')
 		expect(res.body.orderWindow.from.hour).to.equal(1)
 		expect(res.body.orderWindow.from.minute).to.equal(0)
 		expect(res.body.orderWindow.to.hour).to.equal(22)
@@ -228,7 +215,6 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
 		expect(res.body.price).to.equal(100)
-		expect(res.body.description).to.equal('A test product')
 		expect(res.body.orderWindow.from.hour).to.equal(0)
 		expect(res.body.orderWindow.from.minute).to.equal(0)
 		expect(res.body.orderWindow.to.hour).to.equal(23)
@@ -239,7 +225,6 @@ describe('PATCH /v1/products/:id', function () {
 		const res = await agent.patch(`/v1/products/${new mongoose.Types.ObjectId().toString()}`).send({
 			name: 'Updated Product',
 			price: 200,
-			description: 'An updated product',
 			orderWindow: {
 				from: {
 					hour: 1,
@@ -262,7 +247,6 @@ describe('DELETE /v1/products/:id', function () {
 		testProduct = await ProductModel.create({
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,

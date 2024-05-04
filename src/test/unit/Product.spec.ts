@@ -18,7 +18,6 @@ describe('Product Model', function () {
 	let testProductFields: {
 		name: string
 		price: number
-		description: string
 		orderWindow: {
 			from: {
 				hour: number
@@ -35,14 +34,12 @@ describe('Product Model', function () {
 	beforeEach(async function () {
 		testOption = await OptionModel.create({
 			name: 'Test Option',
-			price: 50,
-			description: 'A test option'
+			price: 50
 		})
 
 		testProductFields = {
 			name: 'Test Product',
 			price: 100,
-			description: 'A test product',
 			orderWindow: {
 				from: {
 					hour: 0,
@@ -63,7 +60,6 @@ describe('Product Model', function () {
 		expect(product).to.exist
 		expect(product.name).to.equal(testProductFields.name)
 		expect(product.price).to.equal(testProductFields.price)
-		expect(product.description).to.equal(testProductFields.description)
 		expect(product.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(product.orderWindow.from.hour).to.equal(testProductFields.orderWindow.from.hour)
 		expect(product.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
@@ -75,7 +71,6 @@ describe('Product Model', function () {
 		const testProductFields2 = {
 			name: 'Burger',
 			price: 50,
-			description: 'A delicious burger',
 			orderWindow: {
 				from: {
 					hour: 10,
@@ -90,7 +85,6 @@ describe('Product Model', function () {
 		const testProductFields3 = {
 			name: 'Pizza',
 			price: 100,
-			description: 'A delicious pizza',
 			orderWindow: {
 				from: {
 					hour: 15,
@@ -120,16 +114,6 @@ describe('Product Model', function () {
 		expect(product.name).to.equal('TestProduct')
 	})
 
-	it('should trim the description', async function () {
-		const product = await ProductModel.create({
-			...testProductFields,
-			description: '  TestDescription  '
-		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(product).to.exist
-		expect(product.description).to.equal('TestDescription')
-	})
-
 	it('should create a product with no options', async function () {
 		const product = await ProductModel.create({
 			...testProductFields,
@@ -153,8 +137,7 @@ describe('Product Model', function () {
 	it('should create a product with multiple options', async function () {
 		const testOption2 = await OptionModel.create({
 			name: 'Test Option 2',
-			price: 75,
-			description: 'A test option 2'
+			price: 75
 		})
 
 		const product = await ProductModel.create({
@@ -243,21 +226,6 @@ describe('Product Model', function () {
 			await ProductModel.create({
 				...testProductFields,
 				price: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not create a product with no description', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				description: undefined
 			})
 		} catch (err) {
 			// The promise was rejected as expected

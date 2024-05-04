@@ -18,7 +18,6 @@ const router = Router()
  * @access Public
  * @param {string} req.body.name - The name of the product.
  * @param {number} req.body.price - The price of the product.
- * @param {string} req.body.description - The description of the product.
  * @param {Array<{from: {hour: number, minute: number}, to: {hour: number, minute: number}}>} req.body.orderWindow - The order window of the product.
  * @param {Array<Types.ObjectId>} [req.body.options] - The options that can be added to the product (optional).
  * @return {number} res.status - The status code of the HTTP response.
@@ -46,7 +45,6 @@ router.get('/',
  * @param {string} req.params.id - The id of the product to be patched.
  * @param {string} [req.body.name] - The name of the product (optional).
  * @param {number} [req.body.price] - The price of the product (optional).
- * @param {string} [req.body.description] - The description of the product (optional).
  * @param {Array<{from: {hour: number, minute: number}, to: {hour: number, minute: number}}>} [req.body.orderWindow] - The order window of the product (optional).
  * @param {Array<Types.ObjectId>} [req.body.options] - The options that can be added to the product (optional).
  * @return {number} res.status - The status code of the HTTP response.

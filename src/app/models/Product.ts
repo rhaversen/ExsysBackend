@@ -14,7 +14,6 @@ export interface IProduct extends Document {
 	_id: Types.ObjectId
 	name: string
 	price: number
-	description: string
 	orderWindow: {
 		from: {
 			hour: number
@@ -68,12 +67,6 @@ const productSchema = new Schema<IProduct>({
 		type: Schema.Types.Number,
 		required: [true, 'Pris er påkrævet'],
 		min: [0, 'prisen skal være større end eller lig 0']
-	},
-	description: {
-		type: Schema.Types.String,
-		trim: true,
-		required: [true, 'Produkt beskrivelse er påkrævet'],
-		maxLength: [50, 'Produkt beskrivelse må maks være 50 tegn lang']
 	},
 	options: [{
 		type: Schema.Types.ObjectId,

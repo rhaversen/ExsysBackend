@@ -12,7 +12,6 @@ import logger from '../utils/logger.js'
 export interface IOption extends Document {
 	_id: Types.ObjectId
 	name: string // The name of the option
-	description: string // A description of the option
 	price: number // The price of the option
 }
 
@@ -23,12 +22,6 @@ const optionSchema = new Schema<IOption>({
 		trim: true,
 		required: [true, 'Navnet er påkrævet'],
 		maxLength: [20, 'Navnet kan højest have 20 tegn']
-	},
-	description: {
-		type: Schema.Types.String,
-		trim: true,
-		required: [true, 'Beskrivelsen er påkrævet'],
-		maxLength: [50, 'Beskrivelsen kan højest have 50 tegn']
 	},
 	price: {
 		type: Schema.Types.Number,
