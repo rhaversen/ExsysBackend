@@ -2,6 +2,7 @@
 
 // Third-party libraries
 import { type Document, model, Schema, type Types } from 'mongoose'
+import validator from 'validator'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -12,7 +13,7 @@ import logger from '../utils/logger.js'
 export interface IOption extends Document {
 	_id: Types.ObjectId
 	name: string // The name of the option
-	description: string // A description of the option
+	imageURL?: string // An image of the option
 	price: number // The price of the option
 }
 
@@ -24,11 +25,10 @@ const optionSchema = new Schema<IOption>({
 		required: [true, 'Navnet er påkrævet'],
 		maxLength: [20, 'Navnet kan højest have 20 tegn']
 	},
-	description: {
+	imageURL: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'Beskrivelsen er påkrævet'],
-		maxLength: [50, 'Beskrivelsen kan højest have 50 tegn']
+		maxLength: [200, 'Billede URL kan højest have 200 tegn']
 	},
 	price: {
 		type: Schema.Types.Number,
@@ -40,6 +40,12 @@ const optionSchema = new Schema<IOption>({
 })
 
 // Validations
+optionSchema.path('imageURL').validate((v: string) => {
+	if (v !== undefined && v !== null && v !== '') {
+		return validator.isURL(v)
+	}
+	return true
+}, 'Billede URL skal være en URL addresse')
 
 // Adding indexes
 

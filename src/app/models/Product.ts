@@ -2,6 +2,7 @@
 
 // Third-party libraries
 import { type Document, model, Schema, type Types } from 'mongoose'
+import validator from 'validator'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -14,7 +15,7 @@ export interface IProduct extends Document {
 	_id: Types.ObjectId
 	name: string
 	price: number
-	description: string
+	imageURL?: string
 	orderWindow: {
 		from: {
 			hour: number
@@ -28,13 +29,29 @@ export interface IProduct extends Document {
 	options?: Types.ObjectId[]
 }
 
-// Sub-schema for hours and minutes
-const hourMinuteSubSchema = new Schema({
+// Sub-schema for fromTime
+const fromTimeSubSchema = new Schema({
 	hour: {
 		type: Schema.Types.Number,
 		required: [true, 'Fra-time er påkrævet'],
 		min: [0, 'Fra-time skal være mere end eller lig 0'],
 		max: [23, 'Fra-time skal være mindre end eller lig 23']
+	},
+	minute: {
+		type: Schema.Types.Number,
+		required: [true, 'Fra-minut er påkrævet'],
+		min: [0, 'Fra-minut skal være mere end eller lig 0'],
+		max: [59, 'Fra-minut skal være mindre end eller lig 59']
+	}
+})
+
+// Sub-schema for toTime
+const toTimeSubSchema = new Schema({
+	hour: {
+		type: Schema.Types.Number,
+		required: [true, 'Til-time er påkrævet'],
+		min: [0, 'Til-time skal være mere end eller lig 0'],
+		max: [23, 'Til-time skal være mindre end eller lig 23']
 	},
 	minute: {
 		type: Schema.Types.Number,
@@ -48,11 +65,11 @@ const hourMinuteSubSchema = new Schema({
 const orderWindowSubSchema = new Schema({
 	from: {
 		_id: false,
-		type: hourMinuteSubSchema
+		type: fromTimeSubSchema
 	},
 	to: {
 		_id: false,
-		type: hourMinuteSubSchema
+		type: toTimeSubSchema
 	}
 })
 
@@ -69,11 +86,10 @@ const productSchema = new Schema<IProduct>({
 		required: [true, 'Pris er påkrævet'],
 		min: [0, 'prisen skal være større end eller lig 0']
 	},
-	description: {
+	imageURL: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'Produkt beskrivelse er påkrævet'],
-		maxLength: [50, 'Produkt beskrivelse må maks være 50 tegn lang']
+		maxLength: [200, 'Billede URL må maks være 200 tegn lang']
 	},
 	options: [{
 		type: Schema.Types.ObjectId,
@@ -121,6 +137,13 @@ productSchema.path('options').validate(function (v: Types.ObjectId[]) {
 	const unique = new Set(v.map(v => v))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
+
+productSchema.path('imageURL').validate(function (v: string) {
+	if (v !== undefined && v !== null && v !== '') {
+		return validator.isURL(v)
+	}
+	return true
+}, 'Billede URL skal være en URL addresse')
 
 // Adding indexes
 
