@@ -36,7 +36,7 @@ export async function getRoom (req: Request, res: Response, next: NextFunction):
 
 		res.status(200).json(room)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -75,7 +75,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 
 		res.status(200).json(room)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -101,7 +101,7 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 
 		res.status(204).send()
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
