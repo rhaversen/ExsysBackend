@@ -369,7 +369,7 @@ await ProductModel.create({
 
 // Products with no image
 await ProductModel.create({
-	name: 'No image morning',
+	name: 'No image early',
 	price: 10,
 	orderWindow: {
 		from: {
@@ -383,7 +383,7 @@ await ProductModel.create({
 	}
 })
 await ProductModel.create({
-	name: 'No image afternoon',
+	name: 'No image late',
 	price: 10,
 	orderWindow: {
 		from: {

@@ -79,7 +79,7 @@ const productSchema = new Schema<IProduct>({
 		type: Schema.Types.String,
 		trim: true,
 		required: [true, 'Navn er påkrævet'],
-		maxLength: [20, 'Navnet må maks være 20 tegn lang']
+		maxLength: [15, 'Navnet må maks være 15 tegn lang']
 	},
 	price: {
 		type: Schema.Types.Number,
