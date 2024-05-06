@@ -297,7 +297,7 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150',
 	orderWindow: {
 		from: { hour: 0, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		to: { hour: 12, minute: 0 }
 	}
 })
 await ProductModel.create({
