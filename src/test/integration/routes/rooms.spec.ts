@@ -34,6 +34,39 @@ describe('POST /v1/rooms', function () {
 	})
 })
 
+describe('GET /v1/rooms/:id', function () {
+	let testRoom1: IRoom
+
+	const testRoomFields1 = {
+		name: 'Room 1',
+		description: 'Description for Room 1'
+	}
+
+	const testRoomFields2 = {
+		name: 'Room 2',
+		description: 'Description for Room 2'
+	}
+
+	beforeEach(async function () {
+		testRoom1 = await RoomModel.create(testRoomFields1)
+		await RoomModel.create(testRoomFields2)
+	})
+
+	it('should return a room', async function () {
+		const response = await agent.get(`/v1/rooms/${testRoom1.id}`)
+
+		expect(response).to.have.status(200)
+		expect(response.body).to.have.property('name', testRoomFields1.name)
+		expect(response.body).to.have.property('description', testRoomFields1.description)
+	})
+
+	it('should return 404 if the room does not exist', async function () {
+		const response = await agent.get(`/v1/rooms/${new mongoose.Types.ObjectId().toString()}`)
+
+		expect(response).to.have.status(404)
+	})
+})
+
 describe('GET /v1/rooms', function () {
 	const testRoomFields1 = {
 		name: 'Room 1',

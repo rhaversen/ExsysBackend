@@ -7,7 +7,7 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { createRoom, deleteRoom, getRooms, patchRoom } from '../controllers/roomController.js'
+import { createRoom, deleteRoom, getRoom, getRooms, patchRoom } from '../controllers/roomController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -23,6 +23,18 @@ const router = Router()
  */
 router.post('/',
 	asyncErrorHandler(createRoom)
+)
+
+/**
+ * @route GET api/v1/rooms/:id
+ * @desc Get a room
+ * @access Public
+ * @param {string} req.params.id - The id of the room to be fetched.
+ * @return {number} res.status - The status code of the HTTP response.
+ * @return {object} res.body - The room.
+ */
+router.get('/:id',
+	asyncErrorHandler(getRoom)
 )
 
 /**

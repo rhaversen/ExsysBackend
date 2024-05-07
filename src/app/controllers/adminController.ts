@@ -85,7 +85,7 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		res.status(200).json(admin)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -111,7 +111,7 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 
 		res.status(204).send()
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)

@@ -54,7 +54,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 
 		res.json(product)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -80,7 +80,7 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 
 		res.status(204).send()
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)

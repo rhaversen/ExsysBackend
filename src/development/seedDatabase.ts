@@ -10,8 +10,14 @@ await ProductModel.create({
 	name: '0 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 1, minute: 0 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 1,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -19,8 +25,14 @@ await ProductModel.create({
 	name: '1 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 1, minute: 0 },
-		to: { hour: 2, minute: 0 }
+		from: {
+			hour: 1,
+			minute: 0
+		},
+		to: {
+			hour: 2,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -28,8 +40,14 @@ await ProductModel.create({
 	name: '2 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 2, minute: 0 },
-		to: { hour: 3, minute: 0 }
+		from: {
+			hour: 2,
+			minute: 0
+		},
+		to: {
+			hour: 3,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -37,8 +55,14 @@ await ProductModel.create({
 	name: '3 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 3, minute: 0 },
-		to: { hour: 4, minute: 0 }
+		from: {
+			hour: 3,
+			minute: 0
+		},
+		to: {
+			hour: 4,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -46,8 +70,14 @@ await ProductModel.create({
 	name: '4 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 4, minute: 0 },
-		to: { hour: 5, minute: 0 }
+		from: {
+			hour: 4,
+			minute: 0
+		},
+		to: {
+			hour: 5,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -55,8 +85,14 @@ await ProductModel.create({
 	name: '5 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 5, minute: 0 },
-		to: { hour: 6, minute: 0 }
+		from: {
+			hour: 5,
+			minute: 0
+		},
+		to: {
+			hour: 6,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -64,8 +100,14 @@ await ProductModel.create({
 	name: '6 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 6, minute: 0 },
-		to: { hour: 7, minute: 0 }
+		from: {
+			hour: 6,
+			minute: 0
+		},
+		to: {
+			hour: 7,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -73,8 +115,14 @@ await ProductModel.create({
 	name: '7 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 7, minute: 0 },
-		to: { hour: 8, minute: 0 }
+		from: {
+			hour: 7,
+			minute: 0
+		},
+		to: {
+			hour: 8,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -82,8 +130,14 @@ await ProductModel.create({
 	name: '8 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 8, minute: 0 },
-		to: { hour: 9, minute: 0 }
+		from: {
+			hour: 8,
+			minute: 0
+		},
+		to: {
+			hour: 9,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -91,8 +145,14 @@ await ProductModel.create({
 	name: '9 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 9, minute: 0 },
-		to: { hour: 10, minute: 0 }
+		from: {
+			hour: 9,
+			minute: 0
+		},
+		to: {
+			hour: 10,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -100,8 +160,14 @@ await ProductModel.create({
 	name: '10 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 10, minute: 0 },
-		to: { hour: 11, minute: 0 }
+		from: {
+			hour: 10,
+			minute: 0
+		},
+		to: {
+			hour: 11,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -109,8 +175,14 @@ await ProductModel.create({
 	name: '11 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 11, minute: 0 },
-		to: { hour: 12, minute: 0 }
+		from: {
+			hour: 11,
+			minute: 0
+		},
+		to: {
+			hour: 12,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -118,8 +190,14 @@ await ProductModel.create({
 	name: '12 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 12, minute: 0 },
-		to: { hour: 13, minute: 0 }
+		from: {
+			hour: 12,
+			minute: 0
+		},
+		to: {
+			hour: 13,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -127,8 +205,14 @@ await ProductModel.create({
 	name: '13 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 13, minute: 0 },
-		to: { hour: 14, minute: 0 }
+		from: {
+			hour: 13,
+			minute: 0
+		},
+		to: {
+			hour: 14,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -136,8 +220,14 @@ await ProductModel.create({
 	name: '14 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 14, minute: 0 },
-		to: { hour: 15, minute: 0 }
+		from: {
+			hour: 14,
+			minute: 0
+		},
+		to: {
+			hour: 15,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -145,8 +235,14 @@ await ProductModel.create({
 	name: '15 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 15, minute: 0 },
-		to: { hour: 16, minute: 0 }
+		from: {
+			hour: 15,
+			minute: 0
+		},
+		to: {
+			hour: 16,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -154,8 +250,14 @@ await ProductModel.create({
 	name: '16 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 16, minute: 0 },
-		to: { hour: 17, minute: 0 }
+		from: {
+			hour: 16,
+			minute: 0
+		},
+		to: {
+			hour: 17,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -163,8 +265,14 @@ await ProductModel.create({
 	name: '17 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 17, minute: 0 },
-		to: { hour: 18, minute: 0 }
+		from: {
+			hour: 17,
+			minute: 0
+		},
+		to: {
+			hour: 18,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -172,8 +280,14 @@ await ProductModel.create({
 	name: '18 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 18, minute: 0 },
-		to: { hour: 19, minute: 0 }
+		from: {
+			hour: 18,
+			minute: 0
+		},
+		to: {
+			hour: 19,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -181,8 +295,14 @@ await ProductModel.create({
 	name: '19 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 19, minute: 0 },
-		to: { hour: 20, minute: 0 }
+		from: {
+			hour: 19,
+			minute: 0
+		},
+		to: {
+			hour: 20,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -190,8 +310,14 @@ await ProductModel.create({
 	name: '20 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 20, minute: 0 },
-		to: { hour: 21, minute: 0 }
+		from: {
+			hour: 20,
+			minute: 0
+		},
+		to: {
+			hour: 21,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -199,8 +325,14 @@ await ProductModel.create({
 	name: '21 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 21, minute: 0 },
-		to: { hour: 22, minute: 0 }
+		from: {
+			hour: 21,
+			minute: 0
+		},
+		to: {
+			hour: 22,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -208,8 +340,14 @@ await ProductModel.create({
 	name: '22 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 22, minute: 0 },
-		to: { hour: 23, minute: 0 }
+		from: {
+			hour: 22,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
@@ -217,27 +355,45 @@ await ProductModel.create({
 	name: '23 Cake',
 	price: 2,
 	orderWindow: {
-		from: { hour: 23, minute: 0 },
-		to: { hour: 0, minute: 0 }
+		from: {
+			hour: 23,
+			minute: 0
+		},
+		to: {
+			hour: 0,
+			minute: 0
+		}
 	},
 	imageURL: 'https://via.placeholder.com/150'
 })
 
 // Products with no image
 await ProductModel.create({
-	name: 'No image morning',
+	name: 'No image early',
 	price: 10,
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 12, minute: 0 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 12,
+			minute: 0
+		}
 	}
 })
 await ProductModel.create({
-	name: 'No image afternoon',
+	name: 'No image late',
 	price: 10,
 	orderWindow: {
-		from: { hour: 12, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		from: {
+			hour: 12,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 59
+		}
 	}
 })
 
@@ -265,8 +421,14 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150',
 	options: [option1.id],
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 59
+		}
 	}
 })
 await ProductModel.create({
@@ -275,8 +437,14 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150',
 	options: [option1.id, option2.id],
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 59
+		}
 	}
 })
 await ProductModel.create({
@@ -285,8 +453,14 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150',
 	options: [option1.id, option2.id, option3.id],
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 59
+		}
 	}
 })
 
@@ -296,8 +470,14 @@ await ProductModel.create({
 	price: 0,
 	imageURL: 'https://via.placeholder.com/150',
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 12, minute: 0 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 12,
+			minute: 0
+		}
 	}
 })
 await ProductModel.create({
@@ -305,8 +485,14 @@ await ProductModel.create({
 	price: 0,
 	imageURL: 'https://via.placeholder.com/150',
 	orderWindow: {
-		from: { hour: 12, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		from: {
+			hour: 12,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 59
+		}
 	}
 })
 await ProductModel.create({
@@ -315,8 +501,14 @@ await ProductModel.create({
 	imageURL: 'https://via.placeholder.com/150',
 	options: [option1.id, option2.id, option3.id],
 	orderWindow: {
-		from: { hour: 0, minute: 0 },
-		to: { hour: 23, minute: 59 }
+		from: {
+			hour: 0,
+			minute: 0
+		},
+		to: {
+			hour: 23,
+			minute: 59
+		}
 	}
 })
 
