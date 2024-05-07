@@ -54,7 +54,7 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 
 		res.json(option)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -80,7 +80,7 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 
 		res.status(204).send()
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
