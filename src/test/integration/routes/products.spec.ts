@@ -81,7 +81,18 @@ describe('POST /v1/products', function () {
 		expect(res.body.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 		expect(res.body.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 		expect(res.body.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
-		expect(res.body.options[0].toString()).to.equal(testOption.id)
+		expect(res.body.options[0]._id.toString()).to.equal(testOption.id)
+	})
+
+	it('should populate the options', async function () {
+		const res = await agent.post('/v1/products').send(testProductFields)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res.body.options).to.be.an('array')
+		expect(res.body.options).to.have.lengthOf(1)
+		expect(res.body.options[0].name).to.equal(testOption.name)
+		expect(res.body.options[0].imageURL).to.equal(testOption.imageURL)
+		expect(res.body.options[0].price).to.equal(testOption.price)
 	})
 
 	it('should create a valid product with two options', async function () {
@@ -143,6 +154,27 @@ describe('GET /v1/products', function () {
 		expect(res.body[0].orderWindow.from.minute).to.equal(testProduct.orderWindow.from.minute)
 		expect(res.body[0].orderWindow.to.hour).to.equal(testProduct.orderWindow.to.hour)
 		expect(res.body[0].orderWindow.to.minute).to.equal(testProduct.orderWindow.to.minute)
+	})
+
+	it('should populate the options', async function () {
+		const testOption = await OptionModel.create({
+			name: 'Test Option',
+			imageURL: 'https://example.com/image.jpg',
+			price: 50
+		})
+
+		await ProductModel.findByIdAndUpdate(testProduct.id, { options: [testOption.id] })
+
+		const res = await agent.get('/v1/products')
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res.body).to.be.an('array')
+		expect(res.body).to.have.lengthOf(1)
+		expect(res.body[0].options).to.be.an('array')
+		expect(res.body[0].options).to.have.lengthOf(1)
+		expect(res.body[0].options[0].name).to.equal('Test Option')
+		expect(res.body[0].options[0].imageURL).to.equal('https://example.com/image.jpg')
+		expect(res.body[0].options[0].price).to.equal(50)
 	})
 
 	it('should get all products', async function () {
@@ -222,6 +254,39 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body.orderWindow.to.minute).to.equal(59)
 	})
 
+	it('should populate the options', async function () {
+		const testOption = await OptionModel.create({
+			name: 'Test Option',
+			imageURL: 'https://example.com/image.jpg',
+			price: 50
+		})
+
+		await ProductModel.findByIdAndUpdate(testProduct.id, { options: [testOption.id] })
+
+		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
+			name: 'Updated Product',
+			imageURL: 'https://example.com/imageNew.jpg',
+			price: 200,
+			orderWindow: {
+				from: {
+					hour: 1,
+					minute: 0
+				},
+				to: {
+					hour: 22,
+					minute: 59
+				}
+			}
+		})
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res.body.options).to.be.an('array')
+		expect(res.body.options).to.have.lengthOf(1)
+		expect(res.body.options[0].name).to.equal('Test Option')
+		expect(res.body.options[0].imageURL).to.equal('https://example.com/image.jpg')
+	})
+
 	it('should allow a partial update', async function () {
 		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 			name: 'Updated Product'
@@ -256,7 +321,7 @@ describe('PATCH /v1/products/:id', function () {
 		expect(res.body.orderWindow.from.minute).to.equal(0)
 		expect(res.body.orderWindow.to.hour).to.equal(23)
 		expect(res.body.orderWindow.to.minute).to.equal(59)
-		expect(res.body.options[0].toString()).to.equal(testOption.id)
+		expect(res.body.options[0]._id.toString()).to.equal(testOption.id)
 	})
 
 	it('should patch a field which is not present', async function () {
