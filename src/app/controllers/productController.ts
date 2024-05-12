@@ -12,7 +12,7 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 	logger.silly('Creating product')
 
 	try {
-		const newProduct = await ProductModel.create(req.body as Record<string, unknown>)
+		const newProduct = await (await ProductModel.create(req.body as Record<string, unknown>)).populate('options')
 		res.status(201).json(newProduct)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -27,7 +27,7 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 	logger.silly('Getting products')
 
 	try {
-		const products = await ProductModel.find({})
+		const products = await ProductModel.find({}).populate('options')
 		res.status(200).json(products)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -45,7 +45,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
 			new: true,
 			runValidators: true
-		})
+		}).populate('options')
 
 		if (product === null || product === undefined) {
 			res.status(404).json({ error: 'Produkt ikke fundet' })
