@@ -626,6 +626,64 @@ describe('GET /v1/orders', function () {
 		expect(res.body.length).to.equal(0)
 	})
 
+	describe('GET /v1/orders/?status', function () {
+		beforeEach(async function () {
+			await OrderModel.findOneAndUpdate({ products: { $elemMatch: { id: testProduct1.id } }, options: { $elemMatch: { id: testOption.id } } }, { status: 'delivered' })
+			await OrderModel.findOneAndUpdate({ products: { $elemMatch: { id: testProduct2.id } }, options: { $elemMatch: { id: testOption.id } } }, { status: 'delivered' })
+			await OrderModel.create({
+				roomId: testRoom.id,
+				products: [{
+					id: testProduct3.id,
+					quantity: 1
+				}],
+				options: [{
+					id: testOption.id,
+					quantity: 1
+				}],
+				status: 'pending'
+			})
+			await OrderModel.create({
+				roomId: testRoom.id,
+				products: [{
+					id: testProduct4.id,
+					quantity: 1
+				}],
+				options: [{
+					id: testOption.id,
+					quantity: 1
+				}],
+				status: 'confirmed'
+			})
+		})
+
+		it('should return all orders with status delivered', async function () {
+			const res = await agent.get('/v1/orders/?status=delivered')
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			expect(res.body).to.exist
+			expect(res.body.length).to.equal(2)
+			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+		})
+
+		it('should return an empty array if there are no orders with status', async function () {
+			await OrderModel.deleteMany({ status: 'delivered' })
+			const res = await agent.get('/v1/orders/?status=delivered')
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			expect(res.body).to.exist
+			expect(res.body.length).to.equal(0)
+		})
+
+		it('should allow multiple statuses', async function () {
+			const res = await agent.get('/v1/orders/?status=delivered,pending')
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			expect(res.body).to.exist
+			expect(res.body.length).to.equal(3)
+			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+			expect(res.body[2].products[0].id).to.equal(testProduct3.id)
+		})
+	})
+
 	describe('GET /v1/orders/?fromDate&toDate', function () {
 		beforeEach(async function () {
 			clock.tick(24 * 60 * 60 * 1000) // Advance time by 24 hours

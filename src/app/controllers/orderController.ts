@@ -24,6 +24,7 @@ interface GetOrdersWithDateRangeRequest extends Request {
 	query: {
 		fromDate?: string
 		toDate?: string
+		status?: string
 	}
 }
 
@@ -69,12 +70,17 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
 	const {
 		fromDate,
-		toDate
+		toDate,
+		status
 	} = req.query
 	const query: {
 		createdAt?: {
 			$gte?: string
 			$lte?: string
+		}
+		status?: {
+			$in?: string[]
+
 		}
 	} = {}
 
@@ -85,6 +91,9 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 	if (toDate !== undefined && toDate !== '') {
 		query.createdAt = query.createdAt ?? {}
 		query.createdAt.$lte = toDate
+	}
+	if (status !== undefined && status !== '') {
+		query.status = { $in: status.split(',') }
 	}
 
 	try {
