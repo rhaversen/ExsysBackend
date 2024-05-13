@@ -86,6 +86,13 @@ describe('Order Model', function () {
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
 	})
 
+	it('should set status to pending by default', async function () {
+		const order = await OrderModel.create(testOrderFields)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(order).to.exist
+		expect(order.status).to.equal('pending')
+	})
+
 	it('should not allow non-integer quantities for products', async function () {
 		let errorOccurred = false
 		try {
