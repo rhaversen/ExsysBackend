@@ -7,7 +7,7 @@ import { chaiAppServer as agent } from '../../testSetup.js'
 import sinon from 'sinon'
 
 // Own modules
-import OrderModel from '../../../app/models/Order.js'
+import OrderModel, { type IOrder } from '../../../app/models/Order.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
@@ -740,5 +740,180 @@ describe('GET /v1/orders', function () {
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(0)
 		})
+	})
+})
+
+describe('PATCH /v1/orders', function () {
+	let testProduct1: IProduct
+	let testRoom: IRoom
+	let testOption1: IOption
+
+	let order1: IOrder
+	let order2: IOrder
+
+	beforeEach(async function () {
+		testProduct1 = await ProductModel.create({
+			name: 'Test Product',
+			price: 100,
+			orderWindow: {
+				from: {
+					hour: 0,
+					minute: 0
+				},
+				to: {
+					hour: 23,
+					minute: 59
+				}
+			}
+		})
+
+		testRoom = await RoomModel.create({
+			name: 'Test Room',
+			description: 'A test room'
+		})
+
+		testOption1 = await OptionModel.create({
+			name: 'Test Option',
+			price: 50
+		})
+
+		order1 = await OrderModel.create({
+			roomId: testRoom.id,
+			products: [{
+				id: testProduct1.id,
+				quantity: 1
+			}],
+			options: [{
+				id: testOption1.id,
+				quantity: 1
+			}]
+		})
+
+		order2 = await OrderModel.create({
+			roomId: testRoom.id,
+			products: [{
+				id: testProduct1.id,
+				quantity: 1
+			}],
+			options: [{
+				id: testOption1.id,
+				quantity: 1
+			}]
+		})
+	})
+
+	it('should update the status of an order', async function () {
+		await agent.patch('/v1/orders').send({
+			orderIds: [order1.id],
+			status: 'delivered'
+		})
+		const updatedOrder = await OrderModel.findById(order1.id)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(updatedOrder).to.exist
+		expect(updatedOrder?.status).to.equal('delivered')
+	})
+
+	it('should return the updated order', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			orderIds: [order1.id],
+			status: 'delivered'
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res.body[0].status).to.equal('delivered')
+	})
+
+	it('should update the status of multiple orders', async function () {
+		await agent.patch('/v1/orders').send({
+			orderIds: [order1.id, order2.id],
+			status: 'delivered'
+		})
+		const updatedOrder1 = await OrderModel.findById(order1.id)
+		const updatedOrder2 = await OrderModel.findById(order2.id)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(updatedOrder1).to.exist
+		expect(updatedOrder1?.status).to.equal('delivered')
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(updatedOrder2).to.exist
+		expect(updatedOrder2?.status).to.equal('delivered')
+	})
+
+	it('should return the updated orders', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			orderIds: [order1.id, order2.id],
+			status: 'delivered'
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		expect(res.body[0].status).to.equal('delivered')
+		expect(res.body[1].status).to.equal('delivered')
+	})
+
+	it('should return an error if orderIds is missing', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			status: 'delivered'
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body.error).to.exist
+	})
+
+	it('should return an error if status is missing', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			orderIds: [order1.id]
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body.error).to.exist
+	})
+
+	it('should return an error if orderIds is empty', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			orderIds: [],
+			status: 'delivered'
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body.error).to.exist
+	})
+
+	it('should return an error if orderIds contains an invalid id', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			orderIds: ['invalidId'],
+			status: 'delivered'
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body.error).to.exist
+	})
+
+	it('should not update the status of an order if the status is invalid', async function () {
+		const res = await agent.patch('/v1/orders').send({
+			orderIds: [order1.id],
+			status: 'invalid'
+		})
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body).to.exist
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body.error).to.exist
+		const updatedOrder = await OrderModel.findById(order1.id)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(updatedOrder).to.exist
+		expect(updatedOrder?.status).to.equal('pending')
+	})
+
+	it('should not update other orders', async function () {
+		await agent.patch('/v1/orders').send({
+			orderIds: [order1.id],
+			status: 'delivered'
+		})
+		const nonUpdatedOrder = await OrderModel.findById(order2.id)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(nonUpdatedOrder).to.exist
+		expect(nonUpdatedOrder?.status).to.equal('pending')
 	})
 })
