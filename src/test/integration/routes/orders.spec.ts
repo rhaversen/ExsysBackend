@@ -843,7 +843,6 @@ describe('PATCH /v1/orders', function () {
 			orderIds: [order1.id, order2.id],
 			status: 'delivered'
 		})
-		console.log(res.body)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body[0].status).to.equal('delivered')
