@@ -99,3 +99,39 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		}
 	}
 }
+
+export async function updateOrderStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const {
+		orderIds,
+		status
+	} = req.body
+
+	if (orderIds === undefined || status === undefined) {
+		res.status(400).json({ error: 'Mangler orderIds eller status' })
+		return
+	}
+
+	if (!Array.isArray(orderIds) || orderIds.length === 0) {
+		res.status(400).json({ error: 'orderIds skal være en ikke-tom array' })
+		return
+	}
+
+	try {
+		await OrderModel.updateMany({ _id: { $in: orderIds } }, { status },
+			{
+				new: true,
+				runValidators: true
+			}
+		)
+		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } })
+
+		res.status(200).json(updatedOrders)
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			logger.error(error)
+			next(error)
+		}
+	}
+}
