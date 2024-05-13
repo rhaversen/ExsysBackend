@@ -32,6 +32,7 @@ router.post('/',
  * @access Public
  * @param {string} req.query.fromDate - The start date of the range.
  * @param {string} req.query.toDate - The end date of the range.
+ * @param {string} [req.query.status] - The status of the orders (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {Array<object>} res.body - The orders matching the date.
  */
