@@ -196,21 +196,6 @@ describe('Product Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create a product with an invalid image URL', async function () {
-		let errorOccurred = false
-		try {
-			await ProductModel.create({
-				...testProductFields,
-				imageURL: 'invalidURL'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not allow a real and a non-existent option', async function () {
 		let errorOccurred = false
 		try {

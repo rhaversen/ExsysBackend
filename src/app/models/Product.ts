@@ -2,7 +2,6 @@
 
 // Third-party libraries
 import { type Document, model, Schema, type Types } from 'mongoose'
-import validator from 'validator'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -137,13 +136,6 @@ productSchema.path('options').validate(function (v: Types.ObjectId[]) {
 	const unique = new Set(v.map(v => v))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
-
-productSchema.path('imageURL').validate(function (v: string) {
-	if (v !== undefined && v !== null && v !== '') {
-		return validator.isURL(v)
-	}
-	return true
-}, 'Billede URL skal være en URL addresse')
 
 // Adding indexes
 
