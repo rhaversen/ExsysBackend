@@ -2,7 +2,6 @@
 
 // Third-party libraries
 import { type Document, model, Schema, type Types } from 'mongoose'
-import validator from 'validator'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -40,12 +39,6 @@ const optionSchema = new Schema<IOption>({
 })
 
 // Validations
-optionSchema.path('imageURL').validate((v: string) => {
-	if (v !== undefined && v !== null && v !== '') {
-		return validator.isURL(v)
-	}
-	return true
-}, 'Billede URL skal være en URL addresse')
 
 // Adding indexes
 

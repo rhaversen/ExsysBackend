@@ -75,21 +75,6 @@ describe('Option Model', function () {
 		expect(option.imageURL).to.be.undefined
 	})
 
-	it('should not create an option with an invalid image URL', async function () {
-		let errorOccurred = false
-		try {
-			await OptionModel.create({
-				...testOptionFields,
-				imageURL: 'invalidURL'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not create an option with no name', async function () {
 		let errorOccurred = false
 		try {

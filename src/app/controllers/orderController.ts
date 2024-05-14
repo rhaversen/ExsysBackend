@@ -24,6 +24,7 @@ interface GetOrdersWithDateRangeRequest extends Request {
 	query: {
 		fromDate?: string
 		toDate?: string
+		status?: string
 	}
 }
 
@@ -69,12 +70,17 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
 	const {
 		fromDate,
-		toDate
+		toDate,
+		status
 	} = req.query
 	const query: {
 		createdAt?: {
 			$gte?: string
 			$lte?: string
+		}
+		status?: {
+			$in?: string[]
+
 		}
 	} = {}
 
@@ -86,12 +92,51 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		query.createdAt = query.createdAt ?? {}
 		query.createdAt.$lte = toDate
 	}
+	if (status !== undefined && status !== '') {
+		query.status = { $in: status.split(',') }
+	}
 
 	try {
 		const orders = await OrderModel.find(query)
 		res.status(200).json(orders)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			logger.error(error)
+			next(error)
+		}
+	}
+}
+
+export async function updateOrderStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const {
+		orderIds,
+		status
+	} = req.body
+
+	if (orderIds === undefined || status === undefined) {
+		res.status(400).json({ error: 'Mangler orderIds eller status' })
+		return
+	}
+
+	if (!Array.isArray(orderIds) || orderIds.length === 0) {
+		res.status(400).json({ error: 'orderIds skal være en ikke-tom array' })
+		return
+	}
+
+	try {
+		await OrderModel.updateMany({ _id: { $in: orderIds } }, { status },
+			{
+				new: true,
+				runValidators: true
+			}
+		)
+		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } })
+
+		res.status(200).json(updatedOrders)
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			logger.error(error)
