@@ -23,6 +23,7 @@ export interface IOrder extends Document {
 		id: Types.ObjectId
 		quantity: number
 	}> // Additional options for the order
+	status?: 'pending' | 'confirmed' | 'delivered'
 }
 
 // Sub-schema for products
@@ -71,6 +72,11 @@ const orderSchema = new Schema({
 		type: [optionsSubSchema],
 		unique: true,
 		default: undefined
+	},
+	status: {
+		type: Schema.Types.String,
+		enum: ['pending', 'confirmed', 'delivered'],
+		default: 'pending'
 	}
 }, {
 	timestamps: true

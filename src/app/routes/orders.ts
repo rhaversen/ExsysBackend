@@ -7,7 +7,7 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { createOrder, getOrdersWithQuery } from '../controllers/orderController.js'
+import { createOrder, getOrdersWithQuery, updateOrderStatus } from '../controllers/orderController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -30,13 +30,27 @@ router.post('/',
  * @route GET api/v1/orders/?fromDate&toDate
  * @desc Get orders with date range query
  * @access Public
- * @param {string} req.query.fromDate - The start date of the range.
- * @param {string} req.query.toDate - The end date of the range.
+ * @param {string} [req.query.fromDate] - The start date of the range (optional).
+ * @param {string} [req.query.toDate] - The end date of the range (optional).
+ * @param {string} [req.query.status] - The status of the orders (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {Array<object>} res.body - The orders matching the date.
  */
 router.get('/',
 	asyncErrorHandler(getOrdersWithQuery)
+)
+
+/**
+ * @route PATCH api/v1/orders
+ * @desc Update status of an order
+ * @access Public
+ * @param {Array<Types.ObjectId>} req.body.orderIds - The IDs of the orders to update.
+ * @param {string} req.body.status - The new status of the orders.
+ * @return {number} res.status - The status code of the HTTP response.
+ * @return {Array<object>} res.body - The updated orders.
+ */
+router.patch('/',
+	asyncErrorHandler(updateOrderStatus)
 )
 
 export default router
