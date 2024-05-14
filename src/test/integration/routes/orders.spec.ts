@@ -628,8 +628,14 @@ describe('GET /v1/orders', function () {
 
 	describe('GET /v1/orders/?status', function () {
 		beforeEach(async function () {
-			await OrderModel.findOneAndUpdate({ products: { $elemMatch: { id: testProduct1.id } }, options: { $elemMatch: { id: testOption.id } } }, { status: 'delivered' })
-			await OrderModel.findOneAndUpdate({ products: { $elemMatch: { id: testProduct2.id } }, options: { $elemMatch: { id: testOption.id } } }, { status: 'delivered' })
+			await OrderModel.findOneAndUpdate({
+				products: { $elemMatch: { id: testProduct1.id } },
+				options: { $elemMatch: { id: testOption.id } }
+			}, { status: 'delivered' })
+			await OrderModel.findOneAndUpdate({
+				products: { $elemMatch: { id: testProduct2.id } },
+				options: { $elemMatch: { id: testOption.id } }
+			}, { status: 'delivered' })
 			await OrderModel.create({
 				roomId: testRoom.id,
 				products: [{
