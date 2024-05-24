@@ -4,11 +4,11 @@ description: "Builds a Docker image"
 runs:
     using: "composite"
     steps:
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
+        -   name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v3
 
-        - name: Build Docker image
-          run: |
-              docker buildx create --use
-              docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 .
-          shell: bash
+        -   name: Build Docker image
+            run: |
+                docker buildx create --use
+                docker buildx build --file Dockerfile --platform linux/arm64,linux/amd64 .
+            shell: bash

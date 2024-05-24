@@ -9,17 +9,17 @@ metadata:
 spec:
     ingressClassName: nginx
     tls:
-        - hosts:
-              - kantine.nyskivehus.dk
-          secretName: backend-tls
+        -   hosts:
+                - kantine.nyskivehus.dk
+            secretName: backend-tls
     rules:
-        - host: kantine.nyskivehus.dk
-          http:
-              paths:
-                  - backend:
-                        service:
-                            name: backend-service
-                            port:
-                                number: 80
-                    path: /api(/|$)(.*) # Strips the prefix
-                    pathType: Prefix
+        -   host: kantine.nyskivehus.dk
+            http:
+                paths:
+                    -   backend:
+                            service:
+                                name: backend-service
+                                port:
+                                    number: 80
+                        path: /api(/|$)(.*) # Strips the prefix
+                        pathType: Prefix
