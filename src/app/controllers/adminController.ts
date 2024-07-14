@@ -73,10 +73,14 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 			}
 		}
 
-		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
-			new: true,
-			runValidators: true
-		})
+		const admin = await AdminModel.findByIdAndUpdate(
+			req.params.id,
+			{ $set: req.body as Record<string, unknown> },
+			{
+				new: true,
+				runValidators: true
+			}
+		)
 
 		if (admin === null || admin === undefined) {
 			res.status(404).json({ error: 'Admin ikke fundet' })

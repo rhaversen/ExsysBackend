@@ -126,7 +126,9 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 	}
 
 	try {
-		await OrderModel.updateMany({ _id: { $in: orderIds } }, { status },
+		await OrderModel.updateMany(
+			{ _id: { $in: orderIds } },
+			{ $set: { status } },
 			{
 				new: true,
 				runValidators: true

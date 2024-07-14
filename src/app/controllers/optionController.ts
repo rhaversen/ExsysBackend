@@ -42,10 +42,14 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 	logger.silly('Patching option')
 
 	try {
-		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
-			new: true,
-			runValidators: true
-		})
+		const option = await OptionModel.findByIdAndUpdate(
+			req.params.id,
+			{ $set: req.body as Record<string, unknown> },
+			{
+				new: true,
+				runValidators: true
+			}
+		)
 
 		if (option === null || option === undefined) {
 			res.status(404).json({ error: 'Tilvalg ikke fundet' })
