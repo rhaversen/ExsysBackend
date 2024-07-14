@@ -112,19 +112,19 @@ productSchema.path('orderWindow').validate((v: {
 	return !(v.from.hour === v.to.hour && v.from.minute === v.to.minute)
 }, 'Fra-tid kan ikke være det samme som til-tid')
 
-productSchema.path('orderWindow.from.hour').validate((v: number) => {
+productSchema.path('orderWindow.from.hour').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Fra-time skal være et heltal')
 
-productSchema.path('orderWindow.from.minute').validate((v: number) => {
+productSchema.path('orderWindow.from.minute').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Fra-minut skal være et heltal')
 
-productSchema.path('orderWindow.to.hour').validate((v: number) => {
+productSchema.path('orderWindow.to.hour').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Til-time skal være et heltal')
 
-productSchema.path('orderWindow.to.minute').validate((v: number) => {
+productSchema.path('orderWindow.to.minute').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Til-minut skal være et heltal')
 

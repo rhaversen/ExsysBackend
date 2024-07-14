@@ -53,11 +53,11 @@ const adminSchema = new Schema<IAdmin>({
 })
 
 // Validations
-adminSchema.path('email').validate((v: string) => {
+adminSchema.path('email').validate(function (v: string) {
 	return validator.isEmail(v)
 }, 'Email er ikke gyldig')
 
-adminSchema.path('email').validate(async (v: string) => {
+adminSchema.path('email').validate(async function (v: string) {
 	const foundAdminWithEmail = await AdminModel.findOne({ email: v })
 	return foundAdminWithEmail === null || foundAdminWithEmail === undefined
 }, 'Email er allerede i brug')
