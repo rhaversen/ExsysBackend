@@ -13,7 +13,6 @@ import RoomModel from './Room.js'
 
 // Interfaces
 export interface IOrder extends Document {
-	_id: Types.ObjectId
 	roomId: Types.ObjectId // Reference to the Room document
 	products: Array<{
 		id: Types.ObjectId
@@ -24,6 +23,8 @@ export interface IOrder extends Document {
 		quantity: number
 	}> // Additional options for the order
 	status?: 'pending' | 'confirmed' | 'delivered'
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Sub-schema for products

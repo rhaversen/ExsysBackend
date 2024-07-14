@@ -11,7 +11,6 @@ import OptionModel from './Option.js'
 
 // Interfaces
 export interface IProduct extends Document {
-	_id: Types.ObjectId
 	name: string
 	price: number
 	imageURL?: string
@@ -26,6 +25,8 @@ export interface IProduct extends Document {
 		}
 	}
 	options?: Types.ObjectId[]
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Sub-schema for fromTime

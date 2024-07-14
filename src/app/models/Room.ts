@@ -10,9 +10,10 @@ import logger from '../utils/logger.js'
 
 // Interfaces
 export interface IRoom extends Document {
-	_id: Types.ObjectId
 	name: string // The name of the room
 	description: string // A description of the room
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Schema

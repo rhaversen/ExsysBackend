@@ -16,10 +16,11 @@ const {
 
 // Interfaces
 export interface IAdmin extends Document {
-	_id: Types.ObjectId
 	name: string
 	email: string
 	password: string
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Schema
