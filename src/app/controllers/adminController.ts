@@ -12,11 +12,12 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 	logger.silly('Creating admin')
 
 	try {
-		// Destructuring passwords and the remaining fields
+		// Destructuring fields from the request body
 		const {
 			password,
 			confirmPassword,
-			...rest
+			name,
+			email
 		} = req.body as Record<string, unknown>
 
 		if (password !== confirmPassword) {
@@ -24,8 +25,8 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 			return
 		}
 
-		// Creating a new admin with the password and the remaining fields
-		const newAdmin = await AdminModel.create({ password, ...rest })
+		// Creating a new admin with the password, name and email
+		const newAdmin = await AdminModel.create({ password, name, email })
 		res.status(201).json({
 			name: newAdmin.name,
 			email: newAdmin.email
@@ -63,8 +64,10 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 	try {
 		const {
 			password,
-			confirmPassword
-		} = req.body
+			confirmPassword,
+			name,
+			email
+		} = req.body as Record<string, unknown>
 
 		if (password !== undefined && confirmPassword !== undefined) {
 			if (password !== confirmPassword) {
@@ -75,7 +78,13 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		const admin = await AdminModel.findByIdAndUpdate(
 			req.params.id,
-			{ $set: req.body as Record<string, unknown> },
+			{
+				$set: {
+					password,
+					name,
+					email
+				}
+			},
 			{
 				new: true,
 				runValidators: true

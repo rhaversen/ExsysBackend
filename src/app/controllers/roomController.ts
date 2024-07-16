@@ -12,7 +12,13 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 	logger.silly('Creating room')
 
 	try {
-		const newRoom = await RoomModel.create(req.body as Record<string, unknown>)
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			name: req.body.name,
+			description: req.body.description
+		}
+
+		const newRoom = await RoomModel.create(allowedFields)
 		res.status(201).json(newRoom)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -62,9 +68,16 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 export async function patchRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching room')
 
+	try {
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			name: req.body.name,
+			description: req.body.description
+		}
+
 		const room = await RoomModel.findByIdAndUpdate(
 			req.params.id,
-			{ $set: req.body as Record<string, unknown> },
+			{ $set: allowedFields },
 			{
 				new: true,
 				runValidators: true

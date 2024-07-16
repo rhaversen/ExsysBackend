@@ -15,6 +15,7 @@ interface OrderItem {
 
 interface CreateOrderRequest extends Request {
 	body: {
+		roomId?: string
 		products?: OrderItem[]
 		options?: OrderItem[]
 	}
@@ -45,6 +46,7 @@ function combineItemsById (items: OrderItem[] | undefined): OrderItem[] | undefi
 
 export async function createOrder (req: CreateOrderRequest, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
+
 	try {
 		// Filter out products with quantity 0 or undefined
 		req.body.products = req.body.products?.filter((product) => product.quantity !== 0 && product.quantity !== undefined)
@@ -56,7 +58,14 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 		req.body.products = combineItemsById(req.body.products)
 		req.body.options = combineItemsById(req.body.options)
 
-		const newOrder = await OrderModel.create(req.body as Record<string, unknown>)
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			roomId: req.body.roomId,
+			products: req.body.products,
+			options: req.body.options
+		}
+
+		const newOrder = await OrderModel.create(allowedFields)
 		res.status(201).json(newOrder)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {

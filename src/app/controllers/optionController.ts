@@ -12,7 +12,14 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 	logger.silly('Creating option')
 
 	try {
-		const newOption = await OptionModel.create(req.body as Record<string, unknown>)
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			name: req.body.name,
+			imageURL: req.body.imageURL,
+			price: req.body.price
+		}
+
+		const newOption = await OptionModel.create(allowedFields)
 		res.status(201).json(newOption)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -42,9 +49,18 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 	logger.silly('Patching option')
 
 	try {
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			name: req.body.name,
+			imageURL: req.body.imageURL,
+			price: req.body.price
+		}
+
 		const option = await OptionModel.findByIdAndUpdate(
 			req.params.id,
-			{ $set: req.body as Record<string, unknown> },
+			{
+				$set: allowedFields
+			},
 			{
 				new: true,
 				runValidators: true

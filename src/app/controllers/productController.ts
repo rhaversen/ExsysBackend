@@ -12,7 +12,16 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 	logger.silly('Creating product')
 
 	try {
-		const newProduct = await (await ProductModel.create(req.body as Record<string, unknown>)).populate('options')
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			name: req.body.name,
+			price: req.body.price,
+			imageURL: req.body.imageURL,
+			orderWindow: req.body.orderWindow,
+			options: req.body.options
+		}
+
+		const newProduct = await (await ProductModel.create(allowedFields)).populate('options')
 		res.status(201).json(newProduct)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError) {
@@ -42,9 +51,18 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 	logger.silly('Patching product')
 
 	try {
+		// Create a new object with only the allowed fields
+		const allowedFields: Record<string, unknown> = {
+			name: req.body.name,
+			price: req.body.price,
+			imageURL: req.body.imageURL,
+			orderWindow: req.body.orderWindow,
+			options: req.body.options
+		}
+
 		const product = await ProductModel.findByIdAndUpdate(
 			req.params.id,
-			{ $set: req.body as Record<string, unknown> },
+			{ $set: allowedFields },
 			{
 				new: true,
 				runValidators: true
