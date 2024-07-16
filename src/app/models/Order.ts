@@ -129,7 +129,7 @@ orderSchema.path('products.quantity').validate(function (v: number) {
 }, 'Produkt mængde skal være et heltal')
 
 orderSchema.path('options').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
-	const unique = new Set(v.map(v => v.id.id))
+	const unique = new Set(v.map(v => v.id))
 	return unique.size === v.length
 }, 'Tilvalgene skal være unikke')
 

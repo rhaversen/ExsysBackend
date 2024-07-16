@@ -134,7 +134,7 @@ productSchema.path('options').validate(async function (v: Types.ObjectId[]) {
 }, 'Tilvalget eksisterer ikke')
 
 productSchema.path('options').validate(function (v: Types.ObjectId[]) {
-	const unique = new Set(v.map(v => v))
+	const unique = new Set(v)
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
