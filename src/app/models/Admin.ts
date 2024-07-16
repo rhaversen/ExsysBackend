@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Document, model, Schema, type Types } from 'mongoose'
+import { type Document, model, Schema } from 'mongoose'
 import { hash } from 'bcrypt'
 import validator from 'validator'
 
@@ -26,13 +26,13 @@ export interface IAdmin extends Document {
 // Schema
 const adminSchema = new Schema<IAdmin>({
 	name: {
-		type: String,
+		type: Schema.Types.String,
 		trim: true,
 		minLength: [2, 'Navn skal være mindst 2 tegn'],
 		maxLength: [50, 'Navn kan højest være 50 tegn']
 	},
 	email: {
-		type: String,
+		type: Schema.Types.String,
 		required: true,
 		unique: true,
 		lowercase: true,
@@ -41,7 +41,7 @@ const adminSchema = new Schema<IAdmin>({
 		maxLength: [100, 'Email kan højest være 100 tegn']
 	},
 	password: {
-		type: String,
+		type: Schema.Types.String,
 		required: true,
 		trim: true,
 		unique: true,

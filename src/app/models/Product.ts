@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Document, model, Schema, type Types } from 'mongoose'
+import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -24,7 +24,7 @@ export interface IProduct extends Document {
 			minute: number
 		}
 	}
-	options?: Types.ObjectId[]
+	options?: Schema.Types.ObjectId[]
 	createdAt: Date
 	updatedAt: Date
 }
@@ -128,12 +128,12 @@ productSchema.path('orderWindow.to.minute').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Til-minut skal være et heltal')
 
-productSchema.path('options').validate(async function (v: Types.ObjectId[]) {
+productSchema.path('options').validate(async function (v: Schema.Types.ObjectId[]) {
 	const options = await OptionModel.find({ _id: { $in: v } })
 	return options.length === v.length
 }, 'Tilvalget eksisterer ikke')
 
-productSchema.path('options').validate(function (v: Types.ObjectId[]) {
+productSchema.path('options').validate(function (v: Schema.Types.ObjectId[]) {
 	const unique = new Set(v)
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')

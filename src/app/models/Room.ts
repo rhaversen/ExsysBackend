@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Document, model, Schema, type Types } from 'mongoose'
+import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -19,13 +19,13 @@ export interface IRoom extends Document {
 // Schema
 const roomSchema = new Schema<IRoom>({
 	name: {
-		type: String,
+		type: Schema.Types.String,
 		trim: true,
 		unique: true,
 		required: [true, 'Navn er påkrævet']
 	},
 	description: {
-		type: String,
+		type: Schema.Types.String,
 		trim: true,
 		required: [true, 'Beskrivelse er påkrævet']
 	}

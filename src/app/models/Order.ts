@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Document, model, Schema, type Types } from 'mongoose'
+import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -13,13 +13,13 @@ import RoomModel from './Room.js'
 
 // Interfaces
 export interface IOrder extends Document {
-	roomId: Types.ObjectId // Reference to the Room document
+	roomId: Schema.Types.ObjectId // Reference to the Room document
 	products: Array<{
-		id: Types.ObjectId
+		id: Schema.Types.ObjectId
 		quantity: number
 	}> // The products and their quantities
 	options?: Array<{
-		id: Types.ObjectId
+		id: Schema.Types.ObjectId
 		quantity: number
 	}> // Additional options for the order
 	status?: 'pending' | 'confirmed' | 'delivered'
@@ -84,26 +84,26 @@ const orderSchema = new Schema({
 })
 
 // Validations
-orderSchema.path('roomId').validate(async function (v: Types.ObjectId) {
+orderSchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
 	const room = await RoomModel.findById(v)
 	return room !== null && room !== undefined
 }, 'Rummet eksisterer ikke')
 
-orderSchema.path('products').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
+orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.id))
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
-orderSchema.path('products').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
+orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	return v.length > 0
 }, 'Mindst et produkt er påkrævet')
 
-orderSchema.path('products.id').validate(async function (v: Types.ObjectId) {
+orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectId) {
 	const product = await ProductModel.findById(v)
 	return product !== null && product !== undefined
 }, 'Produktet eksisterer ikke')
 
-orderSchema.path('products.id').validate(async function (v: Types.ObjectId) {
+orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectId) {
 	const product = await ProductModel.findById(v)
 
 	if (product === null || product === undefined) {
@@ -128,12 +128,12 @@ orderSchema.path('products.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Produkt mængde skal være et heltal')
 
-orderSchema.path('options').validate(function (v: Array<{ id: Types.ObjectId, quantity: number }>) {
+orderSchema.path('options').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.id))
 	return unique.size === v.length
 }, 'Tilvalgene skal være unikke')
 
-orderSchema.path('options.id').validate(async function (v: Types.ObjectId) {
+orderSchema.path('options.id').validate(async function (v: Schema.Types.ObjectId) {
 	const option = await OptionModel.findById(v)
 	return option !== null && option !== undefined
 }, 'Tilvalget eksisterer ikke')
