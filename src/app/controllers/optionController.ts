@@ -11,14 +11,14 @@ import logger from '../utils/logger.js'
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating option')
 
-	try {
-		// Create a new object with only the allowed fields
-		const allowedFields: Record<string, unknown> = {
-			name: req.body.name,
-			imageURL: req.body.imageURL,
-			price: req.body.price
-		}
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		imageURL: req.body.imageURL,
+		price: req.body.price
+	}
 
+	try {
 		const newOption = await OptionModel.create(allowedFields)
 		res.status(201).json(newOption)
 	} catch (error) {
@@ -48,14 +48,14 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 export async function patchOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching option')
 
-	try {
-		// Create a new object with only the allowed fields
-		const allowedFields: Record<string, unknown> = {
-			name: req.body.name,
-			imageURL: req.body.imageURL,
-			price: req.body.price
-		}
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		imageURL: req.body.imageURL,
+		price: req.body.price
+	}
 
+	try {
 		const option = await OptionModel.findByIdAndUpdate(
 			req.params.id,
 			{

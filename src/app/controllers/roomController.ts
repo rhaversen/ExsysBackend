@@ -11,13 +11,13 @@ import RoomModel from '../models/Room.js'
 export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating room')
 
-	try {
-		// Create a new object with only the allowed fields
-		const allowedFields: Record<string, unknown> = {
-			name: req.body.name,
-			description: req.body.description
-		}
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		description: req.body.description
+	}
 
+	try {
 		const newRoom = await RoomModel.create(allowedFields)
 		res.status(201).json(newRoom)
 	} catch (error) {
@@ -68,13 +68,13 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 export async function patchRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching room')
 
-	try {
-		// Create a new object with only the allowed fields
-		const allowedFields: Record<string, unknown> = {
-			name: req.body.name,
-			description: req.body.description
-		}
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		description: req.body.description
+	}
 
+	try {
 		const room = await RoomModel.findByIdAndUpdate(
 			req.params.id,
 			{ $set: allowedFields },

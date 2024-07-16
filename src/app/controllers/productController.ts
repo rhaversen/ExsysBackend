@@ -11,16 +11,16 @@ import logger from '../utils/logger.js'
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating product')
 
-	try {
-		// Create a new object with only the allowed fields
-		const allowedFields: Record<string, unknown> = {
-			name: req.body.name,
-			price: req.body.price,
-			imageURL: req.body.imageURL,
-			orderWindow: req.body.orderWindow,
-			options: req.body.options
-		}
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		price: req.body.price,
+		imageURL: req.body.imageURL,
+		orderWindow: req.body.orderWindow,
+		options: req.body.options
+	}
 
+	try {
 		const newProduct = await (await ProductModel.create(allowedFields)).populate('options')
 		res.status(201).json(newProduct)
 	} catch (error) {
@@ -50,16 +50,16 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 export async function patchProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching product')
 
-	try {
-		// Create a new object with only the allowed fields
-		const allowedFields: Record<string, unknown> = {
-			name: req.body.name,
-			price: req.body.price,
-			imageURL: req.body.imageURL,
-			orderWindow: req.body.orderWindow,
-			options: req.body.options
-		}
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		price: req.body.price,
+		imageURL: req.body.imageURL,
+		orderWindow: req.body.orderWindow,
+		options: req.body.options
+	}
 
+	try {
 		const product = await ProductModel.findByIdAndUpdate(
 			req.params.id,
 			{ $set: allowedFields },

@@ -11,20 +11,20 @@ import AdminModel from '../models/Admin.js'
 export async function createAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating admin')
 
+	// Destructuring fields from the request body
+	const {
+		password,
+		confirmPassword,
+		name,
+		email
+	} = req.body as Record<string, unknown>
+
+	if (password !== confirmPassword) {
+		res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
+		return
+	}
+
 	try {
-		// Destructuring fields from the request body
-		const {
-			password,
-			confirmPassword,
-			name,
-			email
-		} = req.body as Record<string, unknown>
-
-		if (password !== confirmPassword) {
-			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
-			return
-		}
-
 		// Creating a new admin with the password, name and email
 		const newAdmin = await AdminModel.create({ password, name, email })
 		res.status(201).json({
@@ -61,21 +61,21 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 export async function patchAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching admin')
 
-	try {
-		const {
-			password,
-			confirmPassword,
-			name,
-			email
-		} = req.body as Record<string, unknown>
+	const {
+		password,
+		confirmPassword,
+		name,
+		email
+	} = req.body as Record<string, unknown>
 
-		if (password !== undefined && confirmPassword !== undefined) {
-			if (password !== confirmPassword) {
-				res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
-				return
-			}
+	if (password !== undefined && confirmPassword !== undefined) {
+		if (password !== confirmPassword) {
+			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
+			return
 		}
+	}
 
+	try {
 		const admin = await AdminModel.findByIdAndUpdate(
 			req.params.id,
 			{
