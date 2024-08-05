@@ -22,7 +22,7 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 		const newOption = await OptionModel.create(allowedFields)
 		res.status(201).json(newOption)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -37,7 +37,7 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 		const options = await OptionModel.find({})
 		res.status(200).json(options)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)

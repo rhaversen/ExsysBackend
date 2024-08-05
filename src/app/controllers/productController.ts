@@ -24,7 +24,7 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 		const newProduct = await (await ProductModel.create(allowedFields)).populate('options')
 		res.status(201).json(newProduct)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -39,7 +39,7 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 		const products = await ProductModel.find({}).populate('options')
 		res.status(200).json(products)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)

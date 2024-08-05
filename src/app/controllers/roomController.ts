@@ -21,7 +21,7 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 		const newRoom = await RoomModel.create(allowedFields)
 		res.status(201).json(newRoom)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -57,7 +57,7 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 		const rooms = await RoomModel.find({})
 		res.status(200).json(rooms)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)

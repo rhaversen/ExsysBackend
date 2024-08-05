@@ -68,7 +68,7 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 		const newOrder = await OrderModel.create(allowedFields)
 		res.status(201).json(newOrder)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -109,7 +109,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		const orders = await OrderModel.find(query)
 		res.status(200).json(orders)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			logger.error(error)

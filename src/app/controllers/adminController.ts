@@ -32,7 +32,7 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 			email: newAdmin.email
 		})
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -50,7 +50,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 			email: admin.email
 		})))
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
