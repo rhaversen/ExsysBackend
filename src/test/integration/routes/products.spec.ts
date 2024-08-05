@@ -359,7 +359,7 @@ describe('PATCH /v1/products/:id', function () {
 				}
 			}
 		})
-		expect(res.status).to.equal(404)
+		expect(res).to.have.status(404)
 	})
 })
 
@@ -386,7 +386,7 @@ describe('DELETE /v1/products/:id', function () {
 	it('should delete a product', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true })
 
-		expect(res.status).to.equal(204)
+		expect(res).to.have.status(204)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.be.empty
 		const product = await ProductModel.findById(testProduct.id)
@@ -396,21 +396,21 @@ describe('DELETE /v1/products/:id', function () {
 
 	it('should return a 400 if the confirm field is set to false', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: false })
-		expect(res.status).to.equal(400)
+		expect(res).to.have.status(400)
 	})
 
 	it('should return a 400 if the confirm field is not set', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`)
-		expect(res.status).to.equal(400)
+		expect(res).to.have.status(400)
 	})
 
 	it('should return a 400 if the confirm field is not a boolean', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: 'true' })
-		expect(res.status).to.equal(400)
+		expect(res).to.have.status(400)
 	})
 
 	it('should return a 404 if the product does not exist', async function () {
 		const res = await agent.delete('/v1/products/123456789012345678901234').send({ confirm: true })
-		expect(res.status).to.equal(404)
+		expect(res).to.have.status(404)
 	})
 })
