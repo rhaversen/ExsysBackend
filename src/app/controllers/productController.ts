@@ -11,11 +11,20 @@ import logger from '../utils/logger.js'
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating product')
 
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		price: req.body.price,
+		imageURL: req.body.imageURL,
+		orderWindow: req.body.orderWindow,
+		options: req.body.options
+	}
+
 	try {
-		const newProduct = await (await ProductModel.create(req.body as Record<string, unknown>)).populate('options')
+		const newProduct = await (await ProductModel.create(allowedFields)).populate('options')
 		res.status(201).json(newProduct)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -30,7 +39,7 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 		const products = await ProductModel.find({}).populate('options')
 		res.status(200).json(products)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -41,24 +50,46 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 export async function patchProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching product')
 
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		price: req.body.price,
+		imageURL: req.body.imageURL,
+		orderWindow: req.body.orderWindow,
+		options: req.body.options
+	}
+
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
-		const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
-			new: true,
-			runValidators: true
-		}).populate('options')
+		const product = await ProductModel.findByIdAndUpdate(
+			req.params.id,
+			{ $set: allowedFields },
+			{
+				new: true
+			}
+		).populate('options').session(session)
 
 		if (product === null || product === undefined) {
 			res.status(404).json({ error: 'Produkt ikke fundet' })
 			return
 		}
 
+		await product.validate()
+
+		await session.commitTransaction()
+
 		res.json(product)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 
