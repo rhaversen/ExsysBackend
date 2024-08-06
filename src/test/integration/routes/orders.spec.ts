@@ -122,7 +122,7 @@ describe('POST /v1/orders', function () {
 
 		await agent.post('/v1/orders').send(updatedFields)
 		const order = await OrderModel.findOne({})
-		expect(order?._id.toString()).to.not.equal(updatedFields._id)
+		expect(order?.id.toString()).to.not.equal(updatedFields._id)
 	})
 
 	describe('Quantity validation', function () {
@@ -1000,6 +1000,6 @@ describe('PATCH /v1/orders', function () {
 
 		await agent.patch('/v1/orders').send(updatedFields)
 		const order = await OrderModel.findOne({})
-		expect(order?._id.toString()).to.equal(order1.id)
+		expect(order?.id.toString()).to.equal(order1.id)
 	})
 })
