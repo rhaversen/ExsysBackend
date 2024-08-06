@@ -11,11 +11,18 @@ import logger from '../utils/logger.js'
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating option')
 
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		imageURL: req.body.imageURL,
+		price: req.body.price
+	}
+
 	try {
-		const newOption = await OptionModel.create(req.body as Record<string, unknown>)
+		const newOption = await OptionModel.create(allowedFields)
 		res.status(201).json(newOption)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -30,7 +37,7 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 		const options = await OptionModel.find({})
 		res.status(200).json(options)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -41,24 +48,46 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 export async function patchOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching option')
 
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		imageURL: req.body.imageURL,
+		price: req.body.price
+	}
+
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
-		const option = await OptionModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
-			new: true,
-			runValidators: true
-		})
+		const option = await OptionModel.findByIdAndUpdate(
+			req.params.id,
+			{
+				$set: allowedFields
+			},
+			{
+				new: true
+			}
+		).session(session)
 
 		if (option === null || option === undefined) {
 			res.status(404).json({ error: 'Tilvalg ikke fundet' })
 			return
 		}
 
+		await option.validate()
+
+		await session.commitTransaction()
+
 		res.json(option)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 

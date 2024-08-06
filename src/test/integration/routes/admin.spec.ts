@@ -4,9 +4,10 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import { chaiAppServer as agent } from '../../testSetup.js'
+import mongoose from 'mongoose'
 
 // Own modules
-import AdminModel from '../../../app/models/Admin.js'
+import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
 
 describe('POST /v1/admins', function () {
 	const testAdminFields1 = {
@@ -63,6 +64,17 @@ describe('POST /v1/admins', function () {
 
 		expect(response).to.have.status(400)
 	})
+
+	it('should not allow setting the _id', async function () {
+		const newId = new mongoose.Types.ObjectId().toString()
+		const updatedFields = {
+			_id: newId
+		}
+
+		await agent.post('/v1/admins').send(updatedFields)
+		const admin = await AdminModel.findOne({})
+		expect(admin?.id.toString()).to.not.equal(newId)
+	})
 })
 
 describe('GET /v1/admins', function () {
@@ -101,5 +113,87 @@ describe('GET /v1/admins', function () {
 		const response = await agent.get('/v1/admins')
 
 		expect(response.body[0]).to.not.have.property('password')
+	})
+})
+
+describe('PATCH /v1/admins', function () {
+	const testAdminFields1 = {
+		name: 'admin1',
+		email: 'test1@email.com',
+		password: 'password1',
+		confirmPassword: 'password1'
+	}
+
+	const updatedFields = {
+		name: 'admin2',
+		email: 'test2@email.com',
+		password: 'password2',
+		confirmPassword: 'password2'
+	}
+
+	let originalAdmin: IAdmin
+
+	beforeEach(async function () {
+		originalAdmin = await AdminModel.create(testAdminFields1)
+	})
+
+	it('should patch an admin', async function () {
+		const oldAdmin = await AdminModel.findOne({})
+		await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields)
+		const admin = await AdminModel.findOne({})
+
+		expect(admin?.name).to.equal(updatedFields.name)
+		expect(admin?.email).to.equal(updatedFields.email)
+		expect(oldAdmin?.password).to.not.equal(admin?.password)
+	})
+
+	it('should return the patched admin', async function () {
+		const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields)
+
+		expect(res).to.have.status(200)
+		expect(res.body.name).to.equal(updatedFields.name)
+		expect(res.body.email).to.equal(updatedFields.email)
+	})
+
+	it('should not return the password', async function () {
+		const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields)
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(res.body.password).to.be.undefined
+	})
+
+	it('should allow a partial update', async function () {
+		await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ email: updatedFields.email })
+		const admin = await AdminModel.findOne({})
+
+		expect(admin?.name).to.equal(testAdminFields1.name)
+		expect(admin?.email).to.equal(updatedFields.email)
+	})
+
+	it('should not update password with no confirm password', async function () {
+		const oldAdmin = await AdminModel.findOne({})
+		await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ password: 'newPassword' })
+		const admin = await AdminModel.findOne({})
+
+		expect(admin?.password).to.equal(oldAdmin?.password)
+	})
+
+	it('should not update password with non matching confirm password', async function () {
+		const oldAdmin = await AdminModel.findOne({})
+		await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({
+			password: 'newPassword',
+			confirmPassword: 'nonMatching'
+		})
+		const admin = await AdminModel.findOne({})
+
+		expect(admin?.password).to.equal(oldAdmin?.password)
+	})
+
+	it('should not allow non valid email', async function () {
+		const oldAdmin = await AdminModel.findOne({})
+		await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ email: 'nonTrueEmail' })
+		const admin = await AdminModel.findOne({})
+
+		expect(admin?.email).to.equal(oldAdmin?.email)
 	})
 })

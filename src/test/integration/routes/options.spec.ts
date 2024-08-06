@@ -4,10 +4,10 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
-import { chaiAppServer as agent } from '../../testSetup.js'
 
 // Own modules
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import { chaiAppServer as agent } from '../../testSetup.js'
 
 describe('POST /v1/options', function () {
 	const testOptionFields1 = {
@@ -34,6 +34,17 @@ describe('POST /v1/options', function () {
 		expect(response.body).to.have.property('name', testOptionFields1.name)
 		expect(response.body).to.have.property('imageURL', testOptionFields1.imageURL)
 		expect(response.body).to.have.property('price', testOptionFields1.price)
+	})
+
+	it('should not allow setting the _id', async function () {
+		const newId = new mongoose.Types.ObjectId().toString()
+		const updatedFields = {
+			_id: newId
+		}
+
+		await agent.post('/v1/options').send(updatedFields)
+		const option = await OptionModel.findOne({})
+		expect(option?.id.toString()).to.not.equal(newId)
 	})
 })
 
@@ -168,6 +179,16 @@ describe('PATCH /v1/options/:id', function () {
 
 		expect(response).to.have.status(400)
 		expect(response.body).to.have.property('error')
+	})
+
+	it('should not allow updating the _id', async function () {
+		const updatedFields = {
+			_id: new mongoose.Types.ObjectId().toString()
+		}
+
+		await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields)
+		const option = await OptionModel.findById(testOption1.id)
+		expect(option?.id.toString()).to.equal(testOption1.id)
 	})
 })
 

@@ -3,14 +3,15 @@
 // Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import { chaiAppServer as agent } from '../../testSetup.js'
 import sinon from 'sinon'
+import mongoose from 'mongoose'
 
 // Own modules
 import OrderModel, { type IOrder } from '../../../app/models/Order.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import { chaiAppServer as agent } from '../../testSetup.js'
 
 describe('POST /v1/orders', function () {
 	let testProduct1: IProduct
@@ -112,6 +113,16 @@ describe('POST /v1/orders', function () {
 		const order = await OrderModel.findOne({})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.not.exist
+	})
+
+	it('should not allow setting the _id', async function () {
+		const updatedFields = {
+			_id: new mongoose.Types.ObjectId().toString()
+		}
+
+		await agent.post('/v1/orders').send(updatedFields)
+		const order = await OrderModel.findOne({})
+		expect(order?.id.toString()).to.not.equal(updatedFields._id)
 	})
 
 	describe('Quantity validation', function () {
@@ -979,5 +990,16 @@ describe('PATCH /v1/orders', function () {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(nonUpdatedOrder).to.exist
 		expect(nonUpdatedOrder?.status).to.equal('pending')
+	})
+
+	it('should not allow updating the _id', async function () {
+		const updatedFields = {
+			orderIds: [order1.id],
+			_id: new mongoose.Types.ObjectId().toString()
+		}
+
+		await agent.patch('/v1/orders').send(updatedFields)
+		const order = await OrderModel.findOne({})
+		expect(order?.id.toString()).to.equal(order1.id)
 	})
 })

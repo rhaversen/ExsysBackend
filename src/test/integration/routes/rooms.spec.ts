@@ -4,10 +4,10 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
-import { chaiAppServer as agent } from '../../testSetup.js'
 
 // Own modules
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
+import { chaiAppServer as agent } from '../../testSetup.js'
 
 describe('POST /v1/rooms', function () {
 	const testRoomFields1 = {
@@ -31,6 +31,17 @@ describe('POST /v1/rooms', function () {
 		expect(response).to.have.status(201)
 		expect(response.body).to.have.property('name', testRoomFields1.name)
 		expect(response.body).to.have.property('description', testRoomFields1.description)
+	})
+
+	it('should not allow setting the _id', async function () {
+		const newId = new mongoose.Types.ObjectId().toString()
+		const updatedFields = {
+			_id: newId
+		}
+
+		await agent.post('/v1/rooms').send(updatedFields)
+		const room = await RoomModel.findOne({})
+		expect(room?.id.toString()).to.not.equal(newId)
 	})
 })
 
@@ -121,6 +132,28 @@ describe('PATCH /v1/rooms/:id', function () {
 		expect(response).to.have.status(200)
 		expect(response.body).to.have.property('name', updatedFields.name)
 		expect(response.body).to.have.property('description', updatedFields.description)
+	})
+
+	it('should allow updating name to current name', async function () {
+		const updatedFields = {
+			name: testRoomFields1.name
+		}
+
+		const response = await agent.patch(`/v1/rooms/${testRoom1.id}`).send(updatedFields)
+
+		expect(response).to.have.status(200)
+		expect(response.body).to.have.property('name', updatedFields.name)
+		expect(response.body).to.have.property('description', testRoomFields1.description)
+	})
+
+	it('should not allow updating the _id', async function () {
+		const updatedFields = {
+			_id: new mongoose.Types.ObjectId().toString()
+		}
+
+		await agent.patch(`/v1/rooms/${testRoom1.id}`).send(updatedFields)
+		const room = await RoomModel.findOne({})
+		expect(room?.id.toString()).to.equal(testRoom1.id)
 	})
 
 	it('should return 404 if the room does not exist', async function () {

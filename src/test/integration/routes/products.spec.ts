@@ -4,11 +4,11 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose, { type Types } from 'mongoose'
-import { chaiAppServer as agent } from '../../testSetup.js'
 
 // Own modules
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
+import { chaiAppServer as agent } from '../../testSetup.js'
 
 describe('POST /v1/products', function () {
 	let testOption: IOption
@@ -117,6 +117,16 @@ describe('POST /v1/products', function () {
 		expect(order?.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
 		expect(order?.options?.[0].toString()).to.equal(testOption.id)
 		expect(order?.options?.[1].toString()).to.equal(testOption2.id)
+	})
+
+	it('should not allow setting the _id', async function () {
+		const newId = new mongoose.Types.ObjectId().toString()
+		await agent.post('/v1/products').send({
+			_id: newId,
+			...testProductFields
+		})
+		const product = await ProductModel.findOne({})
+		expect(product?.id.toString()).to.not.equal(newId)
 	})
 })
 
@@ -359,7 +369,7 @@ describe('PATCH /v1/products/:id', function () {
 				}
 			}
 		})
-		expect(res.status).to.equal(404)
+		expect(res).to.have.status(404)
 	})
 })
 
@@ -386,7 +396,7 @@ describe('DELETE /v1/products/:id', function () {
 	it('should delete a product', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true })
 
-		expect(res.status).to.equal(204)
+		expect(res).to.have.status(204)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.be.empty
 		const product = await ProductModel.findById(testProduct.id)
@@ -396,21 +406,21 @@ describe('DELETE /v1/products/:id', function () {
 
 	it('should return a 400 if the confirm field is set to false', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: false })
-		expect(res.status).to.equal(400)
+		expect(res).to.have.status(400)
 	})
 
 	it('should return a 400 if the confirm field is not set', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`)
-		expect(res.status).to.equal(400)
+		expect(res).to.have.status(400)
 	})
 
 	it('should return a 400 if the confirm field is not a boolean', async function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: 'true' })
-		expect(res.status).to.equal(400)
+		expect(res).to.have.status(400)
 	})
 
 	it('should return a 404 if the product does not exist', async function () {
 		const res = await agent.delete('/v1/products/123456789012345678901234').send({ confirm: true })
-		expect(res.status).to.equal(404)
+		expect(res).to.have.status(404)
 	})
 })

@@ -15,6 +15,7 @@ interface OrderItem {
 
 interface CreateOrderRequest extends Request {
 	body: {
+		roomId?: string
 		products?: OrderItem[]
 		options?: OrderItem[]
 	}
@@ -45,21 +46,29 @@ function combineItemsById (items: OrderItem[] | undefined): OrderItem[] | undefi
 
 export async function createOrder (req: CreateOrderRequest, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
+
+	// Filter out products with quantity 0 or undefined
+	req.body.products = req.body.products?.filter((product) => product.quantity !== 0 && product.quantity !== undefined)
+
+	// Filter out options with quantity 0 or undefined
+	req.body.options = req.body.options?.filter((option) => option.quantity !== 0 && option.quantity !== undefined)
+
+	// Combine products and options with same id and add together their quantities
+	req.body.products = combineItemsById(req.body.products)
+	req.body.options = combineItemsById(req.body.options)
+
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		roomId: req.body.roomId,
+		products: req.body.products,
+		options: req.body.options
+	}
+
 	try {
-		// Filter out products with quantity 0 or undefined
-		req.body.products = req.body.products?.filter((product) => product.quantity !== 0 && product.quantity !== undefined)
-
-		// Filter out options with quantity 0 or undefined
-		req.body.options = req.body.options?.filter((option) => option.quantity !== 0 && option.quantity !== undefined)
-
-		// Combine products and options with same id and add together their quantities
-		req.body.products = combineItemsById(req.body.products)
-		req.body.options = combineItemsById(req.body.options)
-
-		const newOrder = await OrderModel.create(req.body as Record<string, unknown>)
+		const newOrder = await OrderModel.create(allowedFields)
 		res.status(201).json(newOrder)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -100,7 +109,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		const orders = await OrderModel.find(query)
 		res.status(200).json(orders)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			logger.error(error)
@@ -125,22 +134,35 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		return
 	}
 
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
-		await OrderModel.updateMany({ _id: { $in: orderIds } }, { status },
+		await OrderModel.updateMany(
+			{ _id: { $in: orderIds } },
+			{ $set: { status } },
 			{
-				new: true,
-				runValidators: true
+				new: true
 			}
-		)
-		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } })
+		).session(session)
+
+		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } }).session(session)
+
+		for (const updatedOrder of updatedOrders) {
+			await updatedOrder.validate()
+		}
+
+		await session.commitTransaction()
 
 		res.status(200).json(updatedOrders)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
-			logger.error(error)
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }

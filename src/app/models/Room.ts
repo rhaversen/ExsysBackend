@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Document, model, Schema, type Types } from 'mongoose'
+import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -10,21 +10,22 @@ import logger from '../utils/logger.js'
 
 // Interfaces
 export interface IRoom extends Document {
-	_id: Types.ObjectId
 	name: string // The name of the room
 	description: string // A description of the room
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Schema
 const roomSchema = new Schema<IRoom>({
 	name: {
-		type: String,
+		type: Schema.Types.String,
 		trim: true,
 		unique: true,
 		required: [true, 'Navn er påkrævet']
 	},
 	description: {
-		type: String,
+		type: Schema.Types.String,
 		trim: true,
 		required: [true, 'Beskrivelse er påkrævet']
 	}
@@ -33,8 +34,8 @@ const roomSchema = new Schema<IRoom>({
 })
 
 // Validations
-roomSchema.path('name').validate(async (v: string) => {
-	const foundRoomWithName = await RoomModel.findOne({ name: v })
+roomSchema.path('name').validate(async function (v: string) {
+	const foundRoomWithName = await RoomModel.findOne({ name: v, _id: { $ne: this._id } })
 	return foundRoomWithName === null || foundRoomWithName === undefined
 }, 'Navnet er allerede i brug')
 
