@@ -58,7 +58,7 @@ adminSchema.path('email').validate(function (v: string) {
 }, 'Email er ikke gyldig')
 
 adminSchema.path('email').validate(async function (v: string) {
-	const foundAdminWithEmail = await AdminModel.findOne({ email: v })
+	const foundAdminWithEmail = await AdminModel.findOne({ email: v, _id: { $ne: this._id } })
 	return foundAdminWithEmail === null || foundAdminWithEmail === undefined
 }, 'Email er allerede i brug')
 
