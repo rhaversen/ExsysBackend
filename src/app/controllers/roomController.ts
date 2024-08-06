@@ -74,20 +74,26 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 		description: req.body.description
 	}
 
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
 		const room = await RoomModel.findByIdAndUpdate(
 			req.params.id,
 			{ $set: allowedFields },
 			{
-				new: true,
-				runValidators: true
+				new: true
 			}
-		)
+		).session(session)
 
 		if (room === null || room === undefined) {
 			res.status(404).json({ error: 'Rum ikke fundet' })
 			return
 		}
+
+		await room.validate()
+
+		await session.commitTransaction()
 
 		res.status(200).json(room)
 	} catch (error) {
@@ -96,6 +102,8 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 

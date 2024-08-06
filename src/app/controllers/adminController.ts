@@ -75,6 +75,9 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 		}
 	}
 
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
 		const admin = await AdminModel.findByIdAndUpdate(
 			req.params.id,
@@ -86,23 +89,29 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 				}
 			},
 			{
-				new: true,
-				runValidators: true
+				new: true
 			}
-		)
+		).session(session)
 
 		if (admin === null || admin === undefined) {
 			res.status(404).json({ error: 'Admin ikke fundet' })
 			return
 		}
 
+		await admin.validate()
+
+		await session.commitTransaction()
+
 		res.status(200).json(admin)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 

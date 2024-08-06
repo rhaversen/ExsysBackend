@@ -59,28 +59,37 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		options: req.body.options
 	}
 
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
 		const product = await ProductModel.findByIdAndUpdate(
 			req.params.id,
 			{ $set: allowedFields },
 			{
-				new: true,
-				runValidators: true
+				new: true
 			}
-		).populate('options')
+		).populate('options').session(session)
 
 		if (product === null || product === undefined) {
 			res.status(404).json({ error: 'Produkt ikke fundet' })
 			return
 		}
 
+		await product.validate()
+
+		await session.commitTransaction()
+
 		res.json(product)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 

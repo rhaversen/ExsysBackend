@@ -134,24 +134,35 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		return
 	}
 
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
 		await OrderModel.updateMany(
 			{ _id: { $in: orderIds } },
 			{ $set: { status } },
 			{
-				new: true,
-				runValidators: true
+				new: true
 			}
-		)
-		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } })
+		).session(session)
+
+		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } }).session(session)
+
+		for (const updatedOrder of updatedOrders) {
+			await updatedOrder.validate()
+		}
+
+		await session.commitTransaction()
 
 		res.status(200).json(updatedOrders)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
-			logger.error(error)
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }

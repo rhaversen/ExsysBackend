@@ -55,6 +55,9 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 		price: req.body.price
 	}
 
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
 		const option = await OptionModel.findByIdAndUpdate(
 			req.params.id,
@@ -62,23 +65,29 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 				$set: allowedFields
 			},
 			{
-				new: true,
-				runValidators: true
+				new: true
 			}
-		)
+		).session(session)
 
 		if (option === null || option === undefined) {
 			res.status(404).json({ error: 'Tilvalg ikke fundet' })
 			return
 		}
 
+		await option.validate()
+
+		await session.commitTransaction()
+
 		res.json(option)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 
