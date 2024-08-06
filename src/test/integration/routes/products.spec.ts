@@ -4,11 +4,11 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose, { type Types } from 'mongoose'
-import { chaiAppServer as agent } from '../../testSetup.js'
 
 // Own modules
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
+import { chaiAppServer as agent } from '../../testSetup.js'
 
 describe('POST /v1/products', function () {
 	let testOption: IOption
@@ -117,6 +117,16 @@ describe('POST /v1/products', function () {
 		expect(order?.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
 		expect(order?.options?.[0].toString()).to.equal(testOption.id)
 		expect(order?.options?.[1].toString()).to.equal(testOption2.id)
+	})
+
+	it('should not allow setting the _id', async function () {
+		const newId = new mongoose.Types.ObjectId().toString()
+		await agent.post('/v1/products').send({
+			_id: newId,
+			...testProductFields
+		})
+		const product = await ProductModel.findOne({})
+		expect(product?._id.toString()).to.not.equal(newId)
 	})
 })
 
