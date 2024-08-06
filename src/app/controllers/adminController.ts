@@ -11,27 +11,28 @@ import AdminModel from '../models/Admin.js'
 export async function createAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating admin')
 
+	// Destructuring fields from the request body
+	const {
+		password,
+		confirmPassword,
+		name,
+		email
+	} = req.body as Record<string, unknown>
+
+	if (password !== confirmPassword) {
+		res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
+		return
+	}
+
 	try {
-		// Destructuring passwords and the remaining fields
-		const {
-			password,
-			confirmPassword,
-			...rest
-		} = req.body as Record<string, unknown>
-
-		if (password !== confirmPassword) {
-			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
-			return
-		}
-
-		// Creating a new admin with the password and the remaining fields
-		const newAdmin = await AdminModel.create({ password, ...rest })
+		// Creating a new admin with the password, name and email
+		const newAdmin = await AdminModel.create({ password, name, email })
 		res.status(201).json({
 			name: newAdmin.name,
 			email: newAdmin.email
 		})
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -49,7 +50,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 			email: admin.email
 		})))
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -60,36 +61,66 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 export async function patchAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching admin')
 
-	try {
-		const {
-			password,
-			confirmPassword
-		} = req.body
+	const {
+		password,
+		confirmPassword,
+		name,
+		email
+	} = req.body as Record<string, unknown>
 
-		if (password !== undefined && confirmPassword !== undefined) {
-			if (password !== confirmPassword) {
-				res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
-				return
-			}
+	if (password !== undefined && confirmPassword !== undefined) {
+		if (password !== confirmPassword) {
+			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
+			return
 		}
+	} else if (password !== undefined && confirmPassword === undefined) {
+		res.status(400).json({ error: 'Bekræft kodeord mangler' })
+		return
+	}
 
-		const admin = await AdminModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
-			new: true,
-			runValidators: true
-		})
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
+	try {
+		const admin = await AdminModel.findByIdAndUpdate(
+			req.params.id,
+			{
+				$set: {
+					password,
+					name,
+					email
+				}
+			},
+			{
+				new: true
+			}
+		).session(session)
 
 		if (admin === null || admin === undefined) {
 			res.status(404).json({ error: 'Admin ikke fundet' })
 			return
 		}
 
-		res.status(200).json(admin)
+		await admin.validate()
+
+		await session.commitTransaction()
+
+		// Ensuring only necessary fields are included in the response
+		const responseObject = {
+			name: admin.name,
+			email: admin.email
+		}
+
+		res.status(200).json(responseObject)
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 

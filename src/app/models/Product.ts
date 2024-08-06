@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Document, model, Schema, type Types } from 'mongoose'
+import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
@@ -11,7 +11,6 @@ import OptionModel from './Option.js'
 
 // Interfaces
 export interface IProduct extends Document {
-	_id: Types.ObjectId
 	name: string
 	price: number
 	imageURL?: string
@@ -25,7 +24,9 @@ export interface IProduct extends Document {
 			minute: number
 		}
 	}
-	options?: Types.ObjectId[]
+	options?: Schema.Types.ObjectId[]
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Sub-schema for fromTime
@@ -111,29 +112,29 @@ productSchema.path('orderWindow').validate((v: {
 	return !(v.from.hour === v.to.hour && v.from.minute === v.to.minute)
 }, 'Fra-tid kan ikke være det samme som til-tid')
 
-productSchema.path('orderWindow.from.hour').validate((v: number) => {
+productSchema.path('orderWindow.from.hour').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Fra-time skal være et heltal')
 
-productSchema.path('orderWindow.from.minute').validate((v: number) => {
+productSchema.path('orderWindow.from.minute').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Fra-minut skal være et heltal')
 
-productSchema.path('orderWindow.to.hour').validate((v: number) => {
+productSchema.path('orderWindow.to.hour').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Til-time skal være et heltal')
 
-productSchema.path('orderWindow.to.minute').validate((v: number) => {
+productSchema.path('orderWindow.to.minute').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Til-minut skal være et heltal')
 
-productSchema.path('options').validate(async function (v: Types.ObjectId[]) {
+productSchema.path('options').validate(async function (v: Schema.Types.ObjectId[]) {
 	const options = await OptionModel.find({ _id: { $in: v } })
 	return options.length === v.length
 }, 'Tilvalget eksisterer ikke')
 
-productSchema.path('options').validate(function (v: Types.ObjectId[]) {
-	const unique = new Set(v.map(v => v))
+productSchema.path('options').validate(function (v: Schema.Types.ObjectId[]) {
+	const unique = new Set(v)
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 

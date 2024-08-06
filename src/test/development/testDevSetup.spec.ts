@@ -11,8 +11,9 @@ before(async function () {
 })
 
 after(async function () {
+	this.timeout(10000)
 	await gracefulShutdownFunction()
 
-	// exit the process after 1 second
-	setTimeout(() => process.exit(0), 1000)
+	// exit the process after 3 seconds
+	setTimeout(() => process.exit(0), 3000)
 })

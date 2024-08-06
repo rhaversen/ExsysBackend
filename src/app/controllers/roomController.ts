@@ -11,11 +11,17 @@ import RoomModel from '../models/Room.js'
 export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating room')
 
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		description: req.body.description
+	}
+
 	try {
-		const newRoom = await RoomModel.create(req.body as Record<string, unknown>)
+		const newRoom = await RoomModel.create(allowedFields)
 		res.status(201).json(newRoom)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -51,7 +57,7 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 		const rooms = await RoomModel.find({})
 		res.status(200).json(rooms)
 	} catch (error) {
-		if (error instanceof mongoose.Error.ValidationError) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
@@ -62,16 +68,32 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 export async function patchRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching room')
 
+	// Create a new object with only the allowed fields
+	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
+		description: req.body.description
+	}
+
+	const session = await mongoose.startSession()
+	session.startTransaction()
+
 	try {
-		const room = await RoomModel.findByIdAndUpdate(req.params.id, req.body as Record<string, unknown>, {
-			new: true,
-			runValidators: true
-		})
+		const room = await RoomModel.findByIdAndUpdate(
+			req.params.id,
+			{ $set: allowedFields },
+			{
+				new: true
+			}
+		).session(session)
 
 		if (room === null || room === undefined) {
 			res.status(404).json({ error: 'Rum ikke fundet' })
 			return
 		}
+
+		await room.validate()
+
+		await session.commitTransaction()
 
 		res.status(200).json(room)
 	} catch (error) {
@@ -80,6 +102,8 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 		} else {
 			next(error)
 		}
+	} finally {
+		await session.endSession()
 	}
 }
 
