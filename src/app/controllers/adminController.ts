@@ -105,7 +105,13 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		await session.commitTransaction()
 
-		res.status(200).json(admin)
+		// Ensuring only necessary fields are included in the response
+		const responseObject = {
+			name: admin.name,
+			email: admin.email
+		}
+
+		res.status(200).json(responseObject)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
