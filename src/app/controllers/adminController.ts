@@ -73,6 +73,9 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
 			return
 		}
+	} else if (password !== undefined && confirmPassword === undefined) {
+		res.status(400).json({ error: 'Bekræft kodeord mangler' })
+		return
 	}
 
 	const session = await mongoose.startSession()
