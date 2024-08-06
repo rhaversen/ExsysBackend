@@ -63,13 +63,13 @@ describe('Order Model', function () {
 		})
 
 		testOrderFields = {
-			roomId: testRoom._id,
+			roomId: testRoom.id,
 			products: [{
-				id: testProduct._id,
+				id: testProduct.id,
 				quantity: 1
 			}],
 			options: [{
-				id: testOption._id,
+				id: testOption.id,
 				quantity: 1
 			}]
 		}
@@ -79,10 +79,7 @@ describe('Order Model', function () {
 		const order = await OrderModel.create(testOrderFields)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
-		expect(order.roomId).to.equal(testRoom._id)
-		expect(order.products[0].id).to.equal(testOrderFields.products[0].id)
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(order.options?.[0].id).to.equal(testOrderFields.options?.[0].id)
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
 	})
 

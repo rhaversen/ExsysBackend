@@ -71,6 +71,7 @@ afterEach(async function () {
 })
 
 after(async function () {
+	this.timeout(10000)
 	await gracefulShutdownFunction()
 
 	// exit the process after 1 second

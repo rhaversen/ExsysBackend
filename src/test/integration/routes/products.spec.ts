@@ -126,7 +126,7 @@ describe('POST /v1/products', function () {
 			...testProductFields
 		})
 		const product = await ProductModel.findOne({})
-		expect(product?._id.toString()).to.not.equal(newId)
+		expect(product?.id.toString()).to.not.equal(newId)
 	})
 })
 

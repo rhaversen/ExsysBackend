@@ -44,7 +44,7 @@ describe('POST /v1/options', function () {
 
 		await agent.post('/v1/options').send(updatedFields)
 		const option = await OptionModel.findOne({})
-		expect(option?._id.toString()).to.not.equal(newId)
+		expect(option?.id.toString()).to.not.equal(newId)
 	})
 })
 
@@ -188,7 +188,7 @@ describe('PATCH /v1/options/:id', function () {
 
 		await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields)
 		const option = await OptionModel.findById(testOption1.id)
-		expect(option?._id.toString()).to.equal(testOption1.id)
+		expect(option?.id.toString()).to.equal(testOption1.id)
 	})
 })
 

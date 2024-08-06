@@ -41,7 +41,7 @@ describe('POST /v1/rooms', function () {
 
 		await agent.post('/v1/rooms').send(updatedFields)
 		const room = await RoomModel.findOne({})
-		expect(room?._id.toString()).to.not.equal(newId)
+		expect(room?.id.toString()).to.not.equal(newId)
 	})
 })
 
@@ -153,7 +153,7 @@ describe('PATCH /v1/rooms/:id', function () {
 
 		await agent.patch(`/v1/rooms/${testRoom1.id}`).send(updatedFields)
 		const room = await RoomModel.findOne({})
-		expect(room?._id.toString()).to.equal(testRoom1.id)
+		expect(room?.id.toString()).to.equal(testRoom1.id)
 	})
 
 	it('should return 404 if the room does not exist', async function () {

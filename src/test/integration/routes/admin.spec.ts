@@ -73,7 +73,7 @@ describe('POST /v1/admins', function () {
 
 		await agent.post('/v1/admins').send(updatedFields)
 		const admin = await AdminModel.findOne({})
-		expect(admin?._id.toString()).to.not.equal(newId)
+		expect(admin?.id.toString()).to.not.equal(newId)
 	})
 })
 
