@@ -16,9 +16,13 @@ const {
 
 // Interfaces
 export interface IAdmin extends Document {
+	// Properties
+	_id: Schema.Types.ObjectId
 	name: string
 	email: string
 	password: string
+
+	// Timestamps
 	createdAt: Date
 	updatedAt: Date
 }
