@@ -31,7 +31,8 @@ const kioskSchema = new Schema<IKiosk>({
 	kioskTag: {
 		type: Schema.Types.String,
 		required: true,
-		unique: true
+		unique: true,
+		trim: true
 	},
 	activities: {
 		type: [Schema.Types.ObjectId],
