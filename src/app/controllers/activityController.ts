@@ -71,7 +71,7 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		activityId: req.body.activityId
+		roomId: req.body.roomId
 	}
 
 	const session = await mongoose.startSession()
