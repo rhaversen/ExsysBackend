@@ -35,6 +35,7 @@ const adminSchema = new Schema<IAdmin>({
 	name: {
 		type: Schema.Types.String,
 		trim: true,
+		required: true,
 		minLength: [2, 'Navn skal være mindst 2 tegn'],
 		maxLength: [50, 'Navn kan højest være 50 tegn']
 	},
