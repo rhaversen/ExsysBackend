@@ -71,8 +71,8 @@ adminSchema.pre('save', async function (next) {
 	// Password hashing
 	if (this.isModified('password')) {
 		this.password = await hash(this.password, bcryptSaltRounds) // Using a random salt for each user
-		next()
 	}
+	next()
 })
 
 // Compile the schema into a model
