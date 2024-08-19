@@ -2,7 +2,7 @@
 
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
-import { hash } from 'bcrypt'
+import { compare, hash } from 'bcrypt'
 import validator from 'validator'
 
 // Own modules
@@ -25,6 +25,9 @@ export interface IAdmin extends Document {
 	// Timestamps
 	createdAt: Date
 	updatedAt: Date
+
+	// Methods
+	comparePassword: (password: string) => Promise<boolean>
 }
 
 // Schema
@@ -78,6 +81,12 @@ adminSchema.pre('save', async function (next) {
 	}
 	next()
 })
+
+adminSchema.methods.comparePassword = async function (this: IAdmin, password: string): Promise<boolean> {
+	logger.silly('Comparing password')
+	const isPasswordCorrect = await compare(password, this.password)
+	return isPasswordCorrect
+}
 
 // Compile the schema into a model
 const AdminModel = model<IAdmin>('Admin', adminSchema)
