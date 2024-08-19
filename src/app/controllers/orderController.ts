@@ -15,7 +15,7 @@ interface OrderItem {
 
 interface CreateOrderRequest extends Request {
 	body: {
-		roomId?: string
+		activityId?: string
 		products?: OrderItem[]
 		options?: OrderItem[]
 	}
@@ -59,7 +59,7 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
-		roomId: req.body.roomId,
+		activityId: req.body.activityId,
 		products: req.body.products,
 		options: req.body.options
 	}

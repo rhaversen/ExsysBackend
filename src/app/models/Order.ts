@@ -7,7 +7,7 @@ import { type Document, model, Schema } from 'mongoose'
 import logger from '../utils/logger.js'
 import OptionModel from './Option.js'
 import ProductModel from './Product.js'
-import RoomModel from './Room.js'
+import ActivityModel from './Activity.js'
 
 // Destructuring and global variables
 
@@ -15,7 +15,7 @@ import RoomModel from './Room.js'
 export interface IOrder extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	roomId: Schema.Types.ObjectId // Reference to the Room document
+	activityId: Schema.Types.ObjectId // The activity the order is for
 	products: Array<{
 		id: Schema.Types.ObjectId
 		quantity: number
@@ -61,10 +61,10 @@ const optionsSubSchema = new Schema({
 
 // Main order schema
 const orderSchema = new Schema({
-	roomId: {
+	activityId: {
 		type: Schema.Types.ObjectId,
-		ref: 'Room',
-		required: [true, 'Rum er påkrevet']
+		ref: 'Activity',
+		required: [true, 'Aktivitet er påkrævet']
 	},
 	products: {
 		_id: false,
@@ -88,10 +88,10 @@ const orderSchema = new Schema({
 })
 
 // Validations
-orderSchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
-	const room = await RoomModel.findById(v)
-	return room !== null && room !== undefined
-}, 'Rummet eksisterer ikke')
+orderSchema.path('activityId').validate(async function (v: Schema.Types.ObjectId) {
+	const activity = await ActivityModel.findById(v)
+	return activity !== null && activity !== undefined
+}, 'Aktiviteten eksisterer ikke')
 
 orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.id))
