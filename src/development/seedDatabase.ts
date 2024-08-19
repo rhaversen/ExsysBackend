@@ -1,3 +1,4 @@
+import AdminModel from '../app/models/Admin.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'
 import ProductModel from '../app/models/Product.js'
@@ -593,6 +594,13 @@ await OrderModel.create({
 		id: option3.id,
 		quantity: 3
 	}]
+})
+
+// Admins
+await AdminModel.create({
+	name: 'Admin',
+	email: 'test@test.com',
+	password: 'password'
 })
 
 logger.info('Database seeded')
