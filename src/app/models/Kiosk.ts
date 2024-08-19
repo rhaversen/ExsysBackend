@@ -32,7 +32,9 @@ const kioskSchema = new Schema<IKiosk>({
 		type: Schema.Types.String,
 		required: true,
 		unique: true,
-		trim: true
+		trim: true,
+		minlength: 5,
+		maxlength: 5
 	},
 	activities: {
 		type: [Schema.Types.ObjectId],
