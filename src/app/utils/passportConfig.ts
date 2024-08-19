@@ -7,6 +7,7 @@ import { type PassportStatic } from 'passport'
 
 // Own modules
 import AdminModel, { type IAdmin } from '../models/Admin.js'
+import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 
 // Destructuring and global variables
 
@@ -68,9 +69,9 @@ const configurePassport = (passport: PassportStatic): void => {
 		})().catch(err => { done(err) })
 	}))
 
-	passport.serializeUser(function (admin: any, done) {
-		const adminId = (admin as IAdmin).id
-		done(null, adminId)
+	passport.serializeUser(function (user: any, done) {
+		const userId = (user as IAdmin | IKiosk).id
+		done(null, userId)
 	})
 
 	passport.deserializeUser(function (id, done) {
@@ -81,8 +82,17 @@ const configurePassport = (passport: PassportStatic): void => {
 				}
 				done(null, admin)
 			})
-			.catch(err => {
-				done(err, false)
+			.catch(() => {
+				KioskModel.findById(id).exec()
+					.then(kiosk => {
+						if (kiosk === null || kiosk === undefined) {
+							done(new Error('User not found'), false)
+						}
+						done(null, kiosk)
+					})
+					.catch(err => {
+						done(err, false)
+					})
 			})
 	})
 }
