@@ -25,11 +25,19 @@ const activitySchema = new Schema<IActivity>({
 	},
 	name: {
 		type: Schema.Types.String,
-		required: true
+		required: true,
+		trim: true,
+		unique: true
 	}
 }, {
 	timestamps: true
 })
+
+// Validations
+activitySchema.path('name').validate(async function (v: string) {
+	const foundActivityWithName = await ActivityModel.findOne({ name: v, _id: { $ne: this._id } })
+	return foundActivityWithName === null || foundActivityWithName === undefined
+}, 'Navnet er allerede i brug')
 
 // Pre-save middleware
 activitySchema.pre('save', async function (next) {
