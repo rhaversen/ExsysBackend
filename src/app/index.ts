@@ -26,6 +26,7 @@ import productRoutes from './routes/products.js'
 import adminRoutes from './routes/admins.js'
 import roomRoutes from './routes/rooms.js'
 import optionRoutes from './routes/options.js'
+import authRoutes from './routes/auth.js'
 
 // Service routes
 import serviceRoutes from './routes/service.js'
@@ -95,6 +96,7 @@ app.use('/v1/admins', mediumSensitivityApiLimiter, adminRoutes)
 app.use('/v1/rooms', mediumSensitivityApiLimiter, roomRoutes)
 app.use('/v1/options', mediumSensitivityApiLimiter, optionRoutes)
 app.use('/service', mediumSensitivityApiLimiter, serviceRoutes)
+app.use('/v1/auth', mediumSensitivityApiLimiter, authRoutes)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
