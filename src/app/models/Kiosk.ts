@@ -14,7 +14,7 @@ const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 export interface IKiosk extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	kioskId: string // Unique identifier generated with nanoid
+	kioskTag: string // Unique identifier generated with nanoid
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
 
 	// Timestamps
@@ -23,12 +23,12 @@ export interface IKiosk extends Document {
 
 	// Methods
 	comparePassword: (password: string) => Promise<boolean>
-	generateNewKioskId: () => Promise<string>
+	generateNewKioskTag: () => Promise<string>
 }
 
 // Schema
 const kioskSchema = new Schema<IKiosk>({
-	kioskId: {
+	kioskTag: {
 		type: Schema.Types.String,
 		required: true,
 		unique: true
@@ -46,29 +46,29 @@ const kioskSchema = new Schema<IKiosk>({
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {
 	logger.silly('Saving kiosk')
-	if (this.kioskId === undefined) {
+	if (this.kioskTag === undefined) {
 		// Set default value to accessToken
-		this.kioskId = await generateUniqueKioskId()
+		this.kioskTag = await generateUniqueKioskTag()
 	}
 	next()
 })
 
 // Kiosk methods
-kioskSchema.methods.generateNewKioskId = async function (this: IKiosk) {
+kioskSchema.methods.generateNewKioskTag = async function (this: IKiosk) {
 	logger.silly('Generating access token')
-	this.kioskId = await generateUniqueKioskId()
+	this.kioskTag = await generateUniqueKioskTag()
 	await this.save()
-	return this.kioskId
+	return this.kioskTag
 }
 
-async function generateUniqueKioskId (): Promise<string> {
-	let newKioskId
-	let foundKioskWithId
+async function generateUniqueKioskTag (): Promise<string> {
+	let newKioskTag
+	let foundKioskWithTag
 	do {
-		newKioskId = nanoid()
-		foundKioskWithId = await KioskModel.findOne({ kioskId: newKioskId })
-	} while (foundKioskWithId !== null)
-	return newKioskId
+		newKioskTag = nanoid()
+		foundKioskWithTag = await KioskModel.findOne({ kioskTag: newKioskTag })
+	} while (foundKioskWithTag !== null)
+	return newKioskTag
 }
 
 // Compile the schema into a model

@@ -45,14 +45,14 @@ const configurePassport = (passport: PassportStatic): void => {
 
 	// Local Kiosk Strategy
 	passport.use('kiosk-local', new LocalStrategy({
-		usernameField: 'kioskId',
+		usernameField: 'kioskTag',
 		passwordField: 'password'
-	}, (kioskId, password, done) => {
+	}, (kioskTag, password, done) => {
 		(async () => {
 			try {
-				const kiosk = await KioskModel.findOne({ kioskId }).exec()
+				const kiosk = await KioskModel.findOne({ kioskTag }).exec()
 				if (kiosk === null || kiosk === undefined) {
-					done(null, false, { message: 'A kiosk with the id ' + kioskId + ' was not found. Please check spelling or create a new kiosk' })
+					done(null, false, { message: 'A kiosk with the tag ' + kioskTag + ' was not found. Please check spelling or create a new kiosk' })
 					return
 				}
 

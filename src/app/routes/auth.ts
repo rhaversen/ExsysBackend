@@ -16,7 +16,7 @@ const router = Router()
  * @route POST api/v1/auth/login-kiosk-local
  * @desc Login kiosk and return session cookie
  * @access Public
- * @param {string} req.body.kioskId The kioskId of the kiosk.
+ * @param {string} req.body.kioskTag The tag of the kiosk.
  * @param {string} req.body.password The password of the kiosk.
  * @param {string} [req.body.stayLoggedIn] Whether to stay logged in or not.
  * @return {number} res.status The status code of the HTTP response.
