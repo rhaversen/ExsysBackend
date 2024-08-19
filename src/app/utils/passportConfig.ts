@@ -11,8 +11,8 @@ import AdminModel, { type IAdmin } from '../models/Admin.js'
 // Destructuring and global variables
 
 const configurePassport = (passport: PassportStatic): void => {
-	// Local Strategy
-	passport.use('user-local', new LocalStrategy({
+	// Local Admin Strategy
+	passport.use('admin-local', new LocalStrategy({
 		usernameField: 'email',
 		passwordField: 'password'
 	}, (email, password, done) => {
@@ -36,6 +36,32 @@ const configurePassport = (passport: PassportStatic): void => {
 				}
 
 				done(null, admin)
+			} catch (err) {
+				done(err)
+			}
+		})().catch(err => { done(err) })
+	}))
+
+	// Local Kiosk Strategy
+	passport.use('kiosk-local', new LocalStrategy({
+		usernameField: 'kioskId',
+		passwordField: 'password'
+	}, (kioskId, password, done) => {
+		(async () => {
+			try {
+				const kiosk = await KioskModel.findOne({ kioskId }).exec()
+				if (kiosk === null || kiosk === undefined) {
+					done(null, false, { message: 'A kiosk with the id ' + kioskId + ' was not found. Please check spelling or create a new kiosk' })
+					return
+				}
+
+				const isMatch = await kiosk.comparePassword(password)
+				if (!isMatch) {
+					done(null, false, { message: 'Invalid credentials' })
+					return
+				}
+
+				done(null, kiosk)
 			} catch (err) {
 				done(err)
 			}
