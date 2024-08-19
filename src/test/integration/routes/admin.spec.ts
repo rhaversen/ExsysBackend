@@ -33,12 +33,13 @@ describe('POST /v1/admins', function () {
 		expect(response.body).to.have.property('name', testAdminFields1.name)
 	})
 
-	it('should not require a name', async function () {
+	it('should require a name', async function () {
 		const response = await agent.post('/v1/admins').send({
 			...testAdminFields1,
 			name: undefined
 		})
-		expect(response).to.have.status(201)
+
+		expect(response).to.have.status(400)
 	})
 
 	it('should not return the password', async function () {

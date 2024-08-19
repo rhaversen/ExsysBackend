@@ -187,13 +187,19 @@ describe('Admin Model', function () {
 		expect(admin.email).to.equal('test@email.com')
 	})
 
-	it('should save an admin without a name', async function () {
-		const admin = await AdminModel.create({
-			...testAdminFields,
-			name: undefined
-		})
+	it('should not save an admin without a name', async function () {
+		let errorOccurred = false
+		try {
+			await AdminModel.create({
+				...testAdminFields,
+				name: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(admin).to.exist
+		expect(errorOccurred).to.be.true
 	})
 
 	it('should not save an admin without an email', async function () {

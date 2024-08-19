@@ -12,10 +12,12 @@ import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import { chaiAppServer as agent } from '../../testSetup.js'
+import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 
 describe('POST /v1/orders', function () {
 	let testProduct1: IProduct
 	let testRoom: IRoom
+	let testActivity: IActivity
 	let testOption1: IOption
 
 	beforeEach(async function () {
@@ -39,6 +41,11 @@ describe('POST /v1/orders', function () {
 			description: 'A test room'
 		})
 
+		testActivity = await ActivityModel.create({
+			roomId: testRoom.id,
+			name: 'Test Activity'
+		})
+
 		testOption1 = await OptionModel.create({
 			name: 'Test Option',
 			price: 50
@@ -47,7 +54,7 @@ describe('POST /v1/orders', function () {
 
 	it('should create a valid order', async function () {
 		await agent.post('/v1/orders').send({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct1.id,
 				quantity: 1
@@ -61,7 +68,7 @@ describe('POST /v1/orders', function () {
 		const order = await OrderModel.findOne({})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
-		expect(order?.roomId.toString()).to.equal(testRoom.id)
+		expect(order?.activityId.toString()).to.equal(testActivity.id)
 		expect(order?.products[0].id.toString()).to.equal(testProduct1.id)
 		expect(order?.products[0].quantity).to.equal(1)
 		expect(order?.options?.[0].id.toString()).to.equal(testOption1.id)
@@ -70,7 +77,7 @@ describe('POST /v1/orders', function () {
 
 	it('should return the order', async function () {
 		const res = await agent.post('/v1/orders').send({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct1.id,
 				quantity: 1
@@ -82,7 +89,7 @@ describe('POST /v1/orders', function () {
 		})
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		expect(res.body.roomId.toString()).to.equal(testRoom.id)
+		expect(res.body.activityId.toString()).to.equal(testActivity.id)
 		expect(res.body.products[0].id).to.equal(testProduct1.id)
 		expect(res.body.products[0].quantity).to.equal(1)
 		expect(res.body.options?.[0].id).to.equal(testOption1.id)
@@ -91,7 +98,7 @@ describe('POST /v1/orders', function () {
 
 	it('should handle orders with undefined options', async function () {
 		await agent.post('/v1/orders').send({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct1.id,
 				quantity: 1
@@ -104,7 +111,7 @@ describe('POST /v1/orders', function () {
 
 	it('should handle orders with undefined products', async function () {
 		await agent.post('/v1/orders').send({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			options: [{
 				id: testOption1.id,
 				quantity: 1
@@ -148,7 +155,7 @@ describe('POST /v1/orders', function () {
 
 			it('should create a order with a product with quantity 0 and product with quantity 1', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 0
@@ -165,7 +172,7 @@ describe('POST /v1/orders', function () {
 
 			it('should remove products with quantity 0', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 0
@@ -181,7 +188,7 @@ describe('POST /v1/orders', function () {
 
 			it('should combine products with the same product id', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -197,7 +204,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle two duplicate and a unique products', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 2
@@ -219,7 +226,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle unique products with different quantities', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -237,7 +244,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle products with quantity 0 and products with quantity 1', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -254,7 +261,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle products with quantity 1 and products with undefined quantity', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -281,7 +288,7 @@ describe('POST /v1/orders', function () {
 
 			it('should create a order with a option with quantity 0 and option with quantity 1', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -302,7 +309,7 @@ describe('POST /v1/orders', function () {
 
 			it('should create a order with a option with quantity 0', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -319,7 +326,7 @@ describe('POST /v1/orders', function () {
 
 			it('should remove option with quantity 0', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -335,7 +342,7 @@ describe('POST /v1/orders', function () {
 
 			it('should remove options with quantity 0', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -355,7 +362,7 @@ describe('POST /v1/orders', function () {
 
 			it('should combine options with the same option id', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -375,7 +382,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle two duplicate options with different quantities', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -395,7 +402,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle two duplicate and a unique option', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -421,7 +428,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle unique options with different quantities', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -443,7 +450,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle options with quantity 0 and options with quantity 1', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -464,7 +471,7 @@ describe('POST /v1/orders', function () {
 
 			it('should handle options with quantity 1 and options with undefined quantity', async function () {
 				await agent.post('/v1/orders').send({
-					roomId: testRoom.id,
+					activityId: testActivity.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -492,6 +499,7 @@ describe('GET /v1/orders', function () {
 	let testProduct4: IProduct
 
 	let testRoom: IRoom
+	let testActivity: IActivity
 	let testOption: IOption
 
 	let clock: sinon.SinonFakeTimers
@@ -582,13 +590,18 @@ describe('GET /v1/orders', function () {
 			description: 'A test room'
 		})
 
+		testActivity = await ActivityModel.create({
+			roomId: testRoom.id,
+			name: 'Test Activity'
+		})
+
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50
 		})
 
 		await OrderModel.create({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct1.id,
 				quantity: 1
@@ -600,7 +613,7 @@ describe('GET /v1/orders', function () {
 		})
 
 		await OrderModel.create({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct2.id,
 				quantity: 1
@@ -616,12 +629,12 @@ describe('GET /v1/orders', function () {
 		const res = await agent.get('/v1/orders')
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		expect(res.body[0].roomId).to.equal(testRoom.id)
+		expect(res.body[0].activityId).to.equal(testActivity.id)
 		expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 		expect(res.body[0].products[0].quantity).to.equal(1)
 		expect(res.body[0].options[0].id).to.equal(testOption.id)
 		expect(res.body[0].options[0].quantity).to.equal(1)
-		expect(res.body[1].roomId).to.equal(testRoom.id)
+		expect(res.body[1].activityId).to.equal(testActivity.id)
 		expect(res.body[1].products[0].id).to.equal(testProduct2.id)
 		expect(res.body[1].products[0].quantity).to.equal(1)
 		expect(res.body[1].options[0].id).to.equal(testOption.id)
@@ -648,7 +661,7 @@ describe('GET /v1/orders', function () {
 				options: { $elemMatch: { id: testOption.id } }
 			}, { status: 'delivered' })
 			await OrderModel.create({
-				roomId: testRoom.id,
+				activityId: testActivity.id,
 				products: [{
 					id: testProduct3.id,
 					quantity: 1
@@ -660,7 +673,7 @@ describe('GET /v1/orders', function () {
 				status: 'pending'
 			})
 			await OrderModel.create({
-				roomId: testRoom.id,
+				activityId: testActivity.id,
 				products: [{
 					id: testProduct4.id,
 					quantity: 1
@@ -705,7 +718,7 @@ describe('GET /v1/orders', function () {
 		beforeEach(async function () {
 			clock.tick(24 * 60 * 60 * 1000) // Advance time by 24 hours
 			await OrderModel.create({
-				roomId: testRoom.id,
+				activityId: testActivity.id,
 				products: [{
 					id: testProduct3.id,
 					quantity: 1
@@ -717,7 +730,7 @@ describe('GET /v1/orders', function () {
 			})
 			clock.tick(24 * 60 * 60 * 1000) // Advance time by another 24 hours
 			await OrderModel.create({
-				roomId: testRoom.id,
+				activityId: testActivity.id,
 				products: [{
 					id: testProduct4.id,
 					quantity: 1
@@ -821,6 +834,7 @@ describe('GET /v1/orders', function () {
 describe('PATCH /v1/orders', function () {
 	let testProduct1: IProduct
 	let testRoom: IRoom
+	let testActivity: IActivity
 	let testOption1: IOption
 
 	let order1: IOrder
@@ -847,13 +861,18 @@ describe('PATCH /v1/orders', function () {
 			description: 'A test room'
 		})
 
+		testActivity = await ActivityModel.create({
+			roomId: testRoom.id,
+			name: 'Test Activity'
+		})
+
 		testOption1 = await OptionModel.create({
 			name: 'Test Option',
 			price: 50
 		})
 
 		order1 = await OrderModel.create({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct1.id,
 				quantity: 1
@@ -865,7 +884,7 @@ describe('PATCH /v1/orders', function () {
 		})
 
 		order2 = await OrderModel.create({
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct1.id,
 				quantity: 1

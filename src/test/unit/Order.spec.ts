@@ -11,6 +11,7 @@ import OrderModel from '../../app/models/Order.js'
 import ProductModel, { type IProduct } from '../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../app/models/Option.js'
+import ActivityModel, { type IActivity } from '../../app/models/Activity.js'
 
 // Setup test environment
 import '../testSetup.js'
@@ -18,9 +19,10 @@ import '../testSetup.js'
 describe('Order Model', function () {
 	let testProduct: IProduct
 	let testRoom: IRoom
+	let testActivity: IActivity
 	let testOption: IOption
 	let testOrderFields: {
-		roomId: Types.ObjectId
+		activityId: Types.ObjectId
 		products: Array<{
 			id: Types.ObjectId
 			quantity: number
@@ -57,13 +59,18 @@ describe('Order Model', function () {
 			number: 1
 		})
 
+		testActivity = await ActivityModel.create({
+			roomId: testRoom.id,
+			name: 'Test Activity'
+		})
+
 		testOption = await OptionModel.create({
 			name: 'Test Option',
 			price: 50
 		})
 
 		testOrderFields = {
-			roomId: testRoom.id,
+			activityId: testActivity.id,
 			products: [{
 				id: testProduct.id,
 				quantity: 1
@@ -135,12 +142,12 @@ describe('Order Model', function () {
 		expect(order).to.exist
 	})
 
-	it('should require a room', async function () {
+	it('should require an activity', async function () {
 		let errorOccurred = false
 		try {
 			await OrderModel.create({
 				...testOrderFields,
-				roomId: undefined
+				activityId: undefined
 			})
 		} catch (err) {
 			// The promise was rejected as expected
@@ -150,12 +157,12 @@ describe('Order Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not allow a room that does not exist', async function () {
+	it('should not allow an activity that does not exist', async function () {
 		let errorOccurred = false
 		try {
 			await OrderModel.create({
 				...testOrderFields,
-				roomId: new Types.ObjectId()
+				activityId: new Types.ObjectId()
 			})
 		} catch (err) {
 			// The promise was rejected as expected
