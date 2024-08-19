@@ -16,7 +16,7 @@ const router = Router()
  * @route POST api/v1/admins
  * @desc Create a new admin
  * @access Public
- * @param {string} [req.body.name] - The name of the admin (optional).
+ * @param {string} req.body.name - The name of the admin optional.
  * @param {string} req.body.email - The email of the admin.
  * @param {string} req.body.password - The password of the admin.
  * @param {string} req.body.confirmPassword - The confirmation of the password of the admin.
