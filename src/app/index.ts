@@ -8,20 +8,27 @@ import mongoose from 'mongoose'
 import RateLimit from 'express-rate-limit'
 import cors from 'cors'
 import gracefulShutdown from 'http-graceful-shutdown'
+import session from 'express-session'
+import cookieParser from 'cookie-parser'
+import passport from 'passport'
+import MongoStore from 'connect-mongo'
 
 // Own Modules
 import databaseConnector from './utils/databaseConnector.js'
 import logger from './utils/logger.js'
 import config from './utils/setupConfig.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
+import configurePassport from './utils/passportConfig.js'
 
-// Routes
-import serviceRoutes from './routes/service.js'
+// Business logic routes
 import orderRoutes from './routes/orders.js'
 import productRoutes from './routes/products.js'
 import adminRoutes from './routes/admins.js'
 import roomRoutes from './routes/rooms.js'
 import optionRoutes from './routes/options.js'
+
+// Service routes
+import serviceRoutes from './routes/service.js'
 
 // Logging environment
 if (typeof process.env.NODE_ENV !== 'undefined') {
@@ -36,7 +43,8 @@ const {
 	veryLowSensitivityApiLimiterConfig,
 	mediumSensitivityApiLimiterConfig,
 	expressPort,
-	corsConfig
+	corsConfig,
+	cookieOptions
 } = config
 
 // Global variables and setup
@@ -48,10 +56,33 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging')
 	await databaseConnector.connectToMongoDB()
 }
 
+if (process.env.SESSION_SECRET === undefined) {
+	logger.error('Session secret is not set!')
+	process.exit(1)
+}
+
 // Middleware
-app.use(helmet())
-app.use(express.json())
-app.use(mongoSanitize())
+app.use(helmet()) // Security headers
+app.use(express.json()) // for parsing application/json
+app.use(cookieParser()) // For parsing cookies
+app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
+app.use(session({ // Session management
+	resave: true, // Save the updated session back to the store
+	rolling: true, // Reset the cookie max-age on every request
+	secret: process.env.SESSION_SECRET,
+	saveUninitialized: false, // Do not save session if not authenticated
+	store: MongoStore.create({
+		client: mongoose.connection.getClient() as any,
+		autoRemove: 'interval',
+		autoRemoveInterval: 1
+	}),
+	cookie: cookieOptions
+}))
+app.use(passport.initialize()) // Initialize Passport
+app.use(passport.session()) // Passport session handling
+
+// Function invocations
+configurePassport(passport) // Use passportConfig
 
 // Rate limiters
 const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfig)
