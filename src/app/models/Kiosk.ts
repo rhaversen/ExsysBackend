@@ -60,10 +60,6 @@ kioskSchema.path('kioskTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
 }, 'KioskTag must only contain numbers')
 
-kioskSchema.path('activities').validate(function (v: Schema.Types.ObjectId[]) {
-	return new Set(v).size === v.length
-}, 'Activities must be unique')
-
 kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
 	for (const activity of v) {
 		const foundActivity = await ActivityModel.findOne({ _id: activity })
