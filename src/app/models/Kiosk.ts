@@ -32,9 +32,7 @@ const kioskSchema = new Schema<IKiosk>({
 		type: Schema.Types.String,
 		required: true,
 		unique: true,
-		trim: true,
-		minlength: 5,
-		maxlength: 5
+		trim: true
 	},
 	activities: {
 		type: [Schema.Types.ObjectId],
@@ -51,6 +49,10 @@ kioskSchema.path('kioskTag').validate(async function (v: string) {
 	const foundKioskWithTag = await KioskModel.findOne({ kioskTag: v, _id: { $ne: this._id } })
 	return foundKioskWithTag === null || foundKioskWithTag === undefined
 }, 'KioskTag is already in use')
+
+kioskSchema.path('kioskTag').validate(function (v: string) {
+	return v.length === 5
+}, 'KioskTag must be 5 characters long')
 
 kioskSchema.path('kioskTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
