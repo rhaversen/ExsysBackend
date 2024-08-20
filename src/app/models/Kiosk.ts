@@ -3,6 +3,9 @@
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
+import ActivityModel from './Activity.js'
+
+// Own modules
 import logger from '../utils/logger.js'
 
 // Nanoid setup
@@ -60,6 +63,16 @@ kioskSchema.path('kioskTag').validate(function (v: string) {
 kioskSchema.path('activities').validate(function (v: Schema.Types.ObjectId[]) {
 	return new Set(v).size === v.length
 }, 'Activities must be unique')
+
+kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
+	for (const activity of v) {
+		const foundActivity = await ActivityModel.findOne({ _id: activity })
+		if (foundActivity === null || foundActivity === undefined) {
+			return false
+		}
+	}
+	return true
+})
 
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {
