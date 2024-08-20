@@ -6,20 +6,20 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import RoomModel from '../models/Room.js'
+import ActivityModel from '../models/Activity.js'
 
-export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Creating room')
+export async function createActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Creating activity')
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		description: req.body.description
+		roomId: req.body.roomId
 	}
 
 	try {
-		const newRoom = await RoomModel.create(allowedFields)
-		res.status(201).json(newRoom)
+		const newActivity = await ActivityModel.create(allowedFields)
+		res.status(201).json(newActivity)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -29,18 +29,18 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 	}
 }
 
-export async function getRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting room')
+export async function getActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting activity')
 
 	try {
-		const room = await RoomModel.findById(req.params.id)
+		const activity = await ActivityModel.findById(req.params.id)
 
-		if (room === null || room === undefined) {
-			res.status(404).json({ error: 'Rum ikke fundet' })
+		if (activity === null || activity === undefined) {
+			res.status(404).json({ error: 'Aktivitet ikke fundet' })
 			return
 		}
 
-		res.status(200).json(room)
+		res.status(200).json(activity)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -50,12 +50,12 @@ export async function getRoom (req: Request, res: Response, next: NextFunction):
 	}
 }
 
-export async function getRooms (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting rooms')
+export async function getActivities (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting activities')
 
 	try {
-		const rooms = await RoomModel.find({})
-		res.status(200).json(rooms)
+		const activities = await ActivityModel.find({})
+		res.status(200).json(activities)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -65,34 +65,33 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 	}
 }
 
-export async function patchRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Patching room')
+export async function patchActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Patching activity')
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		// Retrieve the existing room document
-		const room = await RoomModel.findById(req.params.id).session(session)
+		const activity = await ActivityModel.findById(req.params.id).session(session)
 
-		if (room === null || room === undefined) {
-			res.status(404).json({ error: 'Rum ikke fundet' })
+		if (activity === null || activity === undefined) {
+			res.status(404).json({ error: 'Aktivitet ikke fundet' })
 			return
 		}
 
 		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.name !== undefined) room.name = req.body.name
-		if (req.body.description !== undefined) room.description = req.body.description
+		if (req.body.name !== undefined) activity.name = req.body.name
+		if (req.body.roomId !== undefined) activity.roomId = req.body.roomId
 
 		// Validate and save the updated document
-		await room.validate()
-		await room.save({ session })
+		await activity.validate()
+		await activity.save({ session })
 
 		await session.commitTransaction()
-
-		res.status(200).json(room) // Ensure response only includes appropriate data
+		res.status(200).json(activity)
 	} catch (error) {
 		await session.abortTransaction()
+
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -103,8 +102,8 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 	}
 }
 
-export async function deleteRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Deleting room')
+export async function deleteActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Deleting activity')
 
 	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
@@ -112,10 +111,10 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 	}
 
 	try {
-		const room = await RoomModel.findByIdAndDelete(req.params.id)
+		const activity = await ActivityModel.findByIdAndDelete(req.params.id)
 
-		if (room === null || room === undefined) {
-			res.status(404).json({ error: 'Rum ikke fundet' })
+		if (activity === null || activity === undefined) {
+			res.status(404).json({ error: 'Aktivitet ikke fundet' })
 			return
 		}
 

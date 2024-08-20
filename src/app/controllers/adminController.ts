@@ -61,51 +61,43 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 export async function patchAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching admin')
 
-	const {
-		password,
-		confirmPassword,
-		name,
-		email
-	} = req.body as Record<string, unknown>
+	const { password, confirmPassword } = req.body as Record<string, unknown>
 
-	if (password !== undefined && confirmPassword !== undefined) {
-		if (password !== confirmPassword) {
+	// Check password consistency
+	if (password !== undefined) {
+		if (confirmPassword === undefined) {
+			res.status(400).json({ error: 'Bekræft kodeord mangler' })
+			return
+		} else if (password !== confirmPassword) {
 			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
 			return
 		}
-	} else if (password !== undefined && confirmPassword === undefined) {
-		res.status(400).json({ error: 'Bekræft kodeord mangler' })
-		return
 	}
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const admin = await AdminModel.findByIdAndUpdate(
-			req.params.id,
-			{
-				$set: {
-					password,
-					name,
-					email
-				}
-			},
-			{
-				new: true
-			}
-		).session(session)
+		// Retrieve the admin document
+		const admin = await AdminModel.findById(req.params.id).session(session)
 
 		if (admin === null || admin === undefined) {
 			res.status(404).json({ error: 'Admin ikke fundet' })
 			return
 		}
 
+		// Apply changes if they exist
+		if (req.body.name !== undefined) admin.name = req.body.name
+		if (req.body.email !== undefined) admin.email = req.body.email
+		if (req.body.password !== undefined) admin.password = req.body.password
+
+		// Validate and save the updated document
 		await admin.validate()
+		await admin.save({ session })
 
 		await session.commitTransaction()
 
-		// Ensuring only necessary fields are included in the response
+		// Prepare response object with only necessary fields
 		const responseObject = {
 			name: admin.name,
 			email: admin.email

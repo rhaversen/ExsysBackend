@@ -10,9 +10,13 @@ import logger from '../utils/logger.js'
 
 // Interfaces
 export interface IOption extends Document {
+	// Properties
+	_id: Schema.Types.ObjectId
 	name: string // The name of the option
 	imageURL?: string // An image of the option
 	price: number // The price of the option
+
+	// Timestamps
 	createdAt: Date
 	updatedAt: Date
 }

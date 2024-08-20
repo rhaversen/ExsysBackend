@@ -44,6 +44,15 @@
 		"saltRounds": 10
 	},
 	"cors": {
-		"origin": "https://kantine.nyskivehus.dk"
+		"origin": "https://kantine.nyskivehus.dk",
+		"credentials": true
+	},
+	"cookieOptions": {
+		"httpOnly": true,
+		"secure": false,
+		"SameSite": "strict"
+	},
+	"session": {
+		"expiry": 2592000000
 	}
 }

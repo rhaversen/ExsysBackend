@@ -5,6 +5,7 @@ import Router from 'express'
 
 // Own modules
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
+import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
 // Controller functions
 import { createProduct, deleteProduct, getProducts, patchProduct } from '../controllers/productController.js'
@@ -15,7 +16,7 @@ const router = Router()
 /**
  * @route POST api/v1/products
  * @desc Create a new product
- * @access Public
+ * @access Private
  * @param {string} req.body.name - The name of the product.
  * @param {number} req.body.price - The price of the product.
  * @param {string} req.body.imageURL - The image URL of the product.
@@ -25,24 +26,26 @@ const router = Router()
  * @return {object} res.body - The newly created product.
  */
 router.post('/',
+	isAdmin,
 	asyncErrorHandler(createProduct)
 )
 
 /**
  * @route GET api/v1/products
  * @desc Get all products
- * @access Public
+ * @access Private
  * @return {number} res.status - The status code of the HTTP response.
  * @return {Array<object>} res.body - The products.
  */
 router.get('/',
+	isAdminOrKiosk,
 	asyncErrorHandler(getProducts)
 )
 
 /**
  * @route PATCH api/v1/products/:id
  * @desc Update a product
- * @access Public
+ * @access Private
  * @param {string} req.params.id - The id of the product to be patched.
  * @param {string} [req.body.name] - The name of the product (optional).
  * @param {number} [req.body.price] - The price of the product (optional).
@@ -53,18 +56,20 @@ router.get('/',
  * @return {object} res.body - The updated product.
  */
 router.patch('/:id',
+	isAdmin,
 	asyncErrorHandler(patchProduct)
 )
 
 /**
  * @route DELETE api/v1/products/:id
  * @desc Delete a product
- * @access Public
+ * @access Private
  * @param {string} req.params.id - The id of the product to be deleted.
  * @param {boolean} req.body.confirm - Confirm the deletion.
  * @return {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
+	isAdmin,
 	asyncErrorHandler(deleteProduct)
 )
 

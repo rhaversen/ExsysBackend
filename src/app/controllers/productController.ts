@@ -50,37 +50,35 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 export async function patchProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching product')
 
-	// Create a new object with only the allowed fields
-	const allowedFields: Record<string, unknown> = {
-		name: req.body.name,
-		price: req.body.price,
-		imageURL: req.body.imageURL,
-		orderWindow: req.body.orderWindow,
-		options: req.body.options
-	}
-
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const product = await ProductModel.findByIdAndUpdate(
-			req.params.id,
-			{ $set: allowedFields },
-			{
-				new: true
-			}
-		).populate('options').session(session)
+		// Retrieve the existing product document
+		const product = await ProductModel.findById(req.params.id).session(session)
 
 		if (product === null || product === undefined) {
 			res.status(404).json({ error: 'Produkt ikke fundet' })
 			return
 		}
 
+		// Manually set each field from allowed fields if it's present in the request body
+		if (req.body.name !== undefined) product.name = req.body.name
+		if (req.body.price !== undefined) product.price = req.body.price
+		if (req.body.imageURL !== undefined) product.imageURL = req.body.imageURL
+		if (req.body.orderWindow !== undefined) product.orderWindow = req.body.orderWindow
+		if (req.body.options !== undefined) product.options = req.body.options
+
+		// Validate and save the updated document
 		await product.validate()
+		await product.save({ session })
+
+		// Populate options if needed after update
+		await product.populate('options')
 
 		await session.commitTransaction()
 
-		res.json(product)
+		res.json(product) // Ensure response only includes appropriate data
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
