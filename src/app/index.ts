@@ -100,7 +100,7 @@ app.use('/v1/options', mediumSensitivityApiLimiter, optionRoutes)
 app.use('/service', mediumSensitivityApiLimiter, serviceRoutes)
 app.use('/v1/auth', mediumSensitivityApiLimiter, authRoutes)
 app.use('/v1/activities', mediumSensitivityApiLimiter, activityRoutes)
-app.use('/kiosks', mediumSensitivityApiLimiter, kioskRoutes)
+app.use('/v1/kiosks', mediumSensitivityApiLimiter, kioskRoutes)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
