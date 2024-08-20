@@ -120,7 +120,7 @@ export async function createNewKioskTag (req: Request, res: Response, next: Next
 
 		const kioskTag = await kiosk.generateNewKioskTag()
 
-		res.status(201).json({ kioskTag })
+		res.status(200).json({ kioskTag })
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
