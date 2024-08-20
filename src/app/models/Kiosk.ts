@@ -30,7 +30,6 @@ export interface IKiosk extends Document {
 const kioskSchema = new Schema<IKiosk>({
 	kioskTag: {
 		type: Schema.Types.String,
-		required: true,
 		unique: true,
 		trim: true
 	},
