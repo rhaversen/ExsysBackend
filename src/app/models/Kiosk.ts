@@ -46,6 +46,20 @@ const kioskSchema = new Schema<IKiosk>({
 	timestamps: true
 })
 
+// Validations
+kioskSchema.path('kioskTag').validate(async function (v: string) {
+	const foundKioskWithTag = await KioskModel.findOne({ kioskTag: v, _id: { $ne: this._id } })
+	return foundKioskWithTag === null || foundKioskWithTag === undefined
+}, 'KioskTag is already in use')
+
+kioskSchema.path('kioskTag').validate(function (v: string) {
+	return /^[0-9]+$/.test(v)
+}, 'KioskTag must only contain numbers')
+
+kioskSchema.path('activities').validate(function (v: Schema.Types.ObjectId[]) {
+	return new Set(v).size === v.length
+}, 'Activities must be unique')
+
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {
 	logger.silly('Saving kiosk')
