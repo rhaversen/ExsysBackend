@@ -50,7 +50,7 @@ const winstonLogger = createLogger({
 					return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`
 				})
 			),
-			level: 'info'
+			level: process.env.NODE_ENV === 'development' ? 'silly' : 'info' // Log all levels in development, else log info and above
 		})
 	]
 })

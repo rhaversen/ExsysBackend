@@ -15,7 +15,7 @@ interface OrderItem {
 
 interface CreateOrderRequest extends Request {
 	body: {
-		roomId?: string
+		activityId?: string
 		products?: OrderItem[]
 		options?: OrderItem[]
 	}
@@ -59,7 +59,7 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
-		roomId: req.body.roomId,
+		activityId: req.body.activityId,
 		products: req.body.products,
 		options: req.body.options
 	}
@@ -119,10 +119,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 }
 
 export async function updateOrderStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
-	const {
-		orderIds,
-		status
-	} = req.body
+	const { orderIds, status } = req.body
 
 	if (orderIds === undefined || status === undefined) {
 		res.status(400).json({ error: 'Mangler orderIds eller status' })
@@ -138,18 +135,20 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 	session.startTransaction()
 
 	try {
-		await OrderModel.updateMany(
-			{ _id: { $in: orderIds } },
-			{ $set: { status } },
-			{
-				new: true
-			}
-		).session(session)
+		const ordersToUpdate = await OrderModel.find({ _id: { $in: orderIds } }).session(session)
 
-		const updatedOrders = await OrderModel.find({ _id: { $in: orderIds } }).session(session)
+		if (ordersToUpdate.length === 0) {
+			res.status(404).json({ error: 'Ingen ordre fundet' })
+			return
+		}
 
-		for (const updatedOrder of updatedOrders) {
-			await updatedOrder.validate()
+		const updatedOrders = []
+
+		for (const order of ordersToUpdate) {
+			order.status = status // Update the status
+			await order.validate() // Validate any changes
+			await order.save({ session }) // Save each order individually
+			updatedOrders.push(order) // Collect the updated orders for response
 		}
 
 		await session.commitTransaction()

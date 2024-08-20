@@ -11,6 +11,8 @@ import OptionModel from './Option.js'
 
 // Interfaces
 export interface IProduct extends Document {
+	// Properties
+	_id: Schema.Types.ObjectId
 	name: string
 	price: number
 	imageURL?: string
@@ -25,6 +27,8 @@ export interface IProduct extends Document {
 		}
 	}
 	options?: Schema.Types.ObjectId[]
+
+	// Timestamps
 	createdAt: Date
 	updatedAt: Date
 }

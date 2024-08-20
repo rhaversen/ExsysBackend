@@ -48,37 +48,30 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 export async function patchOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching option')
 
-	// Create a new object with only the allowed fields
-	const allowedFields: Record<string, unknown> = {
-		name: req.body.name,
-		imageURL: req.body.imageURL,
-		price: req.body.price
-	}
-
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const option = await OptionModel.findByIdAndUpdate(
-			req.params.id,
-			{
-				$set: allowedFields
-			},
-			{
-				new: true
-			}
-		).session(session)
+		// Retrieve the existing option document
+		const option = await OptionModel.findById(req.params.id).session(session)
 
 		if (option === null || option === undefined) {
 			res.status(404).json({ error: 'Tilvalg ikke fundet' })
 			return
 		}
 
+		// Manually set each field from allowed fields if it's present in the request body
+		if (req.body.name !== undefined) option.name = req.body.name
+		if (req.body.imageURL !== undefined) option.imageURL = req.body.imageURL
+		if (req.body.price !== undefined) option.price = req.body.price
+
+		// Validate and save the updated document
 		await option.validate()
+		await option.save({ session })
 
 		await session.commitTransaction()
 
-		res.json(option)
+		res.json(option) // Ensure response only includes appropriate data
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

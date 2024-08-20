@@ -1,4 +1,10 @@
+// file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
+import AdminModel from '../app/models/Admin.js'
 import OptionModel from '../app/models/Option.js'
+import OrderModel from '../app/models/Order.js'
 import ProductModel from '../app/models/Product.js'
 import RoomModel from '../app/models/Room.js'
 import logger from '../app/utils/logger.js'
@@ -415,7 +421,7 @@ const option3 = await OptionModel.create({
 })
 
 // Products with options
-await ProductModel.create({
+const product1 = await ProductModel.create({
 	name: 'One option',
 	price: 5,
 	imageURL: 'https://via.placeholder.com/150',
@@ -431,7 +437,7 @@ await ProductModel.create({
 		}
 	}
 })
-await ProductModel.create({
+const product2 = await ProductModel.create({
 	name: 'Two options',
 	price: 10,
 	imageURL: 'https://via.placeholder.com/150',
@@ -447,7 +453,7 @@ await ProductModel.create({
 		}
 	}
 })
-await ProductModel.create({
+const product3 = await ProductModel.create({
 	name: 'Three options',
 	price: 15,
 	imageURL: 'https://via.placeholder.com/150',
@@ -513,15 +519,15 @@ await ProductModel.create({
 })
 
 // Rooms
-await RoomModel.create({
+const room1 = await RoomModel.create({
 	name: 'Billiard Room',
 	description: 'A room for billiards'
 })
-await RoomModel.create({
+const room2 = await RoomModel.create({
 	name: 'Library Room',
 	description: 'A room for reading'
 })
-await RoomModel.create({
+const room3 = await RoomModel.create({
 	name: 'Conservatory Room',
 	description: 'A room for music'
 })
@@ -548,6 +554,57 @@ await RoomModel.create({
 await RoomModel.create({
 	name: 'Lounge Room',
 	description: 'A room for lounging'
+})
+
+// Orders
+await OrderModel.create({
+	roomId: room1.id,
+	products: [{
+		id: product1.id,
+		quantity: 1
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}]
+})
+await OrderModel.create({
+	roomId: room2.id,
+	products: [{
+		id: product2.id,
+		quantity: 2
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}, {
+		id: option2.id,
+		quantity: 2
+	}]
+})
+await OrderModel.create({
+	roomId: room3.id,
+	products: [{
+		id: product3.id,
+		quantity: 3
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}, {
+		id: option2.id,
+		quantity: 2
+	}, {
+		id: option3.id,
+		quantity: 3
+	}]
+})
+
+// Admins
+await AdminModel.create({
+	name: 'Admin',
+	email: 'test@test.com',
+	password: 'password'
 })
 
 logger.info('Database seeded')
