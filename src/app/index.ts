@@ -171,7 +171,7 @@ export async function shutDown (): Promise<void> {
 gracefulShutdown(server,
 	{
 		signals: 'SIGINT SIGTERM',
-		timeout: 10000,							// Timeout in ms
+		timeout: 20000,							// Timeout in ms
 		forceExit: true,						// Trigger process.exit() at the end of shutdown process
 		development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
 		// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down

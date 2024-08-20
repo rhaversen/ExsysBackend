@@ -43,7 +43,7 @@ const cleanDatabase = async function (): Promise<void> {
 }
 
 before(async function () {
-	this.timeout(10000)
+	this.timeout(20000)
 	// Setting environment
 	process.env.NODE_ENV = 'test'
 
@@ -58,7 +58,7 @@ before(async function () {
 	gracefulShutdownFunction = gracefulShutdown(app.server,
 		{
 			signals: 'SIGINT SIGTERM',
-			timeout: 10000,							// Timeout in ms
+			timeout: 20000,							// Timeout in ms
 			forceExit: false,						// Trigger process.exit() at the end of shutdown process
 			development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
 			// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
@@ -78,7 +78,7 @@ afterEach(async function () {
 })
 
 after(async function () {
-	this.timeout(10000)
+	this.timeout(20000)
 	await gracefulShutdownFunction()
 
 	// exit the process after 1 second
