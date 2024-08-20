@@ -79,42 +79,42 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 
 	const { password, confirmPassword } = req.body as Record<string, unknown>
 
-	if ((password !== undefined || confirmPassword !== undefined) && (password !== confirmPassword)) {
-		res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
-		return
-	}
-
-	// Create a new object with only the allowed fields
-	const allowedFields: Record<string, unknown> = {
-		name: req.body.name,
-		kioskTag: req.body.kioskTag,
-		password: req.body.password,
-		activities: req.body.activities
+	if (password !== undefined) {
+		if (confirmPassword === undefined) {
+			res.status(400).json({ error: 'Bekræft password mangler' })
+			return
+		} else if (password !== confirmPassword) {
+			res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
+			return
+		}
 	}
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const kiosk = await KioskModel.findByIdAndUpdate(
-			req.params.id,
-			{ $set: allowedFields },
-			{
-				new: true
-			}
-		).session(session)
+		const kiosk = await KioskModel.findById(req.params.id).session(session)
 
 		if (kiosk === null || kiosk === undefined) {
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
+		// Set fields directly, checking for undefined to ensure not overwriting with undefined
+		if (req.body.name !== undefined) kiosk.name = req.body.name
+		if (req.body.kioskTag !== undefined) kiosk.kioskTag = req.body.kioskTag
+		if (req.body.password !== undefined) kiosk.password = req.body.password
+		if (req.body.activities !== undefined) kiosk.activities = req.body.activities
+
+		// Validate and save the updated document
 		await kiosk.validate()
+		await kiosk.save({ session })
 
 		await session.commitTransaction()
-
 		res.status(200).json(kiosk)
 	} catch (error) {
+		await session.abortTransaction()
+
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

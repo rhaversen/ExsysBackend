@@ -68,35 +68,31 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 export async function patchRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching room')
 
-	// Create a new object with only the allowed fields
-	const allowedFields: Record<string, unknown> = {
-		name: req.body.name,
-		description: req.body.description
-	}
-
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const room = await RoomModel.findByIdAndUpdate(
-			req.params.id,
-			{ $set: allowedFields },
-			{
-				new: true
-			}
-		).session(session)
+		// Retrieve the existing room document
+		const room = await RoomModel.findById(req.params.id).session(session)
 
 		if (room === null || room === undefined) {
 			res.status(404).json({ error: 'Rum ikke fundet' })
 			return
 		}
 
+		// Manually set each field from allowed fields if it's present in the request body
+		if (req.body.name !== undefined) room.name = req.body.name
+		if (req.body.description !== undefined) room.description = req.body.description
+
+		// Validate and save the updated document
 		await room.validate()
+		await room.save({ session })
 
 		await session.commitTransaction()
 
-		res.status(200).json(room)
+		res.status(200).json(room) // Ensure response only includes appropriate data
 	} catch (error) {
+		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
