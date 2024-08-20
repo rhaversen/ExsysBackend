@@ -28,6 +28,9 @@ describe('POST /v1/admins', function () {
 		const admin = await AdminModel.findOne({})
 		expect(admin).to.exist
 		expect(admin).to.have.property('name', testAdminFields1.name)
+		expect(admin).to.have.property('email', testAdminFields1.email)
+		expect(admin).to.have.property('password')
+		expect(await admin?.comparePassword(testAdminFields1.password)).to.be.true
 	})
 
 	it('should return the newly created object', async function () {
@@ -143,13 +146,13 @@ describe('PATCH /v1/admins', function () {
 	})
 
 	it('should patch an admin', async function () {
-		const oldAdmin = await AdminModel.findOne({})
 		await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields)
 		const admin = await AdminModel.findOne({})
 
 		expect(admin?.name).to.equal(updatedFields.name)
 		expect(admin?.email).to.equal(updatedFields.email)
-		expect(oldAdmin?.password).to.not.equal(admin?.password)
+		const passwordMatch = await admin?.comparePassword(updatedFields.password)
+		expect(passwordMatch).to.be.true
 	})
 
 	it('should return the patched admin', async function () {

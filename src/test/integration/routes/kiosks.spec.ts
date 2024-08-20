@@ -19,7 +19,10 @@ import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 describe('POST /v1/kiosks', function () {
 	describe('No activities', function () {
 		const testKioskFields = {
-			kioskTag: '12345'
+			name: 'Test Kiosk',
+			kioskTag: '12345',
+			password: 'Test Password',
+			confirmPassword: 'Test Password'
 		}
 
 		it('should have status 201', async function () {
@@ -34,13 +37,19 @@ describe('POST /v1/kiosks', function () {
 			const kiosk = await KioskModel.findOne({})
 
 			expect(kiosk).to.exist
-			expect(kiosk?.kioskTag).to.equal(testKioskFields.kioskTag)
+			expect(kiosk).to.have.property('name', testKioskFields.name)
+			expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
+			expect(kiosk).to.have.property('password')
+			const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
+			expect(passwordMatch).to.be.true
 		})
 
 		it('should return the newly created object', async function () {
 			const response = await agent.post('/v1/kiosks').send(testKioskFields)
 
-			expect(response.body.kioskTag).to.equal(testKioskFields.kioskTag)
+			expect(response.body).to.have.property('name', testKioskFields.name)
+			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
+			expect(response.body).to.have.property('password')
 		})
 
 		it('should have an empty activities array', async function () {
@@ -52,6 +61,9 @@ describe('POST /v1/kiosks', function () {
 
 	describe('No kioskTag', function () {
 		let testKioskFields: {
+			name: string
+			password: string
+			confirmPassword: string
 			activities: mongoose.Types.ObjectId[]
 		}
 
@@ -75,6 +87,9 @@ describe('POST /v1/kiosks', function () {
 			})
 
 			testKioskFields = {
+				name: 'Test Kiosk',
+				password: 'Test Password',
+				confirmPassword: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 			}
 		})
@@ -91,6 +106,8 @@ describe('POST /v1/kiosks', function () {
 			const kiosk = await KioskModel.findOne({})
 
 			expect(kiosk).to.exist
+			expect(kiosk).to.have.property('name', testKioskFields.name)
+			expect(kiosk).to.have.property('kioskTag')
 			const populatedKiosk = await kiosk?.populate('activities')
 			expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
 			expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
@@ -100,13 +117,18 @@ describe('POST /v1/kiosks', function () {
 			const response = await agent.post('/v1/kiosks').send(testKioskFields)
 
 			expect(response.body.kioskTag).to.exist
+			expect(response.body).to.have.property('name', testKioskFields.name)
+			expect(response.body).to.have.property('activities')
 			expect(response.body.activities).to.have.members(testKioskFields.activities)
 		})
 	})
 
 	describe('All fields', function () {
 		let testKioskFields: {
+			name: string
 			kioskTag: string
+			password: string
+			confirmPassword: string
 			activities: mongoose.Types.ObjectId[]
 		}
 
@@ -130,7 +152,10 @@ describe('POST /v1/kiosks', function () {
 			})
 
 			testKioskFields = {
+				name: 'Test Kiosk',
 				kioskTag: '12345',
+				password: 'Test Password',
+				confirmPassword: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 			}
 		})
@@ -159,6 +184,10 @@ describe('POST /v1/kiosks', function () {
 
 			expect(kiosk).to.exist
 			expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
+			expect(kiosk).to.have.property('password')
+			const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
+			expect(passwordMatch).to.be.true
+			expect(kiosk).to.have.property('name', testKioskFields.name)
 			const populatedKiosk = await kiosk?.populate('activities')
 			expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
 			expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
@@ -167,6 +196,7 @@ describe('POST /v1/kiosks', function () {
 		it('should return the newly created object', async function () {
 			const response = await agent.post('/v1/kiosks').send(testKioskFields)
 
+			expect(response.body).to.have.property('name', testKioskFields.name)
 			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
 			expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
 		})
@@ -176,7 +206,9 @@ describe('POST /v1/kiosks', function () {
 describe('GET /v1/kiosks/:id', function () {
 	let testKiosk1: IKiosk
 	let testKioskFields: {
+		name: string
 		kioskTag: string
+		password: string
 		activities: mongoose.Types.ObjectId[]
 	}
 
@@ -200,7 +232,9 @@ describe('GET /v1/kiosks/:id', function () {
 		})
 
 		testKioskFields = {
+			name: 'Test Kiosk',
 			kioskTag: '12345',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 		}
 
@@ -211,6 +245,7 @@ describe('GET /v1/kiosks/:id', function () {
 		const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`)
 
 		expect(response).to.have.status(200)
+		expect(response.body).to.have.property('name', testKioskFields.name)
 		expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
 		expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
 	})
@@ -224,11 +259,15 @@ describe('GET /v1/kiosks/:id', function () {
 
 describe('GET /v1/kiosks', function () {
 	let testKioskFields1: {
+		name: string
 		kioskTag: string
+		password: string
 		activities: mongoose.Types.ObjectId[]
 	}
 	let testKioskFields2: {
+		name: string
 		kioskTag: string
+		password: string
 		activities: mongoose.Types.ObjectId[]
 	}
 
@@ -252,11 +291,15 @@ describe('GET /v1/kiosks', function () {
 		})
 
 		testKioskFields1 = {
+			name: 'Test Kiosk 1',
 			kioskTag: '12345',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 		}
 		testKioskFields2 = {
+			name: 'Test Kiosk 2',
 			kioskTag: '54321',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString()]
 		}
 
@@ -276,8 +319,10 @@ describe('GET /v1/kiosks', function () {
 		expect(response.body).to.be.an('array')
 		expect(response.body).to.have.lengthOf(2)
 		expect(response.body[0]).to.have.property('kioskTag', testKioskFields1.kioskTag)
+		expect(response.body[0]).to.have.property('name', testKioskFields1.name)
 		expect(response.body[0]).to.have.property('activities').that.have.members(testKioskFields1.activities)
 		expect(response.body[1]).to.have.property('kioskTag', testKioskFields2.kioskTag)
+		expect(response.body[1]).to.have.property('name', testKioskFields2.name)
 		expect(response.body[1]).to.have.property('activities').that.have.members(testKioskFields2.activities)
 	})
 })
@@ -289,11 +334,15 @@ describe('PATCH /v1/kiosks/:id', function () {
 	let testActivity2: IActivity
 
 	let testKioskFields1: {
+		name: string
 		kioskTag: string
+		password: string
 		activities: mongoose.Types.ObjectId[]
 	}
 	let testKioskFields2: {
+		name: string
 		kioskTag: string
+		password: string
 		activities: mongoose.Types.ObjectId[]
 	}
 
@@ -317,11 +366,15 @@ describe('PATCH /v1/kiosks/:id', function () {
 		})
 
 		testKioskFields1 = {
+			name: 'Test Kiosk 1',
 			kioskTag: '12345',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 		}
 		testKioskFields2 = {
+			name: 'Test Kiosk 2',
 			kioskTag: '54321',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString()]
 		}
 
@@ -376,6 +429,31 @@ describe('PATCH /v1/kiosks/:id', function () {
 		const kiosk = await KioskModel.findById(testKiosk1.id)
 
 		expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
+	})
+
+	it('should update the password with confirmPassword', async function () {
+		const updatedFields = {
+			password: 'New Password',
+			confirmPassword: 'New Password'
+		}
+
+		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+		const kiosk = await KioskModel.findById(testKiosk1.id)
+		expect(kiosk).to.have.property('password')
+		const passwordMatch = await kiosk?.comparePassword(updatedFields.password)
+		expect(passwordMatch).to.be.true
+	})
+
+	it('should require password and confirmPassword to match', async function () {
+		const updatedFields = {
+			password: 'New Password',
+			confirmPassword: 'Different Password'
+		}
+
+		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+		expect(response).to.have.status(400)
 	})
 
 	it('should not update other fields', async function () {
@@ -446,9 +524,15 @@ describe('PATCH /v1/kiosks/:id/kioskTag', function () {
 			name: 'Room 1',
 			description: 'Description for Room 1'
 		})
+		const testActivity1 = await ActivityModel.create({
+			name: 'Activity 1',
+			roomId: testRoom1.id
+		})
 		testKiosk1 = await KioskModel.create({
 			name: 'Kiosk 1',
-			roomId: testRoom1.id
+			kioskTag: '12345',
+			password: 'Test Password',
+			activities: [testActivity1.id]
 		})
 	})
 
@@ -487,7 +571,9 @@ describe('DELETE /v1/kiosks/:id', function () {
 	let testActivity2: IActivity
 
 	let testKioskFields1: {
+		name: string
 		kioskTag: string
+		password: string
 		activities: mongoose.Types.ObjectId[]
 	}
 
@@ -511,7 +597,9 @@ describe('DELETE /v1/kiosks/:id', function () {
 		})
 
 		testKioskFields1 = {
+			name: 'Test Kiosk',
 			kioskTag: '12345',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 		}
 
@@ -531,7 +619,9 @@ describe('DELETE /v1/kiosks/:id', function () {
 
 	it('should not delete other kiosks', async function () {
 		const testKioskFields2 = {
+			name: 'Test Kiosk 2',
 			kioskTag: '54321',
+			password: 'Test Password',
 			activities: [testActivity1.id.toString()]
 		}
 		const testKiosk2 = await KioskModel.create(testKioskFields2)
