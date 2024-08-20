@@ -20,6 +20,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		password: req.body.password,
 		activities: req.body.activities
@@ -85,6 +86,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
+		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		password: req.body.password,
 		activities: req.body.activities

@@ -24,6 +24,7 @@ const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 export interface IKiosk extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
+	name: string // Name of the kiosk
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
@@ -39,6 +40,11 @@ export interface IKiosk extends Document {
 
 // Schema
 const kioskSchema = new Schema<IKiosk>({
+	name: {
+		type: Schema.Types.String,
+		required: true,
+		trim: true
+	},
 	kioskTag: {
 		type: Schema.Types.String,
 		unique: true,
