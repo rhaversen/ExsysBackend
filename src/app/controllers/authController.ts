@@ -50,7 +50,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 export async function loginKioskLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in kiosk')
-	// Check if email and password are provided
+	// Check if kioskTag and password are provided
 	if (req.body.kioskTag === undefined || req.body.password === undefined) {
 		res.status(400).json({ auth: false, error: 'kioskTag or password is missing.' })
 		return
