@@ -58,7 +58,6 @@ const kioskSchema = new Schema<IKiosk>({
 	activities: {
 		type: [Schema.Types.ObjectId],
 		ref: 'Activity',
-		required: true,
 		default: []
 	}
 }, {
