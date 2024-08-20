@@ -57,6 +57,8 @@ router.get('/',
  * @param {string} req.params.id - The id of the kiosk to be patched.
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.roomId] - The id of the room the kiosk is in (optional).
+ * @param {string} [req.body.password] - The password of the kiosk (optional).
+ * @param {string} [req.body.confirmPassword] - The password confirmation of the kiosk (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The updated kiosk.
  */
