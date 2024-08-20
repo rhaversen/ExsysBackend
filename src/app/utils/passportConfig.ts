@@ -77,22 +77,25 @@ const configurePassport = (passport: PassportStatic): void => {
 	passport.deserializeUser(function (id, done) {
 		AdminModel.findById(id).exec()
 			.then(admin => {
-				if (admin === null || admin === undefined) {
-					done(new Error('User not found'), false)
+				if (admin !== null && admin !== undefined) {
+					done(null, admin) // Call done with admin if found
+				} else {
+					// Only search for kiosk if no admin is found
+					KioskModel.findById(id).exec()
+						.then(kiosk => {
+							if (kiosk !== null && kiosk !== undefined) {
+								done(null, kiosk) // Call done with kiosk if found
+							} else {
+								done(new Error('User not found'), false) // No user found
+							}
+						})
+						.catch(err => {
+							done(err, false) // Error handling for kiosk query
+						})
 				}
-				done(null, admin)
 			})
-			.catch(() => {
-				KioskModel.findById(id).exec()
-					.then(kiosk => {
-						if (kiosk === null || kiosk === undefined) {
-							done(new Error('User not found'), false)
-						}
-						done(null, kiosk)
-					})
-					.catch(err => {
-						done(err, false)
-					})
+			.catch(err => {
+				done(err, false) // Error handling for admin query
 			})
 	})
 }
