@@ -16,119 +16,200 @@ import { chaiAppServer as agent } from '../../testSetup.js'
 import RoomModel from '../../../app/models/Room.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 
-describe('POST /v1/kiosks', function () {
-	describe('No activities', function () {
-		const testKioskFields = {
-			name: 'Test Kiosk',
-			kioskTag: '12345',
-			password: 'Test Password',
-			confirmPassword: 'Test Password'
-		}
-
-		it('should have status 201', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
-
-			expect(response).to.have.status(201)
-		})
-
-		it('should create a new kiosk', async function () {
-			await agent.post('/v1/kiosks').send(testKioskFields)
-
-			const kiosk = await KioskModel.findOne({})
-
-			expect(kiosk).to.exist
-			expect(kiosk).to.have.property('name', testKioskFields.name)
-			expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
-			expect(kiosk).to.have.property('password')
-			const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
-			expect(passwordMatch).to.be.true
-		})
-
-		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
-
-			expect(response.body).to.have.property('name', testKioskFields.name)
-			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-			expect(response.body).to.have.property('password')
-		})
-
-		it('should have an empty activities array', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
-
-			expect(response.body.activities).to.be.an('array').that.is.empty
-		})
-	})
-
-	describe('No kioskTag', function () {
-		let testKioskFields: {
-			name: string
-			password: string
-			confirmPassword: string
-			activities: mongoose.Types.ObjectId[]
-		}
-
-		beforeEach(async function () {
-			const testRoom1 = await RoomModel.create({
-				name: 'Room 1',
-				description: 'Description for Room 1'
-			})
-			const testRoom2 = await RoomModel.create({
-				name: 'Room 2',
-				description: 'Description for Room 2'
-			})
-
-			const testActivity1 = await ActivityModel.create({
-				name: 'Activity 1',
-				roomId: testRoom1.id
-			})
-			const testActivity2 = await ActivityModel.create({
-				name: 'Activity 2',
-				roomId: testRoom2.id
-			})
-
-			testKioskFields = {
+describe('Kiosks routes', function () {
+	describe('POST /v1/kiosks', function () {
+		describe('No activities', function () {
+			const testKioskFields = {
 				name: 'Test Kiosk',
+				kioskTag: '12345',
 				password: 'Test Password',
-				confirmPassword: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				confirmPassword: 'Test Password'
 			}
+
+			it('should have status 201', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response).to.have.status(201)
+			})
+
+			it('should create a new kiosk', async function () {
+				await agent.post('/v1/kiosks').send(testKioskFields)
+
+				const kiosk = await KioskModel.findOne({})
+
+				expect(kiosk).to.exist
+				expect(kiosk).to.have.property('name', testKioskFields.name)
+				expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(kiosk).to.have.property('password')
+				const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
+				expect(passwordMatch).to.be.true
+			})
+
+			it('should return the newly created object', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response.body).to.have.property('name', testKioskFields.name)
+				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(response.body).to.have.property('password')
+			})
+
+			it('should have an empty activities array', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response.body.activities).to.be.an('array').that.is.empty
+			})
 		})
 
-		it('should have status 201', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
+		describe('No kioskTag', function () {
+			let testKioskFields: {
+				name: string
+				password: string
+				confirmPassword: string
+				activities: mongoose.Types.ObjectId[]
+			}
 
-			expect(response).to.have.status(201)
+			beforeEach(async function () {
+				const testRoom1 = await RoomModel.create({
+					name: 'Room 1',
+					description: 'Description for Room 1'
+				})
+				const testRoom2 = await RoomModel.create({
+					name: 'Room 2',
+					description: 'Description for Room 2'
+				})
+
+				const testActivity1 = await ActivityModel.create({
+					name: 'Activity 1',
+					roomId: testRoom1.id
+				})
+				const testActivity2 = await ActivityModel.create({
+					name: 'Activity 2',
+					roomId: testRoom2.id
+				})
+
+				testKioskFields = {
+					name: 'Test Kiosk',
+					password: 'Test Password',
+					confirmPassword: 'Test Password',
+					activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				}
+			})
+
+			it('should have status 201', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response).to.have.status(201)
+			})
+
+			it('should create a new kiosk', async function () {
+				await agent.post('/v1/kiosks').send(testKioskFields)
+
+				const kiosk = await KioskModel.findOne({})
+
+				expect(kiosk).to.exist
+				expect(kiosk).to.have.property('name', testKioskFields.name)
+				expect(kiosk).to.have.property('kioskTag')
+				const populatedKiosk = await kiosk?.populate('activities')
+				expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
+				expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
+			})
+
+			it('should return the newly created object', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response.body.kioskTag).to.exist
+				expect(response.body).to.have.property('name', testKioskFields.name)
+				expect(response.body).to.have.property('activities')
+				expect(response.body.activities).to.have.members(testKioskFields.activities)
+			})
 		})
 
-		it('should create a new kiosk', async function () {
-			await agent.post('/v1/kiosks').send(testKioskFields)
+		describe('All fields', function () {
+			let testKioskFields: {
+				name: string
+				kioskTag: string
+				password: string
+				confirmPassword: string
+				activities: mongoose.Types.ObjectId[]
+			}
 
-			const kiosk = await KioskModel.findOne({})
+			beforeEach(async function () {
+				const testRoom1 = await RoomModel.create({
+					name: 'Room 1',
+					description: 'Description for Room 1'
+				})
+				const testRoom2 = await RoomModel.create({
+					name: 'Room 2',
+					description: 'Description for Room 2'
+				})
 
-			expect(kiosk).to.exist
-			expect(kiosk).to.have.property('name', testKioskFields.name)
-			expect(kiosk).to.have.property('kioskTag')
-			const populatedKiosk = await kiosk?.populate('activities')
-			expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
-			expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
-		})
+				const testActivity1 = await ActivityModel.create({
+					name: 'Activity 1',
+					roomId: testRoom1.id
+				})
+				const testActivity2 = await ActivityModel.create({
+					name: 'Activity 2',
+					roomId: testRoom2.id
+				})
 
-		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
+				testKioskFields = {
+					name: 'Test Kiosk',
+					kioskTag: '12345',
+					password: 'Test Password',
+					confirmPassword: 'Test Password',
+					activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				}
+			})
 
-			expect(response.body.kioskTag).to.exist
-			expect(response.body).to.have.property('name', testKioskFields.name)
-			expect(response.body).to.have.property('activities')
-			expect(response.body.activities).to.have.members(testKioskFields.activities)
+			it('should not allow setting the _id', async function () {
+				const newId = new mongoose.Types.ObjectId().toString()
+				const updatedFields = {
+					_id: newId
+				}
+
+				await agent.post('/v1/kiosks').send(updatedFields)
+				const kiosk = await KioskModel.findOne({})
+				expect(kiosk?.id.toString()).to.not.equal(newId)
+			})
+
+			it('should have status 201', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response).to.have.status(201)
+			})
+
+			it('should create a new kiosk', async function () {
+				await agent.post('/v1/kiosks').send(testKioskFields)
+
+				const kiosk = await KioskModel.findOne({})
+
+				expect(kiosk).to.exist
+				expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(kiosk).to.have.property('password')
+				const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
+				expect(passwordMatch).to.be.true
+				expect(kiosk).to.have.property('name', testKioskFields.name)
+				const populatedKiosk = await kiosk?.populate('activities')
+				expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
+				expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
+			})
+
+			it('should return the newly created object', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields)
+
+				expect(response.body).to.have.property('name', testKioskFields.name)
+				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
+			})
 		})
 	})
 
-	describe('All fields', function () {
+	describe('GET /v1/kiosks/:id', function () {
+		let testKiosk1: IKiosk
 		let testKioskFields: {
 			name: string
 			kioskTag: string
 			password: string
-			confirmPassword: string
 			activities: mongoose.Types.ObjectId[]
 		}
 
@@ -155,508 +236,429 @@ describe('POST /v1/kiosks', function () {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
 				password: 'Test Password',
-				confirmPassword: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
 			}
+
+			testKiosk1 = await KioskModel.create(testKioskFields)
 		})
 
-		it('should not allow setting the _id', async function () {
-			const newId = new mongoose.Types.ObjectId().toString()
-			const updatedFields = {
-				_id: newId
-			}
+		it('should return a kiosk', async function () {
+			const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`)
 
-			await agent.post('/v1/kiosks').send(updatedFields)
-			const kiosk = await KioskModel.findOne({})
-			expect(kiosk?.id.toString()).to.not.equal(newId)
-		})
-
-		it('should have status 201', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
-
-			expect(response).to.have.status(201)
-		})
-
-		it('should create a new kiosk', async function () {
-			await agent.post('/v1/kiosks').send(testKioskFields)
-
-			const kiosk = await KioskModel.findOne({})
-
-			expect(kiosk).to.exist
-			expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
-			expect(kiosk).to.have.property('password')
-			const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
-			expect(passwordMatch).to.be.true
-			expect(kiosk).to.have.property('name', testKioskFields.name)
-			const populatedKiosk = await kiosk?.populate('activities')
-			expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
-			expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
-		})
-
-		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/kiosks').send(testKioskFields)
-
+			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', testKioskFields.name)
 			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
 			expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
 		})
+
+		it('should return 404 if the kiosk does not exist', async function () {
+			const response = await agent.get(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`)
+
+			expect(response).to.have.status(404)
+		})
 	})
-})
 
-describe('GET /v1/kiosks/:id', function () {
-	let testKiosk1: IKiosk
-	let testKioskFields: {
-		name: string
-		kioskTag: string
-		password: string
-		activities: mongoose.Types.ObjectId[]
-	}
-
-	beforeEach(async function () {
-		const testRoom1 = await RoomModel.create({
-			name: 'Room 1',
-			description: 'Description for Room 1'
-		})
-		const testRoom2 = await RoomModel.create({
-			name: 'Room 2',
-			description: 'Description for Room 2'
-		})
-
-		const testActivity1 = await ActivityModel.create({
-			name: 'Activity 1',
-			roomId: testRoom1.id
-		})
-		const testActivity2 = await ActivityModel.create({
-			name: 'Activity 2',
-			roomId: testRoom2.id
-		})
-
-		testKioskFields = {
-			name: 'Test Kiosk',
-			kioskTag: '12345',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+	describe('GET /v1/kiosks', function () {
+		let testKioskFields1: {
+			name: string
+			kioskTag: string
+			password: string
+			activities: mongoose.Types.ObjectId[]
+		}
+		let testKioskFields2: {
+			name: string
+			kioskTag: string
+			password: string
+			activities: mongoose.Types.ObjectId[]
 		}
 
-		testKiosk1 = await KioskModel.create(testKioskFields)
-	})
+		beforeEach(async function () {
+			const testRoom1 = await RoomModel.create({
+				name: 'Room 1',
+				description: 'Description for Room 1'
+			})
+			const testRoom2 = await RoomModel.create({
+				name: 'Room 2',
+				description: 'Description for Room 2'
+			})
 
-	it('should return a kiosk', async function () {
-		const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`)
+			const testActivity1 = await ActivityModel.create({
+				name: 'Activity 1',
+				roomId: testRoom1.id
+			})
+			const testActivity2 = await ActivityModel.create({
+				name: 'Activity 2',
+				roomId: testRoom2.id
+			})
 
-		expect(response).to.have.status(200)
-		expect(response.body).to.have.property('name', testKioskFields.name)
-		expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-		expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
-	})
+			testKioskFields1 = {
+				name: 'Test Kiosk 1',
+				kioskTag: '12345',
+				password: 'Test Password',
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+			}
+			testKioskFields2 = {
+				name: 'Test Kiosk 2',
+				kioskTag: '54321',
+				password: 'Test Password',
+				activities: [testActivity1.id.toString()]
+			}
 
-	it('should return 404 if the kiosk does not exist', async function () {
-		const response = await agent.get(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`)
-
-		expect(response).to.have.status(404)
-	})
-})
-
-describe('GET /v1/kiosks', function () {
-	let testKioskFields1: {
-		name: string
-		kioskTag: string
-		password: string
-		activities: mongoose.Types.ObjectId[]
-	}
-	let testKioskFields2: {
-		name: string
-		kioskTag: string
-		password: string
-		activities: mongoose.Types.ObjectId[]
-	}
-
-	beforeEach(async function () {
-		const testRoom1 = await RoomModel.create({
-			name: 'Room 1',
-			description: 'Description for Room 1'
-		})
-		const testRoom2 = await RoomModel.create({
-			name: 'Room 2',
-			description: 'Description for Room 2'
+			await KioskModel.create(testKioskFields1)
+			await KioskModel.create(testKioskFields2)
 		})
 
-		const testActivity1 = await ActivityModel.create({
-			name: 'Activity 1',
-			roomId: testRoom1.id
-		})
-		const testActivity2 = await ActivityModel.create({
-			name: 'Activity 2',
-			roomId: testRoom2.id
+		it('should have status 200', async function () {
+			const response = await agent.get('/v1/kiosks')
+
+			expect(response).to.have.status(200)
 		})
 
-		testKioskFields1 = {
-			name: 'Test Kiosk 1',
-			kioskTag: '12345',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
-		}
-		testKioskFields2 = {
-			name: 'Test Kiosk 2',
-			kioskTag: '54321',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString()]
-		}
+		it('should return all kiosks', async function () {
+			const response = await agent.get('/v1/kiosks')
 
-		await KioskModel.create(testKioskFields1)
-		await KioskModel.create(testKioskFields2)
-	})
-
-	it('should have status 200', async function () {
-		const response = await agent.get('/v1/kiosks')
-
-		expect(response).to.have.status(200)
-	})
-
-	it('should return all kiosks', async function () {
-		const response = await agent.get('/v1/kiosks')
-
-		expect(response.body).to.be.an('array')
-		expect(response.body).to.have.lengthOf(2)
-		expect(response.body[0]).to.have.property('kioskTag', testKioskFields1.kioskTag)
-		expect(response.body[0]).to.have.property('name', testKioskFields1.name)
-		expect(response.body[0]).to.have.property('activities').that.have.members(testKioskFields1.activities)
-		expect(response.body[1]).to.have.property('kioskTag', testKioskFields2.kioskTag)
-		expect(response.body[1]).to.have.property('name', testKioskFields2.name)
-		expect(response.body[1]).to.have.property('activities').that.have.members(testKioskFields2.activities)
-	})
-})
-
-describe('PATCH /v1/kiosks/:id', function () {
-	let testKiosk1: IKiosk
-	let testKiosk2: IKiosk
-	let testActivity1: IActivity
-	let testActivity2: IActivity
-
-	let testKioskFields1: {
-		name: string
-		kioskTag: string
-		password: string
-		activities: mongoose.Types.ObjectId[]
-	}
-	let testKioskFields2: {
-		name: string
-		kioskTag: string
-		password: string
-		activities: mongoose.Types.ObjectId[]
-	}
-
-	beforeEach(async function () {
-		const testRoom1 = await RoomModel.create({
-			name: 'Room 1',
-			description: 'Description for Room 1'
-		})
-		const testRoom2 = await RoomModel.create({
-			name: 'Room 2',
-			description: 'Description for Room 2'
-		})
-
-		testActivity1 = await ActivityModel.create({
-			name: 'Activity 1',
-			roomId: testRoom1.id
-		})
-		testActivity2 = await ActivityModel.create({
-			name: 'Activity 2',
-			roomId: testRoom2.id
-		})
-
-		testKioskFields1 = {
-			name: 'Test Kiosk 1',
-			kioskTag: '12345',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
-		}
-		testKioskFields2 = {
-			name: 'Test Kiosk 2',
-			kioskTag: '54321',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString()]
-		}
-
-		testKiosk1 = await KioskModel.create(testKioskFields1)
-		testKiosk2 = await KioskModel.create(testKioskFields2)
-	})
-
-	it('should have status 200', async function () {
-		const updatedFields = {
-			kioskTag: '45678',
-			activities: [testKioskFields2.activities[0]]
-		}
-
-		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		expect(response).to.have.status(200)
-	})
-
-	it('should update the kiosk', async function () {
-		const updatedFields = {
-			kioskTag: '45678',
-			activities: [testActivity2.id.toString()]
-		}
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		const kiosk = await KioskModel.findById(testKiosk1.id)
-
-		expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
-		expect(kiosk?.activities[0].toString()).to.equal(updatedFields.activities[0])
-	})
-
-	it('should return the updated kiosk', async function () {
-		const updatedFields = {
-			kioskTag: '45678',
-			activities: [testActivity2.id.toString()]
-		}
-
-		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		expect(response.body).to.have.property('kioskTag', updatedFields.kioskTag)
-		expect(response.body.activities[0].toString()).to.equal(updatedFields.activities[0])
-	})
-
-	it('should allow a partial update', async function () {
-		const updatedFields = {
-			kioskTag: '45678'
-		}
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		const kiosk = await KioskModel.findById(testKiosk1.id)
-
-		expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
-	})
-
-	it('should update the password with confirmPassword', async function () {
-		const updatedFields = {
-			password: 'New Password',
-			confirmPassword: 'New Password'
-		}
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		const kiosk = await KioskModel.findById(testKiosk1.id)
-		expect(kiosk).to.have.property('password')
-		const passwordMatch = await kiosk?.comparePassword(updatedFields.password)
-		expect(passwordMatch).to.be.true
-	})
-
-	it('should require password and confirmPassword to match', async function () {
-		const updatedFields = {
-			password: 'New Password',
-			confirmPassword: 'Different Password'
-		}
-
-		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		expect(response).to.have.status(400)
-	})
-
-	it('should not update other fields', async function () {
-		const updatedFields = {
-			kioskTag: '45678',
-			activities: [testActivity2.id.toString()]
-		}
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		const kiosk = await KioskModel.findById(testKiosk1.id)
-
-		expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
-		const populatedKiosk = await kiosk?.populate('activities')
-		expect(populatedKiosk?.activities[0]).to.have.property('id', updatedFields.activities[0])
-	})
-
-	it('should not update other kiosks', async function () {
-		const updatedFields = {
-			kioskTag: '45678',
-			activities: [testActivity2.id.toString()]
-		}
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		const kiosk = await KioskModel.findById(testKiosk2.id)
-
-		expect(kiosk).to.have.property('kioskTag', testKioskFields2.kioskTag)
-	})
-
-	it('should allow updating tag to the current tag', async function () {
-		const updatedFields = {
-			kioskTag: testKioskFields1.kioskTag
-		}
-
-		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-
-		expect(response).to.have.status(200)
-	})
-
-	it('should not allow updating the _id', async function () {
-		const updatedFields = {
-			_id: new mongoose.Types.ObjectId().toString()
-		}
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
-		const kiosk = await KioskModel.findOne({})
-		expect(kiosk?.id.toString()).to.equal(testKiosk1.id)
-	})
-
-	it('should return 404 if the kiosk does not exist', async function () {
-		const updatedFields = {
-			kioskTag: '45678',
-			activities: [testActivity2.id.toString()]
-		}
-
-		const response = await agent.patch(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields)
-
-		expect(response).to.have.status(404)
-	})
-})
-
-describe('PATCH /v1/kiosks/:id/kioskTag', function () {
-	let testKiosk1: IKiosk
-
-	beforeEach(async function () {
-		const testRoom1 = await RoomModel.create({
-			name: 'Room 1',
-			description: 'Description for Room 1'
-		})
-		const testActivity1 = await ActivityModel.create({
-			name: 'Activity 1',
-			roomId: testRoom1.id
-		})
-		testKiosk1 = await KioskModel.create({
-			name: 'Kiosk 1',
-			kioskTag: '12345',
-			password: 'Test Password',
-			activities: [testActivity1.id]
+			expect(response.body).to.be.an('array')
+			expect(response.body).to.have.lengthOf(2)
+			expect(response.body[0]).to.have.property('kioskTag', testKioskFields1.kioskTag)
+			expect(response.body[0]).to.have.property('name', testKioskFields1.name)
+			expect(response.body[0]).to.have.property('activities').that.have.members(testKioskFields1.activities)
+			expect(response.body[1]).to.have.property('kioskTag', testKioskFields2.kioskTag)
+			expect(response.body[1]).to.have.property('name', testKioskFields2.name)
+			expect(response.body[1]).to.have.property('activities').that.have.members(testKioskFields2.activities)
 		})
 	})
 
-	it('should have status 200', async function () {
-		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}/kioskTag`)
+	describe('PATCH /v1/kiosks/:id', function () {
+		let testKiosk1: IKiosk
+		let testKiosk2: IKiosk
+		let testActivity1: IActivity
+		let testActivity2: IActivity
 
-		expect(response).to.have.status(200)
-	})
-
-	it('should update the kiosk', async function () {
-		const oldKioskTag = testKiosk1.kioskTag
-
-		await agent.patch(`/v1/kiosks/${testKiosk1.id}/kioskTag`)
-
-		const kiosk = await KioskModel.findById(testKiosk1.id)
-
-		expect(kiosk).to.have.property('kioskTag').that.is.not.equal(oldKioskTag)
-	})
-
-	it('should return the updated kiosk', async function () {
-		const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}/kioskTag`)
-
-		expect(response.body).to.have.property('kioskTag').that.is.not.equal(testKiosk1.kioskTag)
-	})
-
-	it('should return 404 if the kiosk does not exist', async function () {
-		const response = await agent.patch(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}/kioskTag`)
-
-		expect(response).to.have.status(404)
-	})
-})
-
-describe('DELETE /v1/kiosks/:id', function () {
-	let testKiosk1: IKiosk
-	let testActivity1: IActivity
-	let testActivity2: IActivity
-
-	let testKioskFields1: {
-		name: string
-		kioskTag: string
-		password: string
-		activities: mongoose.Types.ObjectId[]
-	}
-
-	beforeEach(async function () {
-		const testRoom1 = await RoomModel.create({
-			name: 'Room 1',
-			description: 'Description for Room 1'
-		})
-		const testRoom2 = await RoomModel.create({
-			name: 'Room 2',
-			description: 'Description for Room 2'
-		})
-
-		testActivity1 = await ActivityModel.create({
-			name: 'Activity 1',
-			roomId: testRoom1.id
-		})
-		testActivity2 = await ActivityModel.create({
-			name: 'Activity 2',
-			roomId: testRoom2.id
-		})
-
-		testKioskFields1 = {
-			name: 'Test Kiosk',
-			kioskTag: '12345',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+		let testKioskFields1: {
+			name: string
+			kioskTag: string
+			password: string
+			activities: mongoose.Types.ObjectId[]
+		}
+		let testKioskFields2: {
+			name: string
+			kioskTag: string
+			password: string
+			activities: mongoose.Types.ObjectId[]
 		}
 
-		testKiosk1 = await KioskModel.create(testKioskFields1)
+		beforeEach(async function () {
+			const testRoom1 = await RoomModel.create({
+				name: 'Room 1',
+				description: 'Description for Room 1'
+			})
+			const testRoom2 = await RoomModel.create({
+				name: 'Room 2',
+				description: 'Description for Room 2'
+			})
+
+			testActivity1 = await ActivityModel.create({
+				name: 'Activity 1',
+				roomId: testRoom1.id
+			})
+			testActivity2 = await ActivityModel.create({
+				name: 'Activity 2',
+				roomId: testRoom2.id
+			})
+
+			testKioskFields1 = {
+				name: 'Test Kiosk 1',
+				kioskTag: '12345',
+				password: 'Test Password',
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+			}
+			testKioskFields2 = {
+				name: 'Test Kiosk 2',
+				kioskTag: '54321',
+				password: 'Test Password',
+				activities: [testActivity1.id.toString()]
+			}
+
+			testKiosk1 = await KioskModel.create(testKioskFields1)
+			testKiosk2 = await KioskModel.create(testKioskFields2)
+		})
+
+		it('should have status 200', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testKioskFields2.activities[0]]
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			expect(response).to.have.status(200)
+		})
+
+		it('should update the kiosk', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			const kiosk = await KioskModel.findById(testKiosk1.id)
+
+			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
+			expect(kiosk?.activities[0].toString()).to.equal(updatedFields.activities[0])
+		})
+
+		it('should return the updated kiosk', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			expect(response.body).to.have.property('kioskTag', updatedFields.kioskTag)
+			expect(response.body.activities[0].toString()).to.equal(updatedFields.activities[0])
+		})
+
+		it('should allow a partial update', async function () {
+			const updatedFields = {
+				kioskTag: '45678'
+			}
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			const kiosk = await KioskModel.findById(testKiosk1.id)
+
+			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
+		})
+
+		it('should update the password with confirmPassword', async function () {
+			const updatedFields = {
+				password: 'New Password',
+				confirmPassword: 'New Password'
+			}
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			const kiosk = await KioskModel.findById(testKiosk1.id)
+			expect(kiosk).to.have.property('password')
+			const passwordMatch = await kiosk?.comparePassword(updatedFields.password)
+			expect(passwordMatch).to.be.true
+		})
+
+		it('should require password and confirmPassword to match', async function () {
+			const updatedFields = {
+				password: 'New Password',
+				confirmPassword: 'Different Password'
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			expect(response).to.have.status(400)
+		})
+
+		it('should not update other fields', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			const kiosk = await KioskModel.findById(testKiosk1.id)
+
+			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
+			const populatedKiosk = await kiosk?.populate('activities')
+			expect(populatedKiosk?.activities[0]).to.have.property('id', updatedFields.activities[0])
+		})
+
+		it('should not update other kiosks', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			const kiosk = await KioskModel.findById(testKiosk2.id)
+
+			expect(kiosk).to.have.property('kioskTag', testKioskFields2.kioskTag)
+		})
+
+		it('should allow updating tag to the current tag', async function () {
+			const updatedFields = {
+				kioskTag: testKioskFields1.kioskTag
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+
+			expect(response).to.have.status(200)
+		})
+
+		it('should not allow updating the _id', async function () {
+			const updatedFields = {
+				_id: new mongoose.Types.ObjectId().toString()
+			}
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
+			const kiosk = await KioskModel.findOne({})
+			expect(kiosk?.id.toString()).to.equal(testKiosk1.id)
+		})
+
+		it('should return 404 if the kiosk does not exist', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields)
+
+			expect(response).to.have.status(404)
+		})
 	})
 
-	it('should delete a kiosk', async function () {
-		const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: true })
+	describe('PATCH /v1/kiosks/:id/kioskTag', function () {
+		let testKiosk1: IKiosk
 
-		expect(response).to.have.status(204)
+		beforeEach(async function () {
+			const testRoom1 = await RoomModel.create({
+				name: 'Room 1',
+				description: 'Description for Room 1'
+			})
+			const testActivity1 = await ActivityModel.create({
+				name: 'Activity 1',
+				roomId: testRoom1.id
+			})
+			testKiosk1 = await KioskModel.create({
+				name: 'Kiosk 1',
+				kioskTag: '12345',
+				password: 'Test Password',
+				activities: [testActivity1.id]
+			})
+		})
 
-		expect(response.body).to.be.empty
-		const product = await KioskModel.findById(testKiosk1.id)
+		it('should have status 200', async function () {
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}/kioskTag`)
 
-		expect(product).to.not.exist
+			expect(response).to.have.status(200)
+		})
+
+		it('should update the kiosk', async function () {
+			const oldKioskTag = testKiosk1.kioskTag
+
+			await agent.patch(`/v1/kiosks/${testKiosk1.id}/kioskTag`)
+
+			const kiosk = await KioskModel.findById(testKiosk1.id)
+
+			expect(kiosk).to.have.property('kioskTag').that.is.not.equal(oldKioskTag)
+		})
+
+		it('should return the updated kiosk', async function () {
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}/kioskTag`)
+
+			expect(response.body).to.have.property('kioskTag').that.is.not.equal(testKiosk1.kioskTag)
+		})
+
+		it('should return 404 if the kiosk does not exist', async function () {
+			const response = await agent.patch(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}/kioskTag`)
+
+			expect(response).to.have.status(404)
+		})
 	})
 
-	it('should not delete other kiosks', async function () {
-		const testKioskFields2 = {
-			name: 'Test Kiosk 2',
-			kioskTag: '54321',
-			password: 'Test Password',
-			activities: [testActivity1.id.toString()]
+	describe('DELETE /v1/kiosks/:id', function () {
+		let testKiosk1: IKiosk
+		let testActivity1: IActivity
+		let testActivity2: IActivity
+
+		let testKioskFields1: {
+			name: string
+			kioskTag: string
+			password: string
+			activities: mongoose.Types.ObjectId[]
 		}
-		const testKiosk2 = await KioskModel.create(testKioskFields2)
 
-		await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: true })
+		beforeEach(async function () {
+			const testRoom1 = await RoomModel.create({
+				name: 'Room 1',
+				description: 'Description for Room 1'
+			})
+			const testRoom2 = await RoomModel.create({
+				name: 'Room 2',
+				description: 'Description for Room 2'
+			})
 
-		const kiosk = await KioskModel.findById(testKiosk2.id)
+			testActivity1 = await ActivityModel.create({
+				name: 'Activity 1',
+				roomId: testRoom1.id
+			})
+			testActivity2 = await ActivityModel.create({
+				name: 'Activity 2',
+				roomId: testRoom2.id
+			})
 
-		expect(kiosk).to.exist
-	})
+			testKioskFields1 = {
+				name: 'Test Kiosk',
+				kioskTag: '12345',
+				password: 'Test Password',
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+			}
 
-	it('should return 404 if the kiosk does not exist', async function () {
-		const response = await agent.delete(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`).send({ confirm: true })
+			testKiosk1 = await KioskModel.create(testKioskFields1)
+		})
 
-		expect(response).to.have.status(404)
-	})
+		it('should delete a kiosk', async function () {
+			const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: true })
 
-	it('should return an error if confirm false', async function () {
-		const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: false })
+			expect(response).to.have.status(204)
 
-		expect(response).to.have.status(400)
-		expect(response.body).to.have.property('error')
-	})
+			expect(response.body).to.be.empty
+			const product = await KioskModel.findById(testKiosk1.id)
 
-	it('should return an error if confirm not sent', async function () {
-		const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`)
+			expect(product).to.not.exist
+		})
 
-		expect(response).to.have.status(400)
-		expect(response.body).to.have.property('error')
-	})
+		it('should not delete other kiosks', async function () {
+			const testKioskFields2 = {
+				name: 'Test Kiosk 2',
+				kioskTag: '54321',
+				password: 'Test Password',
+				activities: [testActivity1.id.toString()]
+			}
+			const testKiosk2 = await KioskModel.create(testKioskFields2)
 
-	it('should return an error if confirm not boolean', async function () {
-		const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: 'true' })
+			await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: true })
 
-		expect(response).to.have.status(400)
-		expect(response.body).to.have.property('error')
+			const kiosk = await KioskModel.findById(testKiosk2.id)
+
+			expect(kiosk).to.exist
+		})
+
+		it('should return 404 if the kiosk does not exist', async function () {
+			const response = await agent.delete(`/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`).send({ confirm: true })
+
+			expect(response).to.have.status(404)
+		})
+
+		it('should return an error if confirm false', async function () {
+			const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: false })
+
+			expect(response).to.have.status(400)
+			expect(response.body).to.have.property('error')
+		})
+
+		it('should return an error if confirm not sent', async function () {
+			const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`)
+
+			expect(response).to.have.status(400)
+			expect(response.body).to.have.property('error')
+		})
+
+		it('should return an error if confirm not boolean', async function () {
+			const response = await agent.delete(`/v1/kiosks/${testKiosk1.id}`).send({ confirm: 'true' })
+
+			expect(response).to.have.status(400)
+			expect(response.body).to.have.property('error')
+		})
 	})
 })
