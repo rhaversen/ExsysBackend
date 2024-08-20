@@ -14,8 +14,24 @@ import mongoose, { type Types } from 'mongoose'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import { chaiAppServer as agent } from '../../testSetup.js'
+import AdminModel from '../../../app/models/Admin.js'
 
 describe('Products routes', function () {
+	let sessionCookie: string
+
+	beforeEach(async function () {
+		// Log the agent in to get a valid session
+		const adminFields = {
+			name: 'Agent Admin',
+			email: 'agent@admin.com',
+			password: 'agentPassword'
+		}
+		await AdminModel.create(adminFields)
+
+		const response = await agent.post('/v1/auth/login-admin-local').send(adminFields)
+		sessionCookie = response.headers['set-cookie']
+	})
+
 	describe('POST /v1/products', function () {
 		let testOption: IOption
 
@@ -61,8 +77,20 @@ describe('Products routes', function () {
 			}
 		})
 
+		it('should have status 201', async function () {
+			const response = await agent.post('/v1/products').send(testProductFields).set('Cookie', sessionCookie)
+
+			expect(response).to.have.status(201)
+		})
+
+		it('should have status 403 if not logged in', async function () {
+			const response = await agent.post('/v1/products').send(testProductFields)
+
+			expect(response).to.have.status(403)
+		})
+
 		it('should create a valid product', async function () {
-			await agent.post('/v1/products').send(testProductFields)
+			await agent.post('/v1/products').send(testProductFields).set('Cookie', sessionCookie)
 			const order = await ProductModel.findOne({})
 			expect(order).to.exist
 			expect(order?.name).to.equal(testProductFields.name)
@@ -76,7 +104,7 @@ describe('Products routes', function () {
 		})
 
 		it('should return the product', async function () {
-			const res = await agent.post('/v1/products').send(testProductFields)
+			const res = await agent.post('/v1/products').send(testProductFields).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.name).to.equal(testProductFields.name)
 			expect(res.body.imageURL).to.equal(testProductFields.imageURL)
@@ -89,7 +117,7 @@ describe('Products routes', function () {
 		})
 
 		it('should populate the options', async function () {
-			const res = await agent.post('/v1/products').send(testProductFields)
+			const res = await agent.post('/v1/products').send(testProductFields).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.options).to.be.an('array')
 			expect(res.body.options).to.have.lengthOf(1)
@@ -107,7 +135,7 @@ describe('Products routes', function () {
 
 			testProductFields.options?.push(testOption2.id as Types.ObjectId)
 
-			await agent.post('/v1/products').send(testProductFields)
+			await agent.post('/v1/products').send(testProductFields).set('Cookie', sessionCookie)
 			const order = await ProductModel.findOne({})
 			expect(order).to.exist
 			expect(order?.name).to.equal(testProductFields.name)
@@ -126,7 +154,7 @@ describe('Products routes', function () {
 			await agent.post('/v1/products').send({
 				_id: newId,
 				...testProductFields
-			})
+			}).set('Cookie', sessionCookie)
 			const product = await ProductModel.findOne({})
 			expect(product?.id.toString()).to.not.equal(newId)
 		})
@@ -153,8 +181,18 @@ describe('Products routes', function () {
 			})
 		})
 
-		it('should return a product', async function () {
+		it('should have status 200', async function () {
+			const res = await agent.get('/v1/products').set('Cookie', sessionCookie)
+			expect(res).to.have.status(200)
+		})
+
+		it('should have status 403 if not logged in', async function () {
 			const res = await agent.get('/v1/products')
+			expect(res).to.have.status(403)
+		})
+
+		it('should return a product', async function () {
+			const res = await agent.get('/v1/products').set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body).to.be.an('array')
 			expect(res.body).to.have.lengthOf(1)
@@ -176,7 +214,7 @@ describe('Products routes', function () {
 
 			await ProductModel.findByIdAndUpdate(testProduct.id, { options: [testOption.id] })
 
-			const res = await agent.get('/v1/products')
+			const res = await agent.get('/v1/products').set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body).to.be.an('array')
 			expect(res.body).to.have.lengthOf(1)
@@ -204,7 +242,7 @@ describe('Products routes', function () {
 				}
 			})
 
-			const res = await agent.get('/v1/products')
+			const res = await agent.get('/v1/products').set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body).to.be.an('array')
 			expect(res.body).to.have.lengthOf(2)
@@ -236,7 +274,26 @@ describe('Products routes', function () {
 			})
 		})
 
-		it('should update a product', async function () {
+		it('should have status 200', async function () {
+			const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
+				name: 'Updated Product',
+				imageURL: 'https://example.com/imageNew.jpg',
+				price: 200,
+				orderWindow: {
+					from: {
+						hour: 1,
+						minute: 0
+					},
+					to: {
+						hour: 22,
+						minute: 59
+					}
+				}
+			}).set('Cookie', sessionCookie)
+			expect(res).to.have.status(200)
+		})
+
+		it('should have status 403 if not logged in', async function () {
 			const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 				name: 'Updated Product',
 				imageURL: 'https://example.com/imageNew.jpg',
@@ -252,6 +309,25 @@ describe('Products routes', function () {
 					}
 				}
 			})
+			expect(res).to.have.status(403)
+		})
+
+		it('should update a product', async function () {
+			const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
+				name: 'Updated Product',
+				imageURL: 'https://example.com/imageNew.jpg',
+				price: 200,
+				orderWindow: {
+					from: {
+						hour: 1,
+						minute: 0
+					},
+					to: {
+						hour: 22,
+						minute: 59
+					}
+				}
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.name).to.equal('Updated Product')
 			expect(res.body.imageURL).to.equal('https://example.com/imageNew.jpg')
@@ -285,7 +361,7 @@ describe('Products routes', function () {
 						minute: 59
 					}
 				}
-			})
+			}).set('Cookie', sessionCookie)
 
 			expect(res.body).to.exist
 			expect(res.body.options).to.be.an('array')
@@ -297,7 +373,7 @@ describe('Products routes', function () {
 		it('should allow a partial update', async function () {
 			const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 				name: 'Updated Product'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.name).to.equal('Updated Product')
 			expect(res.body.imageURL).to.equal('https://example.com/image.jpg')
@@ -317,7 +393,7 @@ describe('Products routes', function () {
 
 			const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 				options: [testOption.id]
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.name).to.equal('Test Product')
 			expect(res.body.imageURL).to.equal('https://example.com/image.jpg')
@@ -335,7 +411,7 @@ describe('Products routes', function () {
 				imageURL: 'https://example.com/imageNew.jpg'
 			}
 
-			const res = await agent.patch(`/v1/products/${testProduct.id}`).send(updatedFields)
+			const res = await agent.patch(`/v1/products/${testProduct.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res).to.have.status(200)
 			expect(res.body.name).to.equal('Test Product')
@@ -362,7 +438,7 @@ describe('Products routes', function () {
 						minute: 59
 					}
 				}
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res).to.have.status(404)
 		})
 	})
@@ -387,32 +463,43 @@ describe('Products routes', function () {
 			})
 		})
 
-		it('should delete a product', async function () {
-			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true })
+		it('should have status 204', async function () {
+			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(res).to.have.status(204)
+			expect(res.body).to.be.empty
+		})
+
+		it('should have status 403 if not logged in', async function () {
+			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true })
+			expect(res).to.have.status(403)
+		})
+
+		it('should delete a product', async function () {
+			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+
 			expect(res.body).to.be.empty
 			const product = await ProductModel.findById(testProduct.id)
 			expect(product).to.not.exist
 		})
 
 		it('should return a 400 if the confirm field is set to false', async function () {
-			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: false })
+			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: false }).set('Cookie', sessionCookie)
 			expect(res).to.have.status(400)
 		})
 
 		it('should return a 400 if the confirm field is not set', async function () {
-			const res = await agent.delete(`/v1/products/${testProduct.id}`)
+			const res = await agent.delete(`/v1/products/${testProduct.id}`).set('Cookie', sessionCookie)
 			expect(res).to.have.status(400)
 		})
 
 		it('should return a 400 if the confirm field is not a boolean', async function () {
-			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: 'true' })
+			const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: 'true' }).set('Cookie', sessionCookie)
 			expect(res).to.have.status(400)
 		})
 
 		it('should return a 404 if the product does not exist', async function () {
-			const res = await agent.delete('/v1/products/123456789012345678901234').send({ confirm: true })
+			const res = await agent.delete('/v1/products/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
 			expect(res).to.have.status(404)
 		})
 	})

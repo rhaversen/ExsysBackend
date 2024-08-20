@@ -18,8 +18,24 @@ import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import { chaiAppServer as agent } from '../../testSetup.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
+import AdminModel from '../../../app/models/Admin.js'
 
 describe('Orders routes', function () {
+	let sessionCookie: string
+
+	beforeEach(async function () {
+		// Log the agent in to get a valid session
+		const adminFields = {
+			name: 'Agent Admin',
+			email: 'agent@admin.com',
+			password: 'agentPassword'
+		}
+		await AdminModel.create(adminFields)
+
+		const response = await agent.post('/v1/auth/login-admin-local').send(adminFields)
+		sessionCookie = response.headers['set-cookie']
+	})
+
 	describe('POST /v1/orders', function () {
 		let testProduct1: IProduct
 		let testRoom: IRoom
@@ -58,6 +74,38 @@ describe('Orders routes', function () {
 			})
 		})
 
+		it('should have status 201', async function () {
+			const response = await agent.post('/v1/orders').send({
+				activityId: testActivity.id,
+				products: [{
+					id: testProduct1.id,
+					quantity: 1
+				}],
+				options: [{
+					id: testOption1.id,
+					quantity: 1
+				}]
+			}).set('Cookie', sessionCookie)
+
+			expect(response).to.have.status(201)
+		})
+
+		it('should have status 403 if not logged in', async function () {
+			const response = await agent.post('/v1/orders').send({
+				activityId: testActivity.id,
+				products: [{
+					id: testProduct1.id,
+					quantity: 1
+				}],
+				options: [{
+					id: testOption1.id,
+					quantity: 1
+				}]
+			})
+
+			expect(response).to.have.status(403)
+		})
+
 		it('should create a valid order', async function () {
 			await agent.post('/v1/orders').send({
 				activityId: testActivity.id,
@@ -69,7 +117,7 @@ describe('Orders routes', function () {
 					id: testOption1.id,
 					quantity: 1
 				}]
-			})
+			}).set('Cookie', sessionCookie)
 
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
@@ -91,7 +139,7 @@ describe('Orders routes', function () {
 					id: testOption1.id,
 					quantity: 1
 				}]
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.activityId.toString()).to.equal(testActivity.id)
 			expect(res.body.products[0].id).to.equal(testProduct1.id)
@@ -107,7 +155,7 @@ describe('Orders routes', function () {
 					id: testProduct1.id,
 					quantity: 1
 				}]
-			})
+			}).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
 		})
@@ -119,7 +167,7 @@ describe('Orders routes', function () {
 					id: testOption1.id,
 					quantity: 1
 				}]
-			})
+			}).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order).to.not.exist
 		})
@@ -129,7 +177,7 @@ describe('Orders routes', function () {
 				_id: new mongoose.Types.ObjectId().toString()
 			}
 
-			await agent.post('/v1/orders').send(updatedFields)
+			await agent.post('/v1/orders').send(updatedFields).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order?.id.toString()).to.not.equal(updatedFields._id)
 		})
@@ -166,7 +214,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
@@ -182,7 +230,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 				})
@@ -198,7 +246,7 @@ describe('Orders routes', function () {
 							id: testProduct1.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products[0].quantity).to.equal(2)
 				})
@@ -218,7 +266,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
 					expect(order?.products[0].quantity).to.equal(3)
@@ -236,7 +284,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id,
 							quantity: 2
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
 					expect(order?.products[0].quantity).to.equal(1)
@@ -254,7 +302,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id,
 							quantity: 0
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 					expect(order?.products[0].quantity).to.equal(1)
@@ -270,7 +318,7 @@ describe('Orders routes', function () {
 						{
 							id: testProduct2.id
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 					expect(order?.products[0].quantity).to.equal(1)
@@ -302,7 +350,7 @@ describe('Orders routes', function () {
 							id: testOption2.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
@@ -318,7 +366,7 @@ describe('Orders routes', function () {
 							id: testOption1.id,
 							quantity: 0
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
@@ -334,7 +382,7 @@ describe('Orders routes', function () {
 							id: testOption1.id,
 							quantity: 0
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(0)
 				})
@@ -354,7 +402,7 @@ describe('Orders routes', function () {
 							id: testOption2.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 				})
@@ -374,7 +422,7 @@ describe('Orders routes', function () {
 							id: testOption1.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(2)
 				})
@@ -394,7 +442,7 @@ describe('Orders routes', function () {
 							id: testOption1.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(3)
 				})
@@ -418,7 +466,7 @@ describe('Orders routes', function () {
 							id: testOption2.id,
 							quantity: 1
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
 					expect(order?.options?.[0].quantity).to.equal(3)
@@ -440,7 +488,7 @@ describe('Orders routes', function () {
 							id: testOption2.id,
 							quantity: 2
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
 					expect(order?.options?.[0].quantity).to.equal(1)
@@ -462,7 +510,7 @@ describe('Orders routes', function () {
 							id: testOption2.id,
 							quantity: 0
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 					expect(order?.options?.[0].quantity).to.equal(1)
@@ -482,7 +530,7 @@ describe('Orders routes', function () {
 						{
 							id: testOption2.id
 						}]
-					})
+					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 					expect(order?.options?.[0].quantity).to.equal(1)
@@ -624,8 +672,18 @@ describe('Orders routes', function () {
 			})
 		})
 
-		it('should return all orders', async function () {
+		it('should have status 200', async function () {
+			const res = await agent.get('/v1/orders').set('Cookie', sessionCookie)
+			expect(res).to.have.status(200)
+		})
+
+		it('should have status 403 if not logged in', async function () {
 			const res = await agent.get('/v1/orders')
+			expect(res).to.have.status(403)
+		})
+
+		it('should return all orders', async function () {
+			const res = await agent.get('/v1/orders').set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body[0].activityId).to.equal(testActivity.id)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -642,7 +700,7 @@ describe('Orders routes', function () {
 
 		it('should return an empty array if there are no orders', async function () {
 			await OrderModel.deleteMany({})
-			const res = await agent.get('/v1/orders')
+			const res = await agent.get('/v1/orders').set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(0)
 		})
@@ -684,7 +742,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should return all orders with status delivered', async function () {
-				const res = await agent.get('/v1/orders/?status=delivered')
+				const res = await agent.get('/v1/orders/?status=delivered').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -693,13 +751,13 @@ describe('Orders routes', function () {
 
 			it('should return an empty array if there are no orders with status', async function () {
 				await OrderModel.deleteMany({ status: 'delivered' })
-				const res = await agent.get('/v1/orders/?status=delivered')
+				const res = await agent.get('/v1/orders/?status=delivered').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
 
 			it('should allow multiple statuses', async function () {
-				const res = await agent.get('/v1/orders/?status=delivered,pending')
+				const res = await agent.get('/v1/orders/?status=delivered,pending').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -737,20 +795,20 @@ describe('Orders routes', function () {
 			})
 
 			it('should return an empty array if there are no orders in the interval', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date35.toISOString()}&toDate=${date4.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date35.toISOString()}&toDate=${date4.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
 
 			it('should return an order', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}&toDate=${date25.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}&toDate=${date25.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0].id).to.equal(testProduct3.id)
 			})
 
 			it('should return two orders', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -758,56 +816,56 @@ describe('Orders routes', function () {
 			})
 
 			it('should return orders over longer intervals', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 			})
 
 			it('should return the order inclusive of the date with same from and to date', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date2.toISOString()}&toDate=${date2.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date2.toISOString()}&toDate=${date2.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0].id).to.equal(testProduct3.id)
 			})
 
 			it('should return multiple orders inclusive of the date with same from and to date', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 			})
 
 			it('should return orders inclusive of the to date', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date25.toISOString()}&toDate=${date3.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date25.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0].id).to.equal(testProduct4.id)
 			})
 
 			it('should return all orders if no dates are provided', async function () {
-				const res = await agent.get('/v1/orders')
+				const res = await agent.get('/v1/orders').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 			})
 
 			it('should return all following orders if only fromDate is provided', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0].id).to.equal(testProduct3.id)
 			})
 
 			it('should return all previous orders if only toDate is provided', async function () {
-				const res = await agent.get(`/v1/orders/?toDate=${date25.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?toDate=${date25.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 			})
 
 			it('should not return orders if fromDate is after toDate', async function () {
-				const res = await agent.get(`/v1/orders/?fromDate=${date3.toISOString()}&toDate=${date1.toISOString()}`)
+				const res = await agent.get(`/v1/orders/?fromDate=${date3.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
@@ -879,11 +937,27 @@ describe('Orders routes', function () {
 			})
 		})
 
+		it('should have status 200', async function () {
+			const res = await agent.patch('/v1/orders').send({
+				orderIds: [order1.id],
+				status: 'delivered'
+			}).set('Cookie', sessionCookie)
+			expect(res).to.have.status(200)
+		})
+
+		it('should have status 403 if not logged in', async function () {
+			const res = await agent.patch('/v1/orders').send({
+				orderIds: [order1.id],
+				status: 'delivered'
+			})
+			expect(res).to.have.status(403)
+		})
+
 		it('should update the status of an order', async function () {
 			await agent.patch('/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			const updatedOrder = await OrderModel.findById(order1.id)
 			expect(updatedOrder).to.exist
 			expect(updatedOrder?.status).to.equal('delivered')
@@ -893,7 +967,7 @@ describe('Orders routes', function () {
 			const res = await agent.patch('/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
 		})
@@ -902,7 +976,7 @@ describe('Orders routes', function () {
 			await agent.patch('/v1/orders').send({
 				orderIds: [order1.id, order2.id],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			const updatedOrder1 = await OrderModel.findById(order1.id)
 			const updatedOrder2 = await OrderModel.findById(order2.id)
 			expect(updatedOrder1).to.exist
@@ -915,7 +989,7 @@ describe('Orders routes', function () {
 			const res = await agent.patch('/v1/orders').send({
 				orderIds: [order1.id, order2.id],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
 			expect(res.body[1].status).to.equal('delivered')
@@ -924,7 +998,7 @@ describe('Orders routes', function () {
 		it('should return an error if orderIds is missing', async function () {
 			const res = await agent.patch('/v1/orders').send({
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -932,7 +1006,7 @@ describe('Orders routes', function () {
 		it('should return an error if status is missing', async function () {
 			const res = await agent.patch('/v1/orders').send({
 				orderIds: [order1.id]
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -941,7 +1015,7 @@ describe('Orders routes', function () {
 			const res = await agent.patch('/v1/orders').send({
 				orderIds: [],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -950,7 +1024,7 @@ describe('Orders routes', function () {
 			const res = await agent.patch('/v1/orders').send({
 				orderIds: ['invalidId'],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -959,7 +1033,7 @@ describe('Orders routes', function () {
 			const res = await agent.patch('/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'invalid'
-			})
+			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 			const updatedOrder = await OrderModel.findById(order1.id)
@@ -971,7 +1045,7 @@ describe('Orders routes', function () {
 			await agent.patch('/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			})
+			}).set('Cookie', sessionCookie)
 			const nonUpdatedOrder = await OrderModel.findById(order2.id)
 			expect(nonUpdatedOrder).to.exist
 			expect(nonUpdatedOrder?.status).to.equal('pending')
@@ -983,7 +1057,7 @@ describe('Orders routes', function () {
 				_id: new mongoose.Types.ObjectId().toString()
 			}
 
-			await agent.patch('/v1/orders').send(updatedFields)
+			await agent.patch('/v1/orders').send(updatedFields).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order?.id.toString()).to.equal(order1.id)
 		})
