@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
 // Node.js built-in modules
 
 // Third-party libraries
@@ -18,7 +23,6 @@ describe('Room Model', function () {
 
 	it('should create a valid room', async function () {
 		const room = await RoomModel.create(testRoomField)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(room).to.exist
 		expect(room.name).to.equal(testRoomField.name)
 		expect(room.description).to.equal(testRoomField.description)
@@ -29,7 +33,6 @@ describe('Room Model', function () {
 			...testRoomField,
 			name: '  TestRoom  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(room).to.exist
 		expect(room.name).to.equal('TestRoom')
 	})
@@ -39,7 +42,6 @@ describe('Room Model', function () {
 			...testRoomField,
 			description: '  TestDescription  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(room).to.exist
 		expect(room.description).to.equal('TestDescription')
 	})
@@ -53,7 +55,6 @@ describe('Room Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -68,7 +69,6 @@ describe('Room Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -83,7 +83,6 @@ describe('Room Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 })

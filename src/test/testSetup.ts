@@ -1,3 +1,7 @@
+// file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
 // Node.js built-in modules
 
 // Third-party libraries
@@ -12,6 +16,7 @@ import { type Server } from 'http'
 import logger from '../app/utils/logger.js'
 
 // Test environment settings
+process.env.NODE_ENV = 'test'
 process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'
 process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 
@@ -32,11 +37,13 @@ const cleanDatabase = async function (): Promise<void> {
 	/// ////////////////////////////////////////////
 	/// ///////////////////////////////////////////
 	logger.debug('Cleaning databases')
-	await mongoose.connection.db.dropDatabase()
+	if (mongoose.connection.db !== undefined) {
+		await mongoose.connection.db.dropDatabase()
+	}
 }
 
 before(async function () {
-	this.timeout(10000)
+	this.timeout(20000)
 	// Setting environment
 	process.env.NODE_ENV = 'test'
 
@@ -51,7 +58,7 @@ before(async function () {
 	gracefulShutdownFunction = gracefulShutdown(app.server,
 		{
 			signals: 'SIGINT SIGTERM',
-			timeout: 10000,							// Timeout in ms
+			timeout: 20000,							// Timeout in ms
 			forceExit: false,						// Trigger process.exit() at the end of shutdown process
 			development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
 			// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
@@ -71,7 +78,7 @@ afterEach(async function () {
 })
 
 after(async function () {
-	this.timeout(10000)
+	this.timeout(20000)
 	await gracefulShutdownFunction()
 
 	// exit the process after 1 second

@@ -44,6 +44,15 @@
 		"saltRounds": 1
 	},
 	"cors": {
-		"origin": "*"
+		"origin": "http://localhost:3000",
+		"credentials": true
+	},
+	"cookieOptions": {
+		"httpOnly": true,
+		"secure": false,
+		"SameSite": "strict"
+	},
+	"session": {
+		"expiry": 2592000000
 	}
 }
