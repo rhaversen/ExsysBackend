@@ -52,7 +52,7 @@ const adminSchema = new Schema<IAdmin>({
 		type: Schema.Types.String,
 		required: true,
 		trim: true,
-		minLength: [4, 'Password skal være mindst 8 tegn'],
+		minLength: [4, 'Password skal være mindst 4 tegn'],
 		maxLength: [100, 'Password kan højest være 100 tegn']
 	}
 }, {
