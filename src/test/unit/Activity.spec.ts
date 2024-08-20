@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -32,7 +33,6 @@ describe('Activity Model', function () {
 
 	it('should create a valid activity', async function () {
 		const activity = await ActivityModel.create(testActivityField)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(activity).to.exist
 		expect(activity.name).to.equal(testActivityField.name)
 		const populatedActivity = await activity?.populate('roomId')
@@ -44,7 +44,6 @@ describe('Activity Model', function () {
 			...testActivityField,
 			name: '  TestActivity  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(activity).to.exist
 		expect(activity.name).to.equal('TestActivity')
 	})
@@ -58,7 +57,6 @@ describe('Activity Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -73,7 +71,6 @@ describe('Activity Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -88,7 +85,6 @@ describe('Activity Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 })

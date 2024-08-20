@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -58,7 +59,6 @@ describe('POST /v1/products', function () {
 	it('should create a valid product', async function () {
 		await agent.post('/v1/products').send(testProductFields)
 		const order = await ProductModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order?.name).to.equal(testProductFields.name)
 		expect(order?.imageURL).to.equal(testProductFields.imageURL)
@@ -72,7 +72,6 @@ describe('POST /v1/products', function () {
 
 	it('should return the product', async function () {
 		const res = await agent.post('/v1/products').send(testProductFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal(testProductFields.name)
 		expect(res.body.imageURL).to.equal(testProductFields.imageURL)
@@ -86,7 +85,6 @@ describe('POST /v1/products', function () {
 
 	it('should populate the options', async function () {
 		const res = await agent.post('/v1/products').send(testProductFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.options).to.be.an('array')
 		expect(res.body.options).to.have.lengthOf(1)
@@ -106,7 +104,6 @@ describe('POST /v1/products', function () {
 
 		await agent.post('/v1/products').send(testProductFields)
 		const order = await ProductModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order?.name).to.equal(testProductFields.name)
 		expect(order?.imageURL).to.equal(testProductFields.imageURL)
@@ -153,7 +150,6 @@ describe('GET /v1/products', function () {
 
 	it('should return a product', async function () {
 		const res = await agent.get('/v1/products')
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body).to.be.an('array')
 		expect(res.body).to.have.lengthOf(1)
@@ -176,7 +172,6 @@ describe('GET /v1/products', function () {
 		await ProductModel.findByIdAndUpdate(testProduct.id, { options: [testOption.id] })
 
 		const res = await agent.get('/v1/products')
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body).to.be.an('array')
 		expect(res.body).to.have.lengthOf(1)
@@ -205,7 +200,6 @@ describe('GET /v1/products', function () {
 		})
 
 		const res = await agent.get('/v1/products')
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body).to.be.an('array')
 		expect(res.body).to.have.lengthOf(2)
@@ -253,7 +247,6 @@ describe('PATCH /v1/products/:id', function () {
 				}
 			}
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
 		expect(res.body.imageURL).to.equal('https://example.com/imageNew.jpg')
@@ -289,7 +282,6 @@ describe('PATCH /v1/products/:id', function () {
 			}
 		})
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.options).to.be.an('array')
 		expect(res.body.options).to.have.lengthOf(1)
@@ -301,7 +293,6 @@ describe('PATCH /v1/products/:id', function () {
 		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 			name: 'Updated Product'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Updated Product')
 		expect(res.body.imageURL).to.equal('https://example.com/image.jpg')
@@ -322,7 +313,6 @@ describe('PATCH /v1/products/:id', function () {
 		const res = await agent.patch(`/v1/products/${testProduct.id}`).send({
 			options: [testOption.id]
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.name).to.equal('Test Product')
 		expect(res.body.imageURL).to.equal('https://example.com/image.jpg')
@@ -341,7 +331,6 @@ describe('PATCH /v1/products/:id', function () {
 		}
 
 		const res = await agent.patch(`/v1/products/${testProduct.id}`).send(updatedFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res).to.have.status(200)
 		expect(res.body.name).to.equal('Test Product')
@@ -397,10 +386,8 @@ describe('DELETE /v1/products/:id', function () {
 		const res = await agent.delete(`/v1/products/${testProduct.id}`).send({ confirm: true })
 
 		expect(res).to.have.status(204)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.be.empty
 		const product = await ProductModel.findById(testProduct.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.not.exist
 	})
 

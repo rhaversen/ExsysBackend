@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -20,7 +21,6 @@ describe('POST /v1/options', function () {
 		await agent.post('/v1/options').send(testOptionFields1)
 
 		const option = await OptionModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option).to.have.property('name', testOptionFields1.name)
 		expect(option).to.have.property('imageURL', testOptionFields1.imageURL)
@@ -147,7 +147,6 @@ describe('PATCH /v1/options/:id', function () {
 
 		const response = await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields)
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(response.body).to.exist
 		expect(response).to.have.status(200)
 		expect(response.body).to.have.property('name', testOptionFields1.name)
@@ -214,10 +213,8 @@ describe('DELETE /v1/options/:id', function () {
 		const response = await agent.delete(`/v1/options/${testOption1.id}`).send({ confirm: true })
 
 		expect(response).to.have.status(204)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(response.body).to.be.empty
 		const product = await OptionModel.findById(testOption1.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.not.exist
 	})
 

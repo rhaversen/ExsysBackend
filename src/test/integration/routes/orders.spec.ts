@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -66,7 +67,6 @@ describe('POST /v1/orders', function () {
 		})
 
 		const order = await OrderModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order?.activityId.toString()).to.equal(testActivity.id)
 		expect(order?.products[0].id.toString()).to.equal(testProduct1.id)
@@ -87,7 +87,6 @@ describe('POST /v1/orders', function () {
 				quantity: 1
 			}]
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.activityId.toString()).to.equal(testActivity.id)
 		expect(res.body.products[0].id).to.equal(testProduct1.id)
@@ -105,7 +104,6 @@ describe('POST /v1/orders', function () {
 			}]
 		})
 		const order = await OrderModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 	})
 
@@ -118,7 +116,6 @@ describe('POST /v1/orders', function () {
 			}]
 		})
 		const order = await OrderModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.not.exist
 	})
 
@@ -166,7 +163,6 @@ describe('POST /v1/orders', function () {
 					}]
 				})
 				const order = await OrderModel.findOne({})
-				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				expect(order).to.exist
 			})
 
@@ -303,7 +299,6 @@ describe('POST /v1/orders', function () {
 					}]
 				})
 				const order = await OrderModel.findOne({})
-				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				expect(order).to.exist
 			})
 
@@ -320,7 +315,6 @@ describe('POST /v1/orders', function () {
 					}]
 				})
 				const order = await OrderModel.findOne({})
-				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				expect(order).to.exist
 			})
 
@@ -627,7 +621,6 @@ describe('GET /v1/orders', function () {
 
 	it('should return all orders', async function () {
 		const res = await agent.get('/v1/orders')
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body[0].activityId).to.equal(testActivity.id)
 		expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -645,7 +638,6 @@ describe('GET /v1/orders', function () {
 	it('should return an empty array if there are no orders', async function () {
 		await OrderModel.deleteMany({})
 		const res = await agent.get('/v1/orders')
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body.length).to.equal(0)
 	})
@@ -688,7 +680,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return all orders with status delivered', async function () {
 			const res = await agent.get('/v1/orders/?status=delivered')
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(2)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -698,14 +689,12 @@ describe('GET /v1/orders', function () {
 		it('should return an empty array if there are no orders with status', async function () {
 			await OrderModel.deleteMany({ status: 'delivered' })
 			const res = await agent.get('/v1/orders/?status=delivered')
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(0)
 		})
 
 		it('should allow multiple statuses', async function () {
 			const res = await agent.get('/v1/orders/?status=delivered,pending')
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(3)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -744,14 +733,12 @@ describe('GET /v1/orders', function () {
 
 		it('should return an empty array if there are no orders in the interval', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date35.toISOString()}&toDate=${date4.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(0)
 		})
 
 		it('should return an order', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}&toDate=${date25.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(1)
 			expect(res.body[0].products[0].id).to.equal(testProduct3.id)
@@ -759,7 +746,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return two orders', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(2)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -768,7 +754,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return orders over longer intervals', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(4)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -776,7 +761,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return the order inclusive of the date with same from and to date', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date2.toISOString()}&toDate=${date2.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(1)
 			expect(res.body[0].products[0].id).to.equal(testProduct3.id)
@@ -784,7 +768,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return multiple orders inclusive of the date with same from and to date', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(2)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -792,7 +775,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return orders inclusive of the to date', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date25.toISOString()}&toDate=${date3.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(1)
 			expect(res.body[0].products[0].id).to.equal(testProduct4.id)
@@ -800,7 +782,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return all orders if no dates are provided', async function () {
 			const res = await agent.get('/v1/orders')
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(4)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -808,7 +789,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return all following orders if only fromDate is provided', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(2)
 			expect(res.body[0].products[0].id).to.equal(testProduct3.id)
@@ -816,7 +796,6 @@ describe('GET /v1/orders', function () {
 
 		it('should return all previous orders if only toDate is provided', async function () {
 			const res = await agent.get(`/v1/orders/?toDate=${date25.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(3)
 			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
@@ -824,7 +803,6 @@ describe('GET /v1/orders', function () {
 
 		it('should not return orders if fromDate is after toDate', async function () {
 			const res = await agent.get(`/v1/orders/?fromDate=${date3.toISOString()}&toDate=${date1.toISOString()}`)
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(0)
 		})
@@ -902,7 +880,6 @@ describe('PATCH /v1/orders', function () {
 			status: 'delivered'
 		})
 		const updatedOrder = await OrderModel.findById(order1.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(updatedOrder).to.exist
 		expect(updatedOrder?.status).to.equal('delivered')
 	})
@@ -912,7 +889,6 @@ describe('PATCH /v1/orders', function () {
 			orderIds: [order1.id],
 			status: 'delivered'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body[0].status).to.equal('delivered')
 	})
@@ -924,10 +900,8 @@ describe('PATCH /v1/orders', function () {
 		})
 		const updatedOrder1 = await OrderModel.findById(order1.id)
 		const updatedOrder2 = await OrderModel.findById(order2.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(updatedOrder1).to.exist
 		expect(updatedOrder1?.status).to.equal('delivered')
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(updatedOrder2).to.exist
 		expect(updatedOrder2?.status).to.equal('delivered')
 	})
@@ -937,7 +911,6 @@ describe('PATCH /v1/orders', function () {
 			orderIds: [order1.id, order2.id],
 			status: 'delivered'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
 		expect(res.body[0].status).to.equal('delivered')
 		expect(res.body[1].status).to.equal('delivered')
@@ -947,9 +920,7 @@ describe('PATCH /v1/orders', function () {
 		const res = await agent.patch('/v1/orders').send({
 			status: 'delivered'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body.error).to.exist
 	})
 
@@ -957,9 +928,7 @@ describe('PATCH /v1/orders', function () {
 		const res = await agent.patch('/v1/orders').send({
 			orderIds: [order1.id]
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body.error).to.exist
 	})
 
@@ -968,9 +937,7 @@ describe('PATCH /v1/orders', function () {
 			orderIds: [],
 			status: 'delivered'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body.error).to.exist
 	})
 
@@ -979,9 +946,7 @@ describe('PATCH /v1/orders', function () {
 			orderIds: ['invalidId'],
 			status: 'delivered'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body.error).to.exist
 	})
 
@@ -990,12 +955,9 @@ describe('PATCH /v1/orders', function () {
 			orderIds: [order1.id],
 			status: 'invalid'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body.error).to.exist
 		const updatedOrder = await OrderModel.findById(order1.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(updatedOrder).to.exist
 		expect(updatedOrder?.status).to.equal('pending')
 	})
@@ -1006,7 +968,6 @@ describe('PATCH /v1/orders', function () {
 			status: 'delivered'
 		})
 		const nonUpdatedOrder = await OrderModel.findById(order2.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(nonUpdatedOrder).to.exist
 		expect(nonUpdatedOrder?.status).to.equal('pending')
 	})

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -20,11 +21,9 @@ describe('Admin Model', function () {
 
 	it('should create a valid admin', async function () {
 		const admin = await AdminModel.create(testAdminFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
 		expect(admin.name).to.equal(testAdminFields.name)
 		expect(admin.email).to.equal(testAdminFields.email)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(await bcrypt.compare(testAdminFields.password, admin.password)).to.be.true
 	})
 
@@ -33,7 +32,6 @@ describe('Admin Model', function () {
 			...testAdminFields,
 			name: '  TestAdmin  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
 		expect(admin.name).to.equal('TestAdmin')
 	})
@@ -43,7 +41,6 @@ describe('Admin Model', function () {
 			...testAdminFields,
 			email: '    test@admin.com    '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
 		expect(admin.email).to.equal('test@admin.com')
 	})
@@ -53,9 +50,7 @@ describe('Admin Model', function () {
 			...testAdminFields,
 			password: '  testPassword  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(await bcrypt.compare('testPassword', admin.password)).to.be.true
 	})
 
@@ -70,7 +65,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -85,7 +79,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -100,7 +93,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -115,7 +107,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -130,7 +121,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -145,7 +135,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -160,7 +149,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -173,7 +161,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -182,7 +169,6 @@ describe('Admin Model', function () {
 			...testAdminFields,
 			email: 'Test@Email.Com'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
 		expect(admin.email).to.equal('test@email.com')
 	})
@@ -198,7 +184,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -213,7 +198,6 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -228,15 +212,12 @@ describe('Admin Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
 	it('should hash the password', async function () {
 		const admin = await AdminModel.create(testAdminFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin.password).to.not.equal(testAdminFields.password)
 	})
 })

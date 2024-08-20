@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -21,7 +22,6 @@ describe('POST /v1/admins', function () {
 		await agent.post('/v1/admins').send(testAdminFields1)
 
 		const admin = await AdminModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(admin).to.exist
 		expect(admin).to.have.property('name', testAdminFields1.name)
 	})
@@ -159,7 +159,6 @@ describe('PATCH /v1/admins', function () {
 	it('should not return the password', async function () {
 		const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields)
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(res.body.password).to.be.undefined
 	})
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -19,7 +20,6 @@ describe('POST /v1/rooms', function () {
 		await agent.post('/v1/rooms').send(testRoomFields1)
 
 		const room = await RoomModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(room).to.exist
 		expect(room).to.have.property('name', testRoomFields1.name)
 		expect(room).to.have.property('description', testRoomFields1.description)
@@ -190,10 +190,8 @@ describe('DELETE /v1/rooms/:id', function () {
 		const response = await agent.delete(`/v1/rooms/${testRoom1.id}`).send({ confirm: true })
 
 		expect(response).to.have.status(204)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(response.body).to.be.empty
 		const product = await RoomModel.findById(testRoom1.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.not.exist
 	})
 

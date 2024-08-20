@@ -46,7 +46,6 @@ describe('Kiosk Model', function () {
 
 	it('should create a valid kiosk', async function () {
 		const kiosk = await KioskModel.create(testKioskField)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal(testKioskField.kioskTag)
 		const populatedKiosk = await kiosk?.populate('activities')
@@ -58,7 +57,6 @@ describe('Kiosk Model', function () {
 			...testKioskField,
 			kioskTag: '  12345  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal('12345')
 	})
@@ -72,7 +70,6 @@ describe('Kiosk Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -87,7 +84,6 @@ describe('Kiosk Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -102,7 +98,6 @@ describe('Kiosk Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -117,7 +112,6 @@ describe('Kiosk Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -132,7 +126,6 @@ describe('Kiosk Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 

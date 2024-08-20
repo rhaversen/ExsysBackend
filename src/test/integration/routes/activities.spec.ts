@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -33,7 +34,7 @@ describe('POST /v1/activities', function () {
 		await agent.post('/v1/activities').send(testActivityFields1)
 
 		const activity = await ActivityModel.findOne({})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
 		expect(activity).to.exist
 		expect(activity).to.have.property('name', testActivityFields1.name)
 		const populatedActivity = await activity?.populate('roomId')
@@ -329,10 +330,10 @@ describe('DELETE /v1/activities/:id', function () {
 		const response = await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true })
 
 		expect(response).to.have.status(204)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
 		expect(response.body).to.be.empty
 		const product = await ActivityModel.findById(testActivity1.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
 		expect(product).to.not.exist
 	})
 
@@ -348,7 +349,7 @@ describe('DELETE /v1/activities/:id', function () {
 
 		await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true })
 		const product = await ActivityModel.findById(testActivity2.id)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
 		expect(product).to.exist
 	})
 

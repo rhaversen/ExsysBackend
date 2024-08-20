@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -57,7 +58,6 @@ describe('Product Model', function () {
 
 	it('should create a valid product', async function () {
 		const product = await ProductModel.create(testProductFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.exist
 		expect(product.name).to.equal(testProductFields.name)
 		expect(product.price).to.equal(testProductFields.price)
@@ -99,9 +99,7 @@ describe('Product Model', function () {
 		}
 		const product1 = await ProductModel.create(testProductFields2)
 		const product2 = await ProductModel.create(testProductFields3)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product1).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product2).to.exist
 	})
 
@@ -110,7 +108,6 @@ describe('Product Model', function () {
 			...testProductFields,
 			name: '  TestProduct  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.exist
 		expect(product.name).to.equal('TestProduct')
 	})
@@ -120,7 +117,6 @@ describe('Product Model', function () {
 			...testProductFields,
 			options: undefined
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.exist
 		expect(product.options?.length).to.equal(0)
 	})
@@ -130,7 +126,6 @@ describe('Product Model', function () {
 			...testProductFields,
 			options: []
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.exist
 		expect(product.options?.length).to.equal(0)
 	})
@@ -145,7 +140,6 @@ describe('Product Model', function () {
 			...testProductFields,
 			options: [testOption.id, testOption2.id]
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.exist
 		expect(product.options?.[0].toString()).to.equal(testOption.id)
 		expect(product.options?.[1].toString()).to.equal(testOption2.id)
@@ -162,7 +156,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -177,7 +170,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -192,7 +184,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -207,7 +198,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -216,7 +206,6 @@ describe('Product Model', function () {
 			...testProductFields,
 			price: 100.5
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.exist
 		expect(product.price).to.equal(100.5)
 	})
@@ -232,7 +221,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -247,7 +235,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -262,7 +249,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -277,7 +263,6 @@ describe('Product Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -302,7 +287,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -326,7 +310,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -350,7 +333,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -374,7 +356,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -398,7 +379,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -422,7 +402,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -446,7 +425,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -470,7 +448,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -514,7 +491,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -538,7 +514,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -562,7 +537,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -586,7 +560,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -610,7 +583,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -634,7 +606,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -658,7 +629,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -682,7 +652,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -706,7 +675,6 @@ describe('Product Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -724,7 +692,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -742,7 +709,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -760,7 +726,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -778,7 +743,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -796,7 +760,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -814,7 +777,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -832,7 +794,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 
@@ -850,7 +811,6 @@ describe('Product Model', function () {
 					}
 				}
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(product).to.exist
 		})
 	})

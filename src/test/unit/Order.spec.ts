@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -84,7 +85,6 @@ describe('Order Model', function () {
 
 	it('should create a valid order', async function () {
 		const order = await OrderModel.create(testOrderFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
@@ -92,7 +92,6 @@ describe('Order Model', function () {
 
 	it('should set status to pending by default', async function () {
 		const order = await OrderModel.create(testOrderFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 		expect(order.status).to.equal('pending')
 	})
@@ -111,7 +110,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -129,7 +127,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -138,7 +135,6 @@ describe('Order Model', function () {
 			...testOrderFields,
 			options: undefined
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 	})
 
@@ -153,7 +149,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -168,7 +163,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -183,7 +177,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -201,7 +194,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -225,7 +217,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -243,7 +234,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -261,7 +251,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -279,7 +268,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -288,7 +276,6 @@ describe('Order Model', function () {
 			...testOrderFields,
 			options: undefined
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(order).to.exist
 	})
 
@@ -306,7 +293,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -330,7 +316,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -348,7 +333,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -366,7 +350,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -384,7 +367,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -408,7 +390,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -432,7 +413,6 @@ describe('Order Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -492,7 +472,6 @@ describe('Order Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -514,7 +493,6 @@ describe('Order Model', function () {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(errorOccurred).to.be.true
 		})
 
@@ -530,7 +508,6 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(order).to.exist
 		})
 
@@ -546,7 +523,6 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(order).to.exist
 		})
 
@@ -562,7 +538,6 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(order).to.exist
 		})
 
@@ -578,7 +553,6 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(order).to.exist
 		})
 	})

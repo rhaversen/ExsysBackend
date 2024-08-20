@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // Node.js built-in modules
 
 // Third-party libraries
@@ -27,7 +28,6 @@ describe('Option Model', function () {
 
 	it('should create a valid order', async function () {
 		const option = await OptionModel.create(testOptionFields)
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.name).to.equal(testOptionFields.name)
 		expect(option.imageURL).to.equal(testOptionFields.imageURL)
@@ -39,7 +39,6 @@ describe('Option Model', function () {
 			...testOptionFields,
 			name: '  TestOption  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.name).to.equal('TestOption')
 	})
@@ -49,7 +48,6 @@ describe('Option Model', function () {
 			...testOptionFields,
 			imageURL: '  https://example.com/image.jpg  '
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.imageURL).to.equal('https://example.com/image.jpg')
 	})
@@ -59,7 +57,6 @@ describe('Option Model', function () {
 			...testOptionFields,
 			price: 100.5
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.price).to.equal(100.5)
 	})
@@ -69,9 +66,7 @@ describe('Option Model', function () {
 			...testOptionFields,
 			imageURL: undefined
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option.imageURL).to.be.undefined
 	})
 
@@ -86,7 +81,6 @@ describe('Option Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -101,7 +95,6 @@ describe('Option Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -110,7 +103,6 @@ describe('Option Model', function () {
 			...testOptionFields,
 			price: 0
 		})
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(option).to.exist
 		expect(option.price).to.equal(0)
 	})
@@ -126,7 +118,6 @@ describe('Option Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 
@@ -141,7 +132,6 @@ describe('Option Model', function () {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(errorOccurred).to.be.true
 	})
 })
