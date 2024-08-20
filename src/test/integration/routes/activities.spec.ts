@@ -234,6 +234,61 @@ describe('PATCH /v1/activities/:id', function () {
 		expect(response.body).to.have.property('roomId', testActivityFields1.roomId)
 	})
 
+	it('should allow updating roomId to current roomId', async function () {
+		const updatedFields = {
+			name: 'Updated Activity 1',
+			roomId: testActivityFields1.roomId
+		}
+		const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields)
+
+		expect(response).to.have.status(200)
+		expect(response.body).to.have.property('name', updatedFields.name)
+		expect(response.body).to.have.property('roomId', testActivityFields1.roomId)
+	})
+
+	it('should allow a partial update', async function () {
+		const updatedFields = {
+			name: 'Updated Activity 1'
+		}
+
+		await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields)
+		const activity = await ActivityModel.findById(testActivity1.id)
+		expect(activity).to.have.property('name', updatedFields.name)
+	})
+
+	it('should not update other fields', async function () {
+		const updatedFields = {
+			name: 'Updated Activity 1'
+		}
+
+		await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields)
+		const activity = await ActivityModel.findById(testActivity1.id)
+		const populatedActivity = await activity?.populate('roomId')
+		expect(populatedActivity?.roomId).to.have.property('id', testActivityFields1.roomId)
+	})
+
+	it('should not update other activities', async function () {
+		const testRoom2 = await RoomModel.create({
+			name: 'Room 2',
+			description: 'Description for Room 2'
+		})
+		const testActivity2 = await ActivityModel.create({
+			name: 'Activity 2',
+			roomId: testRoom2.id
+		})
+
+		const updatedFields = {
+			name: 'Updated Activity 1',
+			roomId: testRoom2.id
+		}
+
+		await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields)
+		const activity = await ActivityModel.findById(testActivity2.id)
+		expect(activity).to.have.property('name', 'Activity 2')
+		const populatedActivity = await activity?.populate('roomId')
+		expect(populatedActivity?.roomId).to.have.property('id', testRoom2.id)
+	})
+
 	it('should not allow updating the _id', async function () {
 		const updatedFields = {
 			_id: new mongoose.Types.ObjectId().toString()
@@ -279,6 +334,22 @@ describe('DELETE /v1/activities/:id', function () {
 		const product = await ActivityModel.findById(testActivity1.id)
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(product).to.not.exist
+	})
+
+	it('should not delete other activities', async function () {
+		const testRoom2 = await RoomModel.create({
+			name: 'Room 2',
+			description: 'Description for Room 2'
+		})
+		const testActivity2 = await ActivityModel.create({
+			name: 'Activity 2',
+			roomId: testRoom2.id
+		})
+
+		await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true })
+		const product = await ActivityModel.findById(testActivity2.id)
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		expect(product).to.exist
 	})
 
 	it('should return 404 if the activity does not exist', async function () {
