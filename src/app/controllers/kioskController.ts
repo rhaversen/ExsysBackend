@@ -11,9 +11,17 @@ import KioskModel from '../models/Kiosk.js'
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
 
+	const { password, confirmPassword } = req.body as Record<string, unknown>
+
+	if (password !== confirmPassword) {
+		res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
+		return
+	}
+
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		kioskTag: req.body.kioskTag,
+		password: req.body.password,
 		activities: req.body.activities
 	}
 
@@ -68,9 +76,17 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 export async function patchKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching kiosk')
 
+	const { password, confirmPassword } = req.body as Record<string, unknown>
+
+	if ((password !== undefined || confirmPassword !== undefined) && (password !== confirmPassword)) {
+		res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
+		return
+	}
+
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		kioskTag: req.body.kioskTag,
+		password: req.body.password,
 		activities: req.body.activities
 	}
 

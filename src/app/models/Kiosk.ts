@@ -7,6 +7,13 @@ import ActivityModel from './Activity.js'
 
 // Own modules
 import logger from '../utils/logger.js'
+import { compare, hash } from 'bcrypt'
+import config from '../utils/setupConfig.js'
+
+// Destructuring and global variables
+const {
+	bcryptSaltRounds
+} = config
 
 // Nanoid setup
 const nanoidAlphabet = '123465789'
@@ -18,6 +25,7 @@ export interface IKiosk extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
 	kioskTag: string // Unique identifier generated with nanoid
+	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
 
 	// Timestamps
@@ -34,6 +42,11 @@ const kioskSchema = new Schema<IKiosk>({
 	kioskTag: {
 		type: Schema.Types.String,
 		unique: true,
+		trim: true
+	},
+	password: {
+		type: Schema.Types.String,
+		required: true,
 		trim: true
 	},
 	activities: {
@@ -77,6 +90,10 @@ kioskSchema.pre('save', async function (next) {
 		// Set default value to accessToken
 		this.kioskTag = await generateUniqueKioskTag()
 	}
+	// Password hashing
+	if (this.isModified('password')) {
+		this.password = await hash(this.password, bcryptSaltRounds) // Using a random salt for each user
+	}
 	next()
 })
 
@@ -86,6 +103,12 @@ kioskSchema.methods.generateNewKioskTag = async function (this: IKiosk) {
 	this.kioskTag = await generateUniqueKioskTag()
 	await this.save()
 	return this.kioskTag
+}
+
+kioskSchema.methods.comparePassword = async function (this: IKiosk, password: string): Promise<boolean> {
+	logger.silly('Comparing password')
+	const isPasswordCorrect = await compare(password, this.password)
+	return isPasswordCorrect
 }
 
 async function generateUniqueKioskTag (): Promise<string> {

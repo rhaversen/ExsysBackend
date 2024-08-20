@@ -18,6 +18,8 @@ const router = Router()
  * @access Public
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} req.body.roomId - The id of the room the kiosk is in.
+ * @param {string} req.body.password - The password of the kiosk.
+ * @param {string} req.body.confirmPassword - The password confirmation of the kiosk.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created kiosk.
  */
