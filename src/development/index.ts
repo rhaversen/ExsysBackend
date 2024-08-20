@@ -1,3 +1,7 @@
+// file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
 // Process environment variables
 process.env.NODE_ENV = 'development'
 process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'

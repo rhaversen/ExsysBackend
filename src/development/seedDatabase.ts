@@ -1,3 +1,7 @@
+// file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
 import AdminModel from '../app/models/Admin.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'

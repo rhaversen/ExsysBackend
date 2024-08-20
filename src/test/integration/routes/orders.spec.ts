@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+// file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
 // Node.js built-in modules
 
 // Third-party libraries
