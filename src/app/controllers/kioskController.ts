@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import KioskModel from '../models/Kiosk.js'
+import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
@@ -29,6 +29,27 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	try {
 		const newKiosk = await KioskModel.create(allowedFields)
 		res.status(201).json(newKiosk)
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function getMe (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting me kiosk')
+
+	try {
+		const kiosk = req.user as IKiosk | undefined
+
+		if (kiosk === null || kiosk === undefined) {
+			res.status(404).json({ error: 'Kiosk ikke fundet' })
+			return
+		}
+
+		res.status(200).json(kiosk)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
