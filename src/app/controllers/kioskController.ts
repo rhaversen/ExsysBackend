@@ -21,6 +21,12 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 
 	try {
 		const newKiosk = await (await KioskModel.create(allowedFields)).populate('activities')
+		res.status(201).json({
+			_id: newKiosk._id,
+			name: newKiosk.name,
+			kioskTag: newKiosk.kioskTag,
+			activities: newKiosk.activities
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -42,6 +48,13 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 		}
 
 		await kiosk.populate('activities')
+
+		res.status(200).json({
+			_id: kiosk._id,
+			name: kiosk.name,
+			kioskTag: kiosk.kioskTag,
+			activities: kiosk.activities
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -62,7 +75,12 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 			return
 		}
 
-		res.status(200).json(kiosk)
+		res.status(200).json({
+			_id: kiosk._id,
+			name: kiosk.name,
+			kioskTag: kiosk.kioskTag,
+			activities: kiosk.activities
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -77,6 +95,14 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 
 	try {
 		const kiosks = await KioskModel.find({}).populate('activities')
+		res.status(200).json(
+			kiosks.map(kiosk => ({
+				_id: kiosk._id,
+				name: kiosk.name,
+				kioskTag: kiosk.kioskTag,
+				activities: kiosk.activities
+			}))
+		)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -113,7 +139,12 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		await kiosk.populate('activities')
 
 		await session.commitTransaction()
-		res.status(200).json(kiosk)
+		res.status(200).json({
+			_id: kiosk._id,
+			name: kiosk.name,
+			kioskTag: kiosk.kioskTag,
+			activities: kiosk.activities
+		})
 	} catch (error) {
 		await session.abortTransaction()
 
