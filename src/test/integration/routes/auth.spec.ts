@@ -313,7 +313,7 @@ describe('Auth routes', function () {
 			expect(sessionKioskId).to.equal(testKiosk.id)
 		})
 
-		it('should set originalMaxAge to null in the session', async function () {
+		it('should not set originalMaxAge to null in the session', async function () {
 			// Log the kiosk in to get a token
 			await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
 
@@ -323,7 +323,29 @@ describe('Auth routes', function () {
 			const sessionData = JSON.parse(session?.session as string)
 			const sessionCookie = sessionData.cookie
 
-			expect(sessionCookie.originalMaxAge).to.equal(null)
+			expect(sessionCookie.originalMaxAge).to.not.equal(null)
+		})
+
+		it('should set a Expires on the session cookie', async function () {
+			const res = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+			expect(res).to.have.status(200)
+
+			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			expect(cookie).to.include('Expires')
+		})
+
+		it('should set the Expires to the sessionExpiry value + now time', async function () {
+			// Fake time with sinon
+			sinon.useFakeTimers(new Date('2024-01-01'))
+
+			const res = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+			expect(res).to.have.status(200)
+
+			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const expiryDate = new Date(Date.now() + sessionExpiry)
+			expect(cookie).to.include(`Expires=${expiryDate.toUTCString()}`)
 		})
 
 		it('should set the session cookie to HttpOnly', async function () {
@@ -342,12 +364,19 @@ describe('Auth routes', function () {
 			expect(cookie).to.include('Path=/')
 		})
 
-		it('should not set the maxAge on the session cookie', async function () {
+		it('should set the expiry in the session data', async function () {
 			// Log the kiosk in to get a token
 			const res = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
-			expect(cookie).to.not.include('Max-Age')
+			expect(res).to.have.status(200)
+
+			const sessionCollection = mongoose.connection.collection('sessions')
+			const session = await sessionCollection.findOne({})
+
+			const sessionData = JSON.parse(session?.session as string)
+			const sessionCookie = sessionData.cookie
+
+			expect(sessionCookie.originalMaxAge).to.be.closeTo(sessionExpiry, 1000)
 		})
 
 		it('should return 401 with invalid password', async function () {
@@ -632,150 +661,85 @@ describe('Auth routes', function () {
 	})
 
 	describe('GET /v1/auth/is-authenticated with stayLoggedIn', function () {
-		describe('with Admin', function () {
-			let testAdmin: IAdmin
+		let testAdmin: IAdmin
 
-			const testAdminFields = {
-				name: 'TestAdmin',
-				email: 'test@test.com',
-				password: 'testPassword',
-				stayLoggedIn: true
-			}
+		const testAdminFields = {
+			name: 'TestAdmin',
+			email: 'test@test.com',
+			password: 'testPassword',
+			stayLoggedIn: true
+		}
 
-			beforeEach(async function () {
-				testAdmin = new AdminModel(testAdminFields)
-				await testAdmin.save()
-			})
-
-			it('should return 200 with a valid session', async function () {
-				// Log the admin in to get a session cookie
-				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
-
-				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
-
-				// Use the session cookie in the authenticated request
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', sessionCookie)
-
-				// Validate the authenticated response
-				expect(res).to.have.status(200)
-			})
-
-			it('should return 401 without a valid session', async function () {
-				// Send the request without a session cookie
-				const res = await agent.get('/v1/auth/is-authenticated')
-
-				// Validate the response
-				expect(res).to.have.status(401)
-			})
-
-			it('should return 401 with an invalid session', async function () {
-				// Send the request with an invalid session cookie
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', 'connect.sid=invalidSession')
-
-				// Validate the response
-				expect(res).to.have.status(401)
-			})
-
-			it('should return 401 with a session that has been tampered with', async function () {
-				// Log the admin in to get a session cookie
-				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
-
-				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
-
-				// Tamper with the session cookie
-				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
-
-				// Use the tampered session cookie in the authenticated request
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', tamperedSessionCookie)
-
-				// Validate the authenticated response
-				expect(res).to.have.status(401)
-			})
-
-			it('should return 401 with an expired session', async function () {
-				// Fake time with sinon
-				const clock = sinon.useFakeTimers(new Date('2024-01-01'))
-
-				// Log the admin in to get a session cookie
-				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
-
-				// Move the clock past the session expiry
-				clock.tick(sessionExpiry + 1000)
-
-				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
-
-				// Use the session cookie in the authenticated request
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', sessionCookie)
-
-				// Validate the authenticated response
-				expect(res).to.have.status(401)
-			})
+		beforeEach(async function () {
+			testAdmin = new AdminModel(testAdminFields)
+			await testAdmin.save()
 		})
 
-		describe('with Kiosk', function () {
-			let testKiosk: IKiosk
+		it('should return 200 with a valid session', async function () {
+			// Log the admin in to get a session cookie
+			const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
 
-			const testKioskFields = {
-				name: 'TestKiosk',
-				kioskTag: '12345',
-				password: 'testPassword',
-				stayLoggedIn: true
-			}
+			// Extract the session cookie directly
+			const sessionCookie: string = loginRes.headers['set-cookie'][0]
 
-			beforeEach(async function () {
-				testKiosk = new KioskModel(testKioskFields)
-				await testKiosk.save()
-			})
+			// Use the session cookie in the authenticated request
+			const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', sessionCookie)
 
-			it('should return 200 with a valid session', async function () {
-				// Log the kiosk in to get a session cookie
-				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+			// Validate the authenticated response
+			expect(res).to.have.status(200)
+		})
 
-				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+		it('should return 401 without a valid session', async function () {
+			// Send the request without a session cookie
+			const res = await agent.get('/v1/auth/is-authenticated')
 
-				// Use the session cookie in the authenticated request
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', sessionCookie)
+			// Validate the response
+			expect(res).to.have.status(401)
+		})
 
-				// Validate the authenticated response
-				expect(res).to.have.status(200)
-			})
+		it('should return 401 with an invalid session', async function () {
+			// Send the request with an invalid session cookie
+			const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', 'connect.sid=invalidSession')
 
-			it('should return 401 without a valid session', async function () {
-				// Send the request without a session cookie
-				const res = await agent.get('/v1/auth/is-authenticated')
+			// Validate the response
+			expect(res).to.have.status(401)
+		})
 
-				// Validate the response
-				expect(res).to.have.status(401)
-			})
+		it('should return 401 with a session that has been tampered with', async function () {
+			// Log the admin in to get a session cookie
+			const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
 
-			it('should return 401 with an invalid session', async function () {
-				// Send the request with an invalid session cookie
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', 'connect.sid=invalidSession')
+			// Extract the session cookie directly
+			const sessionCookie: string = loginRes.headers['set-cookie'][0]
 
-				// Validate the response
-				expect(res).to.have.status(401)
-			})
+			// Tamper with the session cookie
+			const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
 
-			it('should return 401 with a session that has been tampered with', async function () {
-				// Log the kiosk in to get a session cookie
-				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+			// Use the tampered session cookie in the authenticated request
+			const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', tamperedSessionCookie)
 
-				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+			// Validate the authenticated response
+			expect(res).to.have.status(401)
+		})
 
-				// Tamper with the session cookie
-				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
+		it('should return 401 with an expired session', async function () {
+			// Fake time with sinon
+			const clock = sinon.useFakeTimers(new Date('2024-01-01'))
 
-				// Use the tampered session cookie in the authenticated request
-				const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', tamperedSessionCookie)
+			// Log the admin in to get a session cookie
+			const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
 
-				// Validate the authenticated response
-				expect(res).to.have.status(401)
-			})
+			// Move the clock past the session expiry
+			clock.tick(sessionExpiry + 1000)
+
+			// Extract the session cookie directly
+			const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+			// Use the session cookie in the authenticated request
+			const res = await agent.get('/v1/auth/is-authenticated').set('Cookie', sessionCookie)
+
+			// Validate the authenticated response
+			expect(res).to.have.status(401)
 		})
 	})
 })
