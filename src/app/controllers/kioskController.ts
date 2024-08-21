@@ -11,13 +11,6 @@ import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
 
-	const { password, confirmPassword } = req.body as Record<string, unknown>
-
-	if (password !== confirmPassword) {
-		res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
-		return
-	}
-
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
@@ -95,18 +88,6 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 
 export async function patchKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching kiosk')
-
-	const { password, confirmPassword } = req.body as Record<string, unknown>
-
-	if (password !== undefined) {
-		if (confirmPassword === undefined) {
-			res.status(400).json({ error: 'Bekræft password mangler' })
-			return
-		} else if (password !== confirmPassword) {
-			res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
-			return
-		}
-	}
 
 	const session = await mongoose.startSession()
 	session.startTransaction()

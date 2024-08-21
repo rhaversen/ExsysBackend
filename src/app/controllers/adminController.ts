@@ -14,15 +14,9 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 	// Destructuring fields from the request body
 	const {
 		password,
-		confirmPassword,
 		name,
 		email
 	} = req.body as Record<string, unknown>
-
-	if (password !== confirmPassword) {
-		res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
-		return
-	}
 
 	try {
 		// Creating a new admin with the password, name and email
@@ -60,19 +54,6 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 
 export async function patchAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching admin')
-
-	const { password, confirmPassword } = req.body as Record<string, unknown>
-
-	// Check password consistency
-	if (password !== undefined) {
-		if (confirmPassword === undefined) {
-			res.status(400).json({ error: 'Bekræft kodeord mangler' })
-			return
-		} else if (password !== confirmPassword) {
-			res.status(400).json({ error: 'Kodeord og bekræftkodeord er ikke ens' })
-			return
-		}
-	}
 
 	const session = await mongoose.startSession()
 	session.startTransaction()

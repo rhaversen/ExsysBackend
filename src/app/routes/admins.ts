@@ -20,7 +20,6 @@ const router = Router()
  * @param {string} req.body.name - The name of the admin optional.
  * @param {string} req.body.email - The email of the admin.
  * @param {string} req.body.password - The password of the admin.
- * @param {string} req.body.confirmPassword - The confirmation of the password of the admin.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created admin.
  */
@@ -49,7 +48,6 @@ router.get('/',
  * @param {string} [req.body.name] - The name of the admin (optional).
  * @param {string} [req.body.email] - The email of the admin (optional).
  * @param {string} [req.body.password] - The password of the admin (optional).
- * @param {string} [req.body.confirmPassword] - The confirmation of the password of the admin (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The updated admin.
  */
