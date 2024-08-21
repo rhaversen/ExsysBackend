@@ -655,7 +655,7 @@ await KioskModel.create({
 	name: 'Kiosk with activities',
 	kioskTag: '12345',
 	password: 'password',
-	activities: [activity1.id, activity2.id]
+	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 await KioskModel.create({
 	name: 'Kiosk without activities',
