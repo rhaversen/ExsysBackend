@@ -5,7 +5,7 @@ import Router from 'express'
 
 // Own modules
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin } from '../middleware/authorization.js'
+import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
 // Controller functions
 import { createRoom, deleteRoom, getRoom, getRooms, patchRoom } from '../controllers/roomController.js'
@@ -36,7 +36,7 @@ router.post('/',
  * @return {object} res.body - The room.
  */
 router.get('/:id',
-	isAdmin,
+	isAdminOrKiosk,
 	asyncErrorHandler(getRoom)
 )
 
@@ -48,7 +48,7 @@ router.get('/:id',
  * @return {Array<object>} res.body - The rooms.
  */
 router.get('/',
-	isAdmin,
+	isAdminOrKiosk,
 	asyncErrorHandler(getRooms)
 )
 

@@ -70,12 +70,10 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				return res.status(500).json({ auth: false, error: loginErr.message })
 			}
 
-			// Set maxAge for persistent sessions if requested
-			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
-				req.session.cookie.maxAge = sessionExpiry
-			}
+			// Set maxAge for persistent sessions always
+			req.session.cookie.maxAge = sessionExpiry
 
-			logger.silly(`Admin ${(user as IKiosk).kioskTag} logged in`)
+			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
 			return res.status(200).json({ auth: true, user })
 		})
 	})(req, res, next)

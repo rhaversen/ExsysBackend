@@ -2,7 +2,9 @@
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
+import ActivityModel from '../app/models/Activity.js'
 import AdminModel from '../app/models/Admin.js'
+import KioskModel from '../app/models/Kiosk.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'
 import ProductModel from '../app/models/Product.js'
@@ -531,11 +533,11 @@ const room3 = await RoomModel.create({
 	name: 'Conservatory Room',
 	description: 'A room for music'
 })
-await RoomModel.create({
+const room4 = await RoomModel.create({
 	name: 'Dining Room',
 	description: 'A room for dining'
 })
-await RoomModel.create({
+const room5 = await RoomModel.create({
 	name: 'Kitchen Room',
 	description: 'A room for cooking'
 })
@@ -556,9 +558,39 @@ await RoomModel.create({
 	description: 'A room for lounging'
 })
 
+// Activities
+const activity1 = await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Billiards'
+})
+const activity2 = await ActivityModel.create({
+	roomId: room2.id,
+	name: 'Reading'
+})
+const activity3 = await ActivityModel.create({
+	roomId: room3.id,
+	name: 'Music'
+})
+const activity4 = await ActivityModel.create({
+	roomId: room4.id,
+	name: 'Yoga'
+})
+const activity5 = await ActivityModel.create({
+	roomId: room4.id,
+	name: 'Basket'
+})
+await ActivityModel.create({
+	roomId: room4.id,
+	name: 'Football'
+})
+await ActivityModel.create({
+	roomId: room5.id,
+	name: 'Cooking'
+})
+
 // Orders
 await OrderModel.create({
-	roomId: room1.id,
+	activityId: activity1.id,
 	products: [{
 		id: product1.id,
 		quantity: 1
@@ -569,7 +601,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
-	roomId: room2.id,
+	activityId: activity2.id,
 	products: [{
 		id: product2.id,
 		quantity: 2
@@ -583,7 +615,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
-	roomId: room3.id,
+	activityId: activity3.id,
 	products: [{
 		id: product3.id,
 		quantity: 3
@@ -599,11 +631,35 @@ await OrderModel.create({
 		quantity: 3
 	}]
 })
+await OrderModel.create({
+	activityId: activity4.id,
+	products: [{
+		id: product1.id,
+		quantity: 1
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}]
+})
 
 // Admins
 await AdminModel.create({
 	name: 'Admin',
 	email: 'test@test.com',
+	password: 'password'
+})
+
+// Kiosks
+await KioskModel.create({
+	name: 'Kiosk with activities',
+	kioskTag: '12345',
+	password: 'password',
+	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+})
+await KioskModel.create({
+	name: 'Kiosk without activities',
+	kioskTag: '54321',
 	password: 'password'
 })
 
