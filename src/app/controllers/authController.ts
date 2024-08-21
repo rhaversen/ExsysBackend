@@ -17,6 +17,7 @@ const {
 
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in admin')
+
 	// Check if email and password are provided
 	if (req.body.email === undefined || req.body.password === undefined) {
 		res.status(400).json({ auth: false, error: 'Email or password is missing.' })
@@ -50,6 +51,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 export async function loginKioskLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in kiosk')
+
 	// Check if kioskTag and password are provided
 	if (req.body.kioskTag === undefined || req.body.password === undefined) {
 		res.status(400).json({ auth: false, error: 'kioskTag or password is missing.' })
@@ -81,6 +83,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 export async function logoutLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging out')
+
 	req.logout(function (err) {
 		if (err !== null && err !== undefined) {
 			next(err)
@@ -98,6 +101,8 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 }
 
 export function ensureAuthenticated (req: Request, res: Response, next: NextFunction): void {
+	logger.silly('Ensuring authentication')
+
 	if (!req.isAuthenticated()) {
 		res.status(401).json({ message: 'Unauthorized' })
 		return

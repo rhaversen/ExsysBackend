@@ -77,6 +77,8 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 }
 
 export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting orders with query')
+
 	const {
 		fromDate,
 		toDate,
@@ -119,6 +121,8 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 }
 
 export async function updateOrderStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Updating order status')
+
 	const { orderIds, status } = req.body
 
 	if (orderIds === undefined || status === undefined) {
