@@ -653,7 +653,7 @@ await AdminModel.create({
 // Kiosks
 await KioskModel.create({
 	name: 'Kiosk with activities',
-	kioskTag: '13245',
+	kioskTag: '12345',
 	password: 'password',
 	activities: [activity1.id, activity2.id]
 })
