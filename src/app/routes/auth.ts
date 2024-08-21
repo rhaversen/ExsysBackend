@@ -18,7 +18,6 @@ const router = Router()
  * @access Public
  * @param {string} req.body.kioskTag The tag of the kiosk.
  * @param {string} req.body.password The password of the kiosk.
- * @param {string} [req.body.stayLoggedIn] Whether to stay logged in or not.
  * @return {number} res.status The status code of the HTTP response.
  * @return {object} res.body The kiosk object.
  * @return {string} res.headers['set-cookie'] The session cookie.
