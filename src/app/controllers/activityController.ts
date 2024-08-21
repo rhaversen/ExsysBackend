@@ -18,7 +18,7 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	}
 
 	try {
-		const newActivity = await ActivityModel.create(allowedFields)
+		const newActivity = await (await ActivityModel.create(allowedFields)).populate('roomId')
 		res.status(201).json(newActivity)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -33,7 +33,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 	logger.silly('Getting activity')
 
 	try {
-		const activity = await ActivityModel.findById(req.params.id)
+		const activity = await ActivityModel.findById(req.params.id).populate('roomId')
 
 		if (activity === null || activity === undefined) {
 			res.status(404).json({ error: 'Aktivitet ikke fundet' })
@@ -54,7 +54,7 @@ export async function getActivities (req: Request, res: Response, next: NextFunc
 	logger.silly('Getting activities')
 
 	try {
-		const activities = await ActivityModel.find({})
+		const activities = await ActivityModel.find({}).populate('roomId')
 		res.status(200).json(activities)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -86,6 +86,8 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 		// Validate and save the updated document
 		await activity.validate()
 		await activity.save({ session })
+
+		await activity.populate('roomId')
 
 		await session.commitTransaction()
 		res.status(200).json(activity)

@@ -27,8 +27,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
-		const newKiosk = await KioskModel.create(allowedFields)
-		res.status(201).json(newKiosk)
+		const newKiosk = await (await KioskModel.create(allowedFields)).populate('activities')
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -49,7 +48,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 			return
 		}
 
-		res.status(200).json(kiosk)
+		await kiosk.populate('activities')
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -63,7 +62,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 	logger.silly('Getting kiosk')
 
 	try {
-		const kiosk = await KioskModel.findById(req.params.id)
+		const kiosk = await KioskModel.findById(req.params.id).populate('activities')
 
 		if (kiosk === null || kiosk === undefined) {
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
@@ -84,8 +83,7 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 	logger.silly('Getting kiosks')
 
 	try {
-		const kiosks = await KioskModel.find({})
-		res.status(200).json(kiosks)
+		const kiosks = await KioskModel.find({}).populate('activities')
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -130,6 +128,8 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		// Validate and save the updated document
 		await kiosk.validate()
 		await kiosk.save({ session })
+
+		await kiosk.populate('activities')
 
 		await session.commitTransaction()
 		res.status(200).json(kiosk)
