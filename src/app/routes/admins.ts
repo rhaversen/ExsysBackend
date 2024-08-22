@@ -18,7 +18,6 @@ const router = Router()
  * @desc Create a new admin
  * @access Private
  * @param {string} req.body.name - The name of the admin optional.
- * @param {string} req.body.email - The email of the admin.
  * @param {string} req.body.password - The password of the admin.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created admin.
@@ -46,7 +45,6 @@ router.get('/',
  * @access Private
  * @param {string} req.params.id - The id of the admin to be patched.
  * @param {string} [req.body.name] - The name of the admin (optional).
- * @param {string} [req.body.email] - The email of the admin (optional).
  * @param {string} [req.body.password] - The password of the admin (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The updated admin.

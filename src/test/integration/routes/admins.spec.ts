@@ -21,7 +21,6 @@ describe('Admins routes', function () {
 		// Log the agent in to get a valid session
 		const adminFields = {
 			name: 'Agent Admin',
-			email: 'agent@admin.com',
 			password: 'agentPassword'
 		}
 		await AdminModel.create(adminFields)
@@ -33,7 +32,6 @@ describe('Admins routes', function () {
 	describe('POST /v1/admins', function () {
 		const testAdminFields1 = {
 			name: 'admin1',
-			email: 'test@email.com',
 			password: 'password1',
 			confirmPassword: 'password1'
 		}
@@ -56,7 +54,6 @@ describe('Admins routes', function () {
 			const admin = await AdminModel.findOne({ name: testAdminFields1.name })
 			expect(admin).to.exist
 			expect(admin).to.have.property('name', testAdminFields1.name)
-			expect(admin).to.have.property('email', testAdminFields1.email)
 			expect(admin).to.have.property('password')
 			expect(await admin?.comparePassword(testAdminFields1.password)).to.be.true
 		})
@@ -116,14 +113,12 @@ describe('Admins routes', function () {
 	describe('GET /v1/admins', function () {
 		const testAdminFields1 = {
 			name: 'admin1',
-			email: 'test1@email.com',
 			password: 'password1',
 			confirmPassword: 'password1'
 		}
 
 		const testAdminFields2 = {
 			name: 'admin2',
-			email: 'test2@email.com',
 			password: 'password2',
 			confirmPassword: 'password2'
 		}
@@ -150,7 +145,6 @@ describe('Admins routes', function () {
 
 			expect(response.body).to.be.an('array')
 			expect(response.body.map((admin: IAdmin) => admin.name)).to.include.members([testAdminFields1.name, testAdminFields2.name])
-			expect(response.body.map((admin: IAdmin) => admin.email)).to.include.members([testAdminFields1.email, testAdminFields2.email])
 		})
 
 		it('should not send the password', async function () {
@@ -163,14 +157,12 @@ describe('Admins routes', function () {
 	describe('PATCH /v1/admins', function () {
 		const testAdminFields1 = {
 			name: 'admin1',
-			email: 'test1@email.com',
 			password: 'password1',
 			confirmPassword: 'password1'
 		}
 
 		const updatedFields = {
 			name: 'admin2',
-			email: 'test2@email.com',
 			password: 'password2',
 			confirmPassword: 'password2'
 		}
@@ -186,7 +178,6 @@ describe('Admins routes', function () {
 			const admin = await AdminModel.findOne({ name: updatedFields.name })
 
 			expect(admin?.name).to.equal(updatedFields.name)
-			expect(admin?.email).to.equal(updatedFields.email)
 			const passwordMatch = await admin?.comparePassword(updatedFields.password)
 			expect(passwordMatch).to.be.true
 		})
@@ -207,7 +198,6 @@ describe('Admins routes', function () {
 			const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(res.body.name).to.equal(updatedFields.name)
-			expect(res.body.email).to.equal(updatedFields.email)
 		})
 
 		it('should not return the password', async function () {
@@ -217,11 +207,10 @@ describe('Admins routes', function () {
 		})
 
 		it('should allow a partial update', async function () {
-			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ email: updatedFields.email }).set('Cookie', sessionCookie)
+			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ name: updatedFields.name }).set('Cookie', sessionCookie)
 			const admin = await AdminModel.findOne({ name: testAdminFields1.name })
 
 			expect(admin?.name).to.equal(testAdminFields1.name)
-			expect(admin?.email).to.equal(updatedFields.email)
 		})
 
 		it('should not update password with no confirm password', async function () {
@@ -241,14 +230,6 @@ describe('Admins routes', function () {
 			const admin = await AdminModel.findOne({})
 
 			expect(admin?.password).to.equal(oldAdmin?.password)
-		})
-
-		it('should not allow non valid email', async function () {
-			const oldAdmin = await AdminModel.findOne({})
-			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ email: 'nonTrueEmail' }).set('Cookie', sessionCookie)
-			const admin = await AdminModel.findOne({})
-
-			expect(admin?.email).to.equal(oldAdmin?.email)
 		})
 	})
 })

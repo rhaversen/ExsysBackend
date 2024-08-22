@@ -14,17 +14,15 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 	// Destructuring fields from the request body
 	const {
 		password,
-		name,
-		email
+		name
 	} = req.body as Record<string, unknown>
 
 	try {
-		// Creating a new admin with the password, name and email
-		const newAdmin = await AdminModel.create({ password, name, email })
+		// Creating a new admin with the password and name
+		const newAdmin = await AdminModel.create({ password, name })
 		res.status(201).json({
 			_id: newAdmin._id,
-			name: newAdmin.name,
-			email: newAdmin.email
+			name: newAdmin.name
 		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -43,8 +41,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 		res.status(200).json(
 			admins.map(admin => ({
 				_id: admin._id,
-				name: admin.name,
-				email: admin.email
+				name: admin.name
 			}))
 		)
 	} catch (error) {
@@ -73,7 +70,6 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		// Apply changes if they exist
 		if (req.body.name !== undefined) admin.name = req.body.name
-		if (req.body.email !== undefined) admin.email = req.body.email
 		if (req.body.password !== undefined) admin.password = req.body.password
 
 		// Validate and save the updated document
@@ -84,8 +80,7 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		res.status(200).json({
 			_id: admin._id,
-			name: admin.name,
-			email: admin.email
+			name: admin.name
 		})
 	} catch (error) {
 		await session.abortTransaction()

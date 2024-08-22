@@ -14,19 +14,14 @@ import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 const configurePassport = (passport: PassportStatic): void => {
 	// Local Admin Strategy
 	passport.use('admin-local', new LocalStrategy({
-		usernameField: 'email',
+		usernameField: 'name',
 		passwordField: 'password'
-	}, (email, password, done) => {
+	}, (name, password, done) => {
 		(async () => {
 			try {
-				if (!validator.isEmail(email)) {
-					done(null, false, { message: 'Invalid email' })
-					return
-				}
-
-				const admin = await AdminModel.findOne({ email }).exec()
+				const admin = await AdminModel.findOne({ name }).exec()
 				if (admin === null || admin === undefined) {
-					done(null, false, { message: 'An admin with the email ' + email + ' was not found. Please check spelling or sign up' })
+					done(null, false, { message: 'An admin with the name ' + name + ' was not found. Please check spelling or sign up' })
 					return
 				}
 

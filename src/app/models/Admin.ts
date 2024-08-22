@@ -19,7 +19,6 @@ export interface IAdmin extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
 	name: string
-	email: string
 	password: string
 
 	// Timestamps
@@ -39,15 +38,6 @@ const adminSchema = new Schema<IAdmin>({
 		minLength: [2, 'Navn skal være mindst 2 tegn'],
 		maxLength: [50, 'Navn kan højest være 50 tegn']
 	},
-	email: {
-		type: Schema.Types.String,
-		required: true,
-		unique: true,
-		lowercase: true,
-		trim: true,
-		minLength: [5, 'Email skal være mindst 5 tegn'],
-		maxLength: [100, 'Email kan højest være 100 tegn']
-	},
 	password: {
 		type: Schema.Types.String,
 		required: true,
@@ -60,14 +50,10 @@ const adminSchema = new Schema<IAdmin>({
 })
 
 // Validations
-adminSchema.path('email').validate(function (v: string) {
-	return validator.isEmail(v)
-}, 'Email er ikke gyldig')
-
-adminSchema.path('email').validate(async function (v: string) {
-	const foundAdminWithEmail = await AdminModel.findOne({ email: v, _id: { $ne: this._id } })
-	return foundAdminWithEmail === null || foundAdminWithEmail === undefined
-}, 'Email er allerede i brug')
+adminSchema.path('name').validate(async function (v: string) {
+	const foundAdminWithName = await AdminModel.findOne({ name: v, _id: { $ne: this._id } })
+	return foundAdminWithName === null || foundAdminWithName === undefined
+}, 'Navnet er allerede i brug')
 
 // Adding indexes
 

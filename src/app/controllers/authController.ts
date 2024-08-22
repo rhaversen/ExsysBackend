@@ -18,9 +18,9 @@ const {
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in admin')
 
-	// Check if email and password are provided
-	if (req.body.email === undefined || req.body.password === undefined) {
-		res.status(400).json({ auth: false, error: 'Email or password is missing.' })
+	// Check if name and password are provided
+	if (req.body.name === undefined || req.body.password === undefined) {
+		res.status(400).json({ auth: false, error: 'name or password is missing.' })
 		return
 	}
 
@@ -43,7 +43,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 				req.session.cookie.maxAge = sessionExpiry
 			}
 
-			logger.silly(`Admin ${(user as IAdmin).email} logged in`)
+			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
 			return res.status(200).json({ auth: true, user })
 		})
 	})(req, res, next)

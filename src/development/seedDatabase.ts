@@ -646,7 +646,6 @@ await OrderModel.create({
 // Admins
 await AdminModel.create({
 	name: 'Admin',
-	email: 'test@test.com',
 	password: 'password'
 })
 
