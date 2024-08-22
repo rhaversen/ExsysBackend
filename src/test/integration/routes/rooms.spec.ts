@@ -22,7 +22,6 @@ describe('Rooms routes', function () {
 		// Log the agent in to get a valid session
 		const adminFields = {
 			name: 'Agent Admin',
-			email: 'agent@admin.com',
 			password: 'agentPassword'
 		}
 		await AdminModel.create(adminFields)
