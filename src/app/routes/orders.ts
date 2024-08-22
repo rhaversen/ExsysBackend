@@ -29,7 +29,7 @@ router.post('/',
 )
 
 /**
- * @route GET api/v1/orders/?fromDate&toDate
+ * @route GET api/v1/orders
  * @desc Get orders with date range query
  * @access Private
  * @param {string} [req.query.fromDate] - The start date of the range (optional).
