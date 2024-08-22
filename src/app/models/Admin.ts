@@ -35,15 +35,15 @@ const adminSchema = new Schema<IAdmin>({
 		type: Schema.Types.String,
 		trim: true,
 		required: true,
-		minLength: [2, 'Navn skal være mindst 2 tegn'],
-		maxLength: [50, 'Navn kan højest være 50 tegn']
+		unique: true,
+		maxlength: [50, 'Navn kan højest være 50 tegn']
 	},
 	password: {
 		type: Schema.Types.String,
 		required: true,
 		trim: true,
-		minLength: [4, 'Password skal være mindst 4 tegn'],
-		maxLength: [100, 'Password kan højest være 100 tegn']
+		minlength: [4, 'Password skal være mindst 4 tegn'],
+		maxlength: [100, 'Password kan højest være 100 tegn']
 	}
 }, {
 	timestamps: true

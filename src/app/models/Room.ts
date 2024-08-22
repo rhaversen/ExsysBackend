@@ -26,12 +26,14 @@ const roomSchema = new Schema<IRoom>({
 		type: Schema.Types.String,
 		trim: true,
 		unique: true,
-		required: [true, 'Navn er påkrævet']
+		required: [true, 'Navn er påkrævet'],
+		maxlength: [50, 'Navn kan højest være 50 tegn']
 	},
 	description: {
 		type: Schema.Types.String,
 		trim: true,
-		required: [true, 'Beskrivelse er påkrævet']
+		required: [true, 'Beskrivelse er påkrævet'],
+		maxlength: [50, 'Beskrivelse kan højest være 50 tegn']
 	}
 }, {
 	timestamps: true
