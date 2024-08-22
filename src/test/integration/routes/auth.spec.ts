@@ -25,7 +25,6 @@ describe('Auth routes', function () {
 
 		const testAdminFields = {
 			name: 'TestAdmin',
-			email: 'TestAdmin@gmail.com',
 			password: 'testPassword'
 		}
 
@@ -126,23 +125,23 @@ describe('Auth routes', function () {
 
 		it('should return 401 with invalid password', async function () {
 			const res = await agent.post('/v1/auth/login-admin-local').send({
-				email: testAdminFields.email,
+				name: testAdminFields.name,
 				password: 'invalidPassword'
 			})
 
 			expect(res).to.have.status(401)
 		})
 
-		it('should return 401 with invalid email', async function () {
+		it('should return 401 with invalid name', async function () {
 			const res = await agent.post('/v1/auth/login-admin-local').send({
-				email: 'invalidEmail',
+				name: 'invalidName',
 				password: testAdminFields.password
 			})
 
 			expect(res).to.have.status(401)
 		})
 
-		it('should return 400 with missing email', async function () {
+		it('should return 400 with missing name', async function () {
 			const res = await agent.post('/v1/auth/login-admin-local').send({
 				password: testAdminFields.password
 			})
@@ -152,13 +151,13 @@ describe('Auth routes', function () {
 
 		it('should return 400 with missing password', async function () {
 			const res = await agent.post('/v1/auth/login-admin-local').send({
-				email: testAdminFields.email
+				name: testAdminFields.name
 			})
 
 			expect(res).to.have.status(400)
 		})
 
-		it('should return 400 with missing email and password', async function () {
+		it('should return 400 with missing name and password', async function () {
 			const res = await agent.post('/v1/auth/login-admin-local').send({})
 
 			expect(res).to.have.status(400)
@@ -168,7 +167,6 @@ describe('Auth routes', function () {
 	describe('POST /v1/auth/login-admin-local with stayLoggedIn', function () {
 		const testAdminFields = {
 			name: 'TestAdmin',
-			email: 'TestAdmin@gmail.com',
 			password: 'testPassword',
 			stayLoggedIn: 'true'
 		}
@@ -426,7 +424,6 @@ describe('Auth routes', function () {
 
 			const testAdminFields = {
 				name: 'TestAdmin',
-				email: 'TestAdmin@gmail.com',
 				password: 'testPassword'
 			}
 
@@ -540,7 +537,6 @@ describe('Auth routes', function () {
 
 			const testAdminFields = {
 				name: 'TestAdmin',
-				email: 'test@test.com',
 				password: 'testPassword'
 			}
 
@@ -665,7 +661,6 @@ describe('Auth routes', function () {
 
 		const testAdminFields = {
 			name: 'TestAdmin',
-			email: 'test@test.com',
 			password: 'testPassword',
 			stayLoggedIn: true
 		}

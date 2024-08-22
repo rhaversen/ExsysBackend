@@ -19,7 +19,6 @@ import '../testSetup.js'
 describe('Admin Model', function () {
 	const testAdminFields = {
 		name: 'TestAdmin',
-		email: 'test@admin.com',
 		password: 'testPassword'
 	}
 
@@ -27,7 +26,6 @@ describe('Admin Model', function () {
 		const admin = await AdminModel.create(testAdminFields)
 		expect(admin).to.exist
 		expect(admin.name).to.equal(testAdminFields.name)
-		expect(admin.email).to.equal(testAdminFields.email)
 		expect(await bcrypt.compare(testAdminFields.password, admin.password)).to.be.true
 	})
 
@@ -38,15 +36,6 @@ describe('Admin Model', function () {
 		})
 		expect(admin).to.exist
 		expect(admin.name).to.equal('TestAdmin')
-	})
-
-	it('should trim the email', async function () {
-		const admin = await AdminModel.create({
-			...testAdminFields,
-			email: '    test@admin.com    '
-		})
-		expect(admin).to.exist
-		expect(admin.email).to.equal('test@admin.com')
 	})
 
 	it('should trim the password', async function () {
@@ -86,48 +75,6 @@ describe('Admin Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not save an admin with a too short email', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				email: 'a'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not save an admin with a too long email', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				email: 'a'.repeat(101) + '@a.com'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not save an admin with an invalid email', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				email: 'invalidEmail'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not save an admin with a too short password', async function () {
 		let errorOccurred = false
 		try {
@@ -156,7 +103,7 @@ describe('Admin Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not save an admin with a duplicate email', async function () {
+	it('should not save an admin with a duplicate name', async function () {
 		let errorOccurred = false
 		try {
 			await AdminModel.create(testAdminFields)
@@ -166,15 +113,6 @@ describe('Admin Model', function () {
 			errorOccurred = true
 		}
 		expect(errorOccurred).to.be.true
-	})
-
-	it('should set the email to lowercase', async function () {
-		const admin = await AdminModel.create({
-			...testAdminFields,
-			email: 'Test@Email.Com'
-		})
-		expect(admin).to.exist
-		expect(admin.email).to.equal('test@email.com')
 	})
 
 	it('should not save an admin without a name', async function () {
@@ -183,20 +121,6 @@ describe('Admin Model', function () {
 			await AdminModel.create({
 				...testAdminFields,
 				name: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not save an admin without an email', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				email: undefined
 			})
 		} catch (err) {
 			// The promise was rejected as expected

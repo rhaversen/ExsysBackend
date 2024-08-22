@@ -30,7 +30,7 @@ router.post('/login-kiosk-local',
  * @route POST api/v1/auth/login-admin-local
  * @desc Login admin and return session cookie
  * @access Public
- * @param {string} req.body.email The email of the admin.
+ * @param {string} req.body.name The name of the admin.
  * @param {string} req.body.password The password of the admin.
  * @param {string} [req.body.stayLoggedIn] Whether to stay logged in or not.
  * @return {number} res.status The status code of the HTTP response.

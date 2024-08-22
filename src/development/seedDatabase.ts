@@ -646,20 +646,25 @@ await OrderModel.create({
 // Admins
 await AdminModel.create({
 	name: 'Admin',
-	email: 'test@test.com',
 	password: 'password'
 })
 
 // Kiosks
 await KioskModel.create({
 	name: 'Kiosk with activities',
-	kioskTag: '12345',
+	kioskTag: '11111',
 	password: 'password',
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 await KioskModel.create({
+	name: 'Kiosk with one activity',
+	kioskTag: '22222',
+	password: 'password',
+	activities: [activity1.id]
+})
+await KioskModel.create({
 	name: 'Kiosk without activities',
-	kioskTag: '54321',
+	kioskTag: '33333',
 	password: 'password'
 })
 

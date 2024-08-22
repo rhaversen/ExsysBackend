@@ -27,12 +27,12 @@ const optionSchema = new Schema<IOption>({
 		type: Schema.Types.String,
 		trim: true,
 		required: [true, 'Navnet er påkrævet'],
-		maxLength: [20, 'Navnet kan højest have 20 tegn']
+		maxlength: [20, 'Navnet kan højest have 20 tegn']
 	},
 	imageURL: {
 		type: Schema.Types.String,
 		trim: true,
-		maxLength: [200, 'Billede URL kan højest have 200 tegn']
+		maxlength: [200, 'Billede URL kan højest have 200 tegn']
 	},
 	price: {
 		type: Schema.Types.Number,

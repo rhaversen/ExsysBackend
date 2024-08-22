@@ -6,17 +6,10 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import KioskModel from '../models/Kiosk.js'
+import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
-
-	const { password, confirmPassword } = req.body as Record<string, unknown>
-
-	if (password !== confirmPassword) {
-		res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
-		return
-	}
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
@@ -27,8 +20,41 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
-		const newKiosk = await KioskModel.create(allowedFields)
-		res.status(201).json(newKiosk)
+		const newKiosk = await (await KioskModel.create(allowedFields)).populate('activities')
+		res.status(201).json({
+			_id: newKiosk._id,
+			name: newKiosk.name,
+			kioskTag: newKiosk.kioskTag,
+			activities: newKiosk.activities
+		})
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function getMe (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting me kiosk')
+
+	try {
+		const kiosk = req.user as IKiosk | undefined
+
+		if (kiosk === null || kiosk === undefined) {
+			res.status(404).json({ error: 'Kiosk ikke fundet' })
+			return
+		}
+
+		await kiosk.populate('activities')
+
+		res.status(200).json({
+			_id: kiosk._id,
+			name: kiosk.name,
+			kioskTag: kiosk.kioskTag,
+			activities: kiosk.activities
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -42,14 +68,19 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 	logger.silly('Getting kiosk')
 
 	try {
-		const kiosk = await KioskModel.findById(req.params.id)
+		const kiosk = await KioskModel.findById(req.params.id).populate('activities')
 
 		if (kiosk === null || kiosk === undefined) {
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
-		res.status(200).json(kiosk)
+		res.status(200).json({
+			_id: kiosk._id,
+			name: kiosk.name,
+			kioskTag: kiosk.kioskTag,
+			activities: kiosk.activities
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -63,8 +94,15 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 	logger.silly('Getting kiosks')
 
 	try {
-		const kiosks = await KioskModel.find({})
-		res.status(200).json(kiosks)
+		const kiosks = await KioskModel.find({}).populate('activities')
+		res.status(200).json(
+			kiosks.map(kiosk => ({
+				_id: kiosk._id,
+				name: kiosk.name,
+				kioskTag: kiosk.kioskTag,
+				activities: kiosk.activities
+			}))
+		)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -76,18 +114,6 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 
 export async function patchKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching kiosk')
-
-	const { password, confirmPassword } = req.body as Record<string, unknown>
-
-	if (password !== undefined) {
-		if (confirmPassword === undefined) {
-			res.status(400).json({ error: 'Bekræft password mangler' })
-			return
-		} else if (password !== confirmPassword) {
-			res.status(400).json({ error: 'Password og confirmPassword skal være ens' })
-			return
-		}
-	}
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
@@ -110,8 +136,15 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		await kiosk.validate()
 		await kiosk.save({ session })
 
+		await kiosk.populate('activities')
+
 		await session.commitTransaction()
-		res.status(200).json(kiosk)
+		res.status(200).json({
+			_id: kiosk._id,
+			name: kiosk.name,
+			kioskTag: kiosk.kioskTag,
+			activities: kiosk.activities
+		})
 	} catch (error) {
 		await session.abortTransaction()
 

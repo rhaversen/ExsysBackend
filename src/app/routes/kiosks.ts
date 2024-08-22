@@ -5,10 +5,10 @@ import Router from 'express'
 
 // Own modules
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
+import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
 
 // Controller functions
-import { createKiosk, deleteKiosk, getKiosk, getKiosks, createNewKioskTag, patchKiosk } from '../controllers/kioskController.js'
+import { createKiosk, deleteKiosk, getKiosk, getKiosks, createNewKioskTag, patchKiosk, getMe } from '../controllers/kioskController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -20,7 +20,6 @@ const router = Router()
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} [req.body.kioskTag] - The tag of the kiosk.
  * @param {string} req.body.password - The password of the kiosk.
- * @param {string} req.body.confirmPassword - The password confirmation of the kiosk.
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for.
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created kiosk.
@@ -28,6 +27,18 @@ const router = Router()
 router.post('/',
 	isAdmin,
 	asyncErrorHandler(createKiosk)
+)
+
+/**
+ * @route GET api/v1/kiosks/me
+ * @desc Get the kiosk that is currently logged in
+ * @access Private
+ * @return {number} res.status - The status code of the HTTP response.
+ * @return {object} res.body - The kiosk.
+ */
+router.get('/me',
+	isKiosk,
+	asyncErrorHandler(getMe)
 )
 
 /**
@@ -63,7 +74,6 @@ router.get('/',
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.password] - The password of the kiosk (optional).
- * @param {string} [req.body.confirmPassword] - The password confirmation of the kiosk (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The updated kiosk.
