@@ -29,6 +29,19 @@ router.post('/',
 )
 
 /**
+ * @route GET api/v1/orders/:id/paymentStatus
+ * @desc Get the payment status of an order
+ * @access Private
+ * @param {Types.ObjectId} req.params.id - The ID of the order to get the payment status of.
+ * @return {number} res.status - The status code of the HTTP response.
+ * @return {object} res.body - The payment status of the order.
+ */
+router.get('/:id/paymentStatus',
+	isAdmin,
+	asyncErrorHandler(getPaymentStatus)
+)
+
+/**
  * @route GET api/v1/orders
  * @desc Get orders with date range query
  * @access Private

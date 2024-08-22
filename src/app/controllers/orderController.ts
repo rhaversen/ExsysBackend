@@ -88,6 +88,29 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 	}
 }
 
+export async function getPaymentStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting payment status')
+
+	const orderId = req.params.id
+
+	try {
+		const order = await OrderModel.findById(orderId).populate('paymentId') as IOrderPopulatedPaymentId | null
+		if (order === null) {
+			res.status(404).json({ error: 'Order not found' })
+			return
+		}
+
+		res.status(200).json({ paymentStatus: order.paymentId.paymentStatus })
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			logger.error(error)
+			next(error)
+		}
+	}
+}
+
 interface GetOrdersWithDateRangeRequest extends Request {
 	query: {
 		fromDate?: string
