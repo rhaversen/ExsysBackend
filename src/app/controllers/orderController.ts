@@ -41,6 +41,29 @@ function combineItemsById (items: OrderItem[]): OrderItem[] {
 	}, [])
 }
 
+async function countSubtotalOfOrder (products: OrderItem[], options: OrderItem[] = []): Promise<number> {
+	let sum = 0
+	for (const item of products) {
+		const itemDoc = await ProductModel.findById(item.id)
+		if (itemDoc !== null) {
+			sum += itemDoc.price * item.quantity
+		}
+	}
+	for (const item of options) {
+		const itemDoc = await OptionModel.findById(item.id)
+		if (itemDoc !== null) {
+			sum += itemDoc.price * item.quantity
+		}
+	}
+	return sum
+}
+
+function isOrderItemList (items: any[]): items is OrderItem[] {
+	return Array.isArray(items) && items.every((item: OrderItem) => {
+		return item !== null && typeof item === 'object' && typeof item.id === 'string' && typeof item.quantity === 'number'
+	})
+}
+
 export async function createOrder (req: CreateOrderRequest, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
 
