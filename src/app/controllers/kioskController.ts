@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
+import { read } from 'fs'
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
@@ -15,6 +16,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
 		kioskTag: req.body.kioskTag,
+		readerId: req.body.readerId,
 		password: req.body.password,
 		activities: req.body.activities
 	}
@@ -24,6 +26,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		res.status(201).json({
 			_id: newKiosk._id,
 			name: newKiosk.name,
+			readerId: newKiosk.readerId,
 			kioskTag: newKiosk.kioskTag,
 			activities: newKiosk.activities
 		})
@@ -52,6 +55,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 		res.status(200).json({
 			_id: kiosk._id,
 			name: kiosk.name,
+			readerId: kiosk.readerId,
 			kioskTag: kiosk.kioskTag,
 			activities: kiosk.activities
 		})
@@ -79,6 +83,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 			_id: kiosk._id,
 			name: kiosk.name,
 			kioskTag: kiosk.kioskTag,
+			readerId: kiosk.readerId,
 			activities: kiosk.activities
 		})
 	} catch (error) {
@@ -99,6 +104,7 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 			kiosks.map(kiosk => ({
 				_id: kiosk._id,
 				name: kiosk.name,
+				readerId: kiosk.readerId,
 				kioskTag: kiosk.kioskTag,
 				activities: kiosk.activities
 			}))
@@ -129,6 +135,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		// Set fields directly, checking for undefined to ensure not overwriting with undefined
 		if (req.body.name !== undefined) kiosk.name = req.body.name
 		if (req.body.kioskTag !== undefined) kiosk.kioskTag = req.body.kioskTag
+		if (req.body.readerId !== undefined) kiosk.readerId = req.body.readerId
 		if (req.body.password !== undefined) kiosk.password = req.body.password
 		if (req.body.activities !== undefined) kiosk.activities = req.body.activities
 
@@ -142,6 +149,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		res.status(200).json({
 			_id: kiosk._id,
 			name: kiosk.name,
+			readerId: kiosk.readerId,
 			kioskTag: kiosk.kioskTag,
 			activities: kiosk.activities
 		})

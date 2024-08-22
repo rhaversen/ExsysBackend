@@ -3,12 +3,13 @@
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
-import ActivityModel from './Activity.js'
+import { compare, hash } from 'bcrypt'
 
 // Own modules
 import logger from '../utils/logger.js'
-import { compare, hash } from 'bcrypt'
 import config from '../utils/setupConfig.js'
+import ReaderModel from './Reader.js'
+import ActivityModel from './Activity.js'
 
 // Destructuring and global variables
 const {
@@ -28,6 +29,7 @@ export interface IKiosk extends Document {
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
+	readerId?: Schema.Types.ObjectId // The pay station the kiosk is connected to
 
 	// Timestamps
 	createdAt: Date
@@ -58,6 +60,11 @@ const kioskSchema = new Schema<IKiosk>({
 		minlength: [4, 'Password skal være mindst 4 tegn'],
 		maxlength: [100, 'Password kan højest være 100 tegn']
 	},
+	readerId: {
+		type: Schema.Types.ObjectId,
+		required: false,
+		ref: 'Reader'
+	},
 	activities: {
 		type: [Schema.Types.ObjectId],
 		ref: 'Activity',
@@ -81,6 +88,14 @@ kioskSchema.path('kioskTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
 }, 'KioskTag must only contain numbers')
 
+kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
+	if (v === undefined || v === null) {
+		return true
+	}
+	const foundReader = await ReaderModel.findOne({ _id: v })
+	return foundReader !== null && foundReader !== undefined
+}, 'Reader does not exist')
+
 kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
 	for (const activity of v) {
 		const foundActivity = await ActivityModel.findOne({ _id: activity })
@@ -89,7 +104,7 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 		}
 	}
 	return true
-})
+}, 'One or more activities do not exist')
 
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {
