@@ -7,7 +7,6 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
-import { read } from 'fs'
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
