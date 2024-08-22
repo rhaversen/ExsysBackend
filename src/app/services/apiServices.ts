@@ -5,15 +5,7 @@ const SUMUP_API_KEY = process.env.SUMUP_API_KEY
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
 
 interface ICreateReaderCheckout {
-	id: string
-	event_type: string
-	payload: {
-		client_transaction_id: string
-		merchant_code: string
-		status: 'successful' | 'failed'
-		transaction_id: string | null
-	}
-	timestamp: string
+	client_transaction_id: string
 }
 
 export async function createReaderCheckout (readerId: string, totalAmount: number, returnUrl: string): Promise<ICreateReaderCheckout | undefined> {
