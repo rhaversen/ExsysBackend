@@ -21,14 +21,6 @@ interface CreateOrderRequest extends Request {
 	}
 }
 
-interface GetOrdersWithDateRangeRequest extends Request {
-	query: {
-		fromDate?: string
-		toDate?: string
-		status?: string
-	}
-}
-
 function combineItemsById (items: OrderItem[]): OrderItem[] {
 	return items.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
 		const existingItem = accumulator.find(item => item.id === currentItem.id)
@@ -96,13 +88,23 @@ export async function createOrder (req: CreateOrderRequest, res: Response, next:
 	}
 }
 
+interface GetOrdersWithDateRangeRequest extends Request {
+	query: {
+		fromDate?: string
+		toDate?: string
+		status?: string
+		paymentStatus?: string
+	}
+}
+
 export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Getting orders with query')
 
 	const {
 		fromDate,
 		toDate,
-		status
+		status,
+		paymentStatus
 	} = req.query
 	const query: {
 		createdAt?: {
@@ -111,8 +113,8 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		}
 		status?: {
 			$in?: string[]
-
 		}
+		paymentStatus?: ['pending' | 'successful' | 'failed']
 	} = {}
 
 	if (fromDate !== undefined && fromDate !== '') {
@@ -128,7 +130,14 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 	}
 
 	try {
-		const orders = await OrderModel.find(query)
+		const orders = await OrderModel.find({
+			...query,
+			'paymentId.paymentStatus': paymentStatus
+		})
+			.populate('paymentId', 'paymentStatus') // Populate the paymentId with only the paymentStatus
+			.select('-paymentId') // Exclude the paymentId from the results
+			.exec()
+
 		res.status(200).json(orders)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
