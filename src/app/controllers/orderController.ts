@@ -9,8 +9,8 @@ import OrderModel from '../models/Order.js'
 import logger from '../utils/logger.js'
 
 interface OrderItem {
-	id?: string
-	quantity?: number
+	id: string
+	quantity: number
 }
 
 interface CreateOrderRequest extends Request {
@@ -29,16 +29,13 @@ interface GetOrdersWithDateRangeRequest extends Request {
 	}
 }
 
-function combineItemsById (items: OrderItem[] | undefined): OrderItem[] | undefined {
-	return items?.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
-		// Find if the item already exists in the accumulator
-		const existingItem = accumulator.find((item: OrderItem) => item.id === currentItem.id)
-		if (existingItem !== null && existingItem !== undefined) {
-			// If the item exists, add the quantities
-			existingItem.quantity = (existingItem.quantity ?? 0) + (currentItem.quantity ?? 0)
+function combineItemsById (items: OrderItem[]): OrderItem[] {
+	return items.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
+		const existingItem = accumulator.find(item => item.id === currentItem.id)
+		if (existingItem != null) {
+			existingItem.quantity += currentItem.quantity
 		} else {
-			// If the item doesn't exist, add it to the accumulator
-			accumulator.push(currentItem)
+			accumulator.push({ ...currentItem })
 		}
 		return accumulator
 	}, [])
