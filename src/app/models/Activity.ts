@@ -27,7 +27,8 @@ const activitySchema = new Schema<IActivity>({
 		type: Schema.Types.String,
 		required: true,
 		trim: true,
-		unique: true
+		unique: true,
+		maxlength: [50, 'Navn kan højest være 50 tegn']
 	}
 }, {
 	timestamps: true

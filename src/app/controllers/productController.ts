@@ -73,7 +73,6 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		await product.validate()
 		await product.save({ session })
 
-		// Populate options if needed after update
 		await product.populate('options')
 
 		await session.commitTransaction()

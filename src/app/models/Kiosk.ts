@@ -43,7 +43,8 @@ const kioskSchema = new Schema<IKiosk>({
 	name: {
 		type: Schema.Types.String,
 		required: true,
-		trim: true
+		trim: true,
+		maxlength: [50, 'Navn kan højest være 50 tegn']
 	},
 	kioskTag: {
 		type: Schema.Types.String,
@@ -53,7 +54,9 @@ const kioskSchema = new Schema<IKiosk>({
 	password: {
 		type: Schema.Types.String,
 		required: true,
-		trim: true
+		trim: true,
+		minlength: [4, 'Password skal være mindst 4 tegn'],
+		maxlength: [100, 'Password kan højest være 100 tegn']
 	},
 	activities: {
 		type: [Schema.Types.ObjectId],
