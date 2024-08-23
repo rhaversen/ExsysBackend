@@ -234,9 +234,11 @@ describe('Activities routes', function () {
 
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId)).to.have.property('_id', testActivityFields1.roomId)
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId.name)).to.have.members(['Room 1', 'Room 2'])
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId.description)).to.have.members(['Description for Room 1', 'Description for Room 2'])
+			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			const roomNames = response.body.map((activity: { roomId: { name: string } }) => activity.roomId.name)
+			expect(roomNames).to.have.members(['Room 1', 'Room 2'])
+			const roomDescriptions = response.body.map((activity: { roomId: { description: string } }) => activity.roomId.description)
+			expect(roomDescriptions).to.have.members(['Description for Room 1', 'Description for Room 2'])
 		})
 	})
 

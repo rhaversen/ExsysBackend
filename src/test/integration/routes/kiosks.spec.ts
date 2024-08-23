@@ -16,6 +16,7 @@ import { chaiAppServer as agent } from '../../testSetup.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import AdminModel from '../../../app/models/Admin.js'
+import ReaderModel from '../../../app/models/Reader.js'
 
 describe('Kiosks routes', function () {
 	let sessionCookie: string
@@ -34,11 +35,22 @@ describe('Kiosks routes', function () {
 
 	describe('POST /v1/kiosks', function () {
 		describe('No activities', function () {
-			const testKioskFields = {
-				name: 'Test Kiosk',
-				kioskTag: '12345',
-				password: 'Test Password'
+			let testKioskFields: {
+				name: string
+				kioskTag: string
+				password: string
+				readerId: mongoose.Types.ObjectId
 			}
+
+			beforeEach(async function () {
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				testKioskFields = {
+					name: 'Test Kiosk',
+					kioskTag: '12345',
+					password: 'Test Password',
+					readerId: testReader.id
+				}
+			})
 
 			it('should have status 201', async function () {
 				const response = await agent.post('/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
@@ -92,6 +104,7 @@ describe('Kiosks routes', function () {
 				name: string
 				password: string
 				activities: mongoose.Types.ObjectId[]
+				readerId: mongoose.Types.ObjectId
 			}
 
 			beforeEach(async function () {
@@ -113,10 +126,13 @@ describe('Kiosks routes', function () {
 					roomId: testRoom2.id
 				})
 
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 				testKioskFields = {
 					name: 'Test Kiosk',
 					password: 'Test Password',
-					activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+					activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+					readerId: testReader.id
 				}
 			})
 
@@ -165,6 +181,7 @@ describe('Kiosks routes', function () {
 				kioskTag: string
 				password: string
 				activities: mongoose.Types.ObjectId[]
+				readerId: mongoose.Types.ObjectId
 			}
 
 			beforeEach(async function () {
@@ -186,11 +203,14 @@ describe('Kiosks routes', function () {
 					roomId: testRoom2.id
 				})
 
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 				testKioskFields = {
 					name: 'Test Kiosk',
 					kioskTag: '12345',
 					password: 'Test Password',
-					activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+					activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+					readerId: testReader.id
 				}
 			})
 
@@ -252,6 +272,7 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -273,11 +294,14 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 			testKioskFields = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader.id
 			}
 
 			testKiosk1 = await KioskModel.create(testKioskFields)
@@ -301,15 +325,6 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.property('name', testKioskFields.name)
 			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
 			expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
-		})
-
-		it('should populate the activities', async function () {
-			const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
-
-			expect(response.body.activities[0]).to.have.property('name', 'Activity 1')
-			expect(response.body.activities[0]).to.have.property('roomId', testKioskFields.activities[0])
-			expect(response.body.activities[1]).to.have.property('name', 'Activity 2')
-			expect(response.body.activities[1]).to.have.property('roomId', testKioskFields.activities[1])
 		})
 
 		it('should not return the password', async function () {
@@ -338,12 +353,14 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -365,17 +382,22 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader1 = await ReaderModel.create({ apiReferenceId: 'test1', readerTag: '12345' })
+			const testReader2 = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString()]
+				activities: [testActivity1.id.toString()],
+				readerId: testReader2.id
 			}
 
 			await KioskModel.create(testKioskFields1)
@@ -434,12 +456,14 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -461,17 +485,22 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader1 = await ReaderModel.create({ apiReferenceId: 'test1', readerTag: '12345' })
+			const testReader2 = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString()]
+				activities: [testActivity1.id.toString()],
+				readerId: testReader2.id
 			}
 
 			testKiosk1 = await KioskModel.create(testKioskFields1)
@@ -634,11 +663,13 @@ describe('Kiosks routes', function () {
 				name: 'Activity 1',
 				roomId: testRoom1.id
 			})
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
 			testKiosk1 = await KioskModel.create({
 				name: 'Kiosk 1',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id]
+				activities: [testActivity1.id],
+				readerId: testReader.id
 			})
 		})
 
@@ -687,6 +718,7 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -708,11 +740,14 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 			testKioskFields1 = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader.id
 			}
 
 			testKiosk1 = await KioskModel.create(testKioskFields1)
@@ -740,11 +775,13 @@ describe('Kiosks routes', function () {
 		})
 
 		it('should not delete other kiosks', async function () {
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '54321' })
 			const testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString()]
+				activities: [testActivity1.id.toString()],
+				readerId: testReader.id
 			}
 			const testKiosk2 = await KioskModel.create(testKioskFields2)
 
