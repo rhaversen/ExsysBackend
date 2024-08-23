@@ -110,7 +110,7 @@ export async function deleteReader (req: Request, res: Response, next: NextFunct
 			return
 		}
 
-		const readerUnpaired = await unpairReader(reader.readerId)
+		const readerUnpaired = await unpairReader(reader.apiReferenceId)
 
 		if (!readerUnpaired) {
 			res.status(400).json({ error: 'Fejl ved fjernelse af læser' })
