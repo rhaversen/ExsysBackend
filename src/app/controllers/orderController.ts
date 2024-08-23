@@ -19,7 +19,7 @@ interface OrderItem {
 	quantity: number
 }
 
-function combineItemsById (items: OrderItem[]): OrderItem[] {
+export function combineItemsById (items: OrderItem[]): OrderItem[] {
 	return items.reduce((accumulator: OrderItem[], currentItem: OrderItem) => {
 		const existingItem = accumulator.find(item => item.id === currentItem.id)
 		if (existingItem != null) {
@@ -31,11 +31,11 @@ function combineItemsById (items: OrderItem[]): OrderItem[] {
 	}, [])
 }
 
-function removeItemsWithZeroQuantity (items: OrderItem[]): OrderItem[] {
+export function removeItemsWithZeroQuantity (items: OrderItem[]): OrderItem[] {
 	return items.filter(item => item.quantity > 0)
 }
 
-async function countSubtotalOfOrder (products: OrderItem[], options: OrderItem[] = []): Promise<number> {
+export async function countSubtotalOfOrder (products: OrderItem[], options: OrderItem[] = []): Promise<number> {
 	let sum = 0
 	for (const item of products) {
 		const itemDoc = await ProductModel.findById(item.id)
@@ -52,7 +52,7 @@ async function countSubtotalOfOrder (products: OrderItem[], options: OrderItem[]
 	return sum
 }
 
-function isOrderItemList (items: any[]): items is OrderItem[] {
+export function isOrderItemList (items: any[]): items is OrderItem[] {
 	return Array.isArray(items) && items.every((item: OrderItem) => {
 		return item !== null && typeof item === 'object' && typeof item.id === 'string' && typeof item.quantity === 'number'
 	})
