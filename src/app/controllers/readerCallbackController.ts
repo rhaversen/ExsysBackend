@@ -29,7 +29,7 @@ function isPaymentStatus (status: string): status is 'successful' | 'failed' {
 export async function updatePaymentStatus (req: ICreateReaderCallback, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Updating payment')
 
-	// Create a new object with only the allowed fields
+	// Destructure the request body
 	const {
 		client_transaction_id: clientTransactionId,
 		status
