@@ -7,13 +7,13 @@ import Router from 'express'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
-import { updatePaymentStatus } from '../controllers/paymentCallbackController.js'
+import { updatePaymentStatus } from '../controllers/readerCallbackController.js'
 
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route POST api/v1/payments
+ * @route POST api/v1/reader-callback
  * @desc Callback used by SumUp to update the payment status of an order
  * @access Public
  * @param {string} req.body.payload.client_transaction_id - The ID of the transaction.

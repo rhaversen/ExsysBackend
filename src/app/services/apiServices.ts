@@ -18,7 +18,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 				currency: 'DKK',
 				minor_unit: 2
 			},
-			return_url: 'https://kantine.nyskivehus.dk/api/v1/paymentCallback'
+			return_url: 'https://kantine.nyskivehus.dk/api/v1/reader-callback'
 		}, {
 			headers: {
 				Authorization: `Bearer ${SUMUP_API_KEY}`,
