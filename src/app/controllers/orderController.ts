@@ -40,13 +40,13 @@ async function countSubtotalOfOrder (products: OrderItem[], options: OrderItem[]
 	for (const item of products) {
 		const itemDoc = await ProductModel.findById(item.id)
 		if (itemDoc !== null) {
-			sum += itemDoc.price * item.quantity
+			sum += itemDoc.price * Math.max(0, Math.floor(item.quantity))
 		}
 	}
 	for (const item of options) {
 		const itemDoc = await OptionModel.findById(item.id)
 		if (itemDoc !== null) {
-			sum += itemDoc.price * item.quantity
+			sum += itemDoc.price * Math.max(0, Math.floor(item.quantity))
 		}
 	}
 	return sum
