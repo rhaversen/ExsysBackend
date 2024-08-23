@@ -5,20 +5,18 @@ import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
 // Own modules
-import OrderModel from '../models/Order.js'
+import OrderModel, { type IOrderPopulatedPaymentId } from '../models/Order.js'
 import logger from '../utils/logger.js'
+import KioskModel from '../models/Kiosk.js'
+import { createReaderCheckout } from '../services/apiServices.js'
+import ReaderModel from '../models/Reader.js'
+import PaymentModel from '../models/Payment.js'
+import ProductModel from '../models/Product.js'
+import OptionModel from '../models/Option.js'
 
 interface OrderItem {
 	id: string
 	quantity: number
-}
-
-interface CreateOrderRequest extends Request {
-	body: {
-		activityId?: string
-		products?: OrderItem[]
-		options?: OrderItem[]
-	}
 }
 
 function combineItemsById (items: OrderItem[]): OrderItem[] {
@@ -56,28 +54,69 @@ function isOrderItemList (items: any[]): items is OrderItem[] {
 	})
 }
 
-export async function createOrder (req: CreateOrderRequest, res: Response, next: NextFunction): Promise<void> {
+export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
 
-	// Filter out products with quantity 0 or undefined
-	req.body.products = req.body.products?.filter((product) => product.quantity !== 0 && product.quantity !== undefined)
+	const {
+		activityId,
+		kioskId,
+		products,
+		options
+	} = req.body as Record<string, unknown>
 
-	// Filter out options with quantity 0 or undefined
-	req.body.options = req.body.options?.filter((option) => option.quantity !== 0 && option.quantity !== undefined)
+	// Check if the products
+	if (!Array.isArray(products) || !isOrderItemList(products)) {
+		res.status(400).json({ error: 'Invalid produkt data' })
+		return
+	}
 
-	// Combine products and options with same id and add together their quantities
-	req.body.products = combineItemsById(req.body.products)
-	req.body.options = combineItemsById(req.body.options)
-
-	// Create a new object with only the allowed fields
-	const allowedFields: Record<string, unknown> = {
-		activityId: req.body.activityId,
-		products: req.body.products,
-		options: req.body.options
+	// Check if the options are valid or undefined
+	if (options !== undefined && (!(Array.isArray(options)) || !isOrderItemList(options))) {
+		res.status(400).json({ error: 'Invalid tilvalg data' })
+		return
 	}
 
 	try {
-		const newOrder = await OrderModel.create(allowedFields)
+		// Combine the products and options by id
+		const combinedProducts = combineItemsById(products)
+		const combinedOptions = combineItemsById(options ?? [])
+
+		// Count the subtotal of the order
+		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
+
+		// Find the reader associated with the kiosk
+		const kiosk = await KioskModel.findById(kioskId)
+		const reader = await ReaderModel.findOne({ readerId: kiosk?.readerId })
+
+		if (reader === null || reader === undefined) {
+			res.status(404).json({ error: 'Kiosk eller Kortlæser ikke fundet' })
+			return
+		}
+
+		// Create a checkout for the reader
+		const readerId = reader.readerId
+		const clientTransactionId = await createReaderCheckout(readerId, subtotal, 'https://kantine.nyskivehus.dk/api/v1/paymentCallback')
+
+		if (clientTransactionId === undefined) {
+			res.status(500).json({ error: 'Kunne ikke oprette checkout' })
+			return
+		}
+
+		// Create a new payment and order
+		const newPayment = await PaymentModel.create({
+			clientTransactionId,
+			status: 'pending'
+		})
+
+		// Create the order
+		const newOrder = await OrderModel.create({
+			activityId,
+			products: combinedProducts,
+			options: combinedOptions,
+			paymentId: newPayment._id
+		})
+
+		// Respond with the new order
 		res.status(201).json(newOrder)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
