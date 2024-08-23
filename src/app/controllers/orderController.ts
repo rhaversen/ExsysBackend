@@ -54,6 +54,30 @@ function isOrderItemList (items: any[]): items is OrderItem[] {
 	})
 }
 
+async function createCheckout (kioskId: string, subtotal: number): Promise<string | undefined> {
+	// Find the reader associated with the kiosk
+	const kiosk = await KioskModel.findById(kioskId)
+	const reader = await ReaderModel.findOne({ readerId: kiosk?.readerId })
+
+	if (reader === null || reader === undefined) {
+		return
+	}
+
+	// Create a checkout for the reader
+	const clientTransactionId = await createReaderCheckout(reader.apiReferenceId, subtotal)
+
+	if (clientTransactionId === undefined) {
+		return
+	}
+
+	// Create a new payment and order
+	const newPayment = await PaymentModel.create({
+		clientTransactionId,
+		status: 'pending'
+	})
+	return newPayment.id
+}
+
 export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating order')
 
@@ -61,7 +85,8 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		activityId,
 		kioskId,
 		products,
-		options
+		options,
+		skipCheckout
 	} = req.body as Record<string, unknown>
 
 	// Check if the products
@@ -76,6 +101,12 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		return
 	}
 
+	// Check if the kioskId is a string
+	if (typeof kioskId !== 'string') {
+		res.status(400).json({ error: 'Mangler kioskId' })
+		return
+	}
+
 	try {
 		// Combine the products and options by id
 		const combinedProducts = combineItemsById(products)
@@ -84,35 +115,21 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		// Count the subtotal of the order
 		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
 
-		// Find the reader associated with the kiosk
-		const kiosk = await KioskModel.findById(kioskId)
-		const reader = await ReaderModel.findOne({ readerId: kiosk?.readerId })
-
-		if (reader === null || reader === undefined) {
-			res.status(404).json({ error: 'Kiosk eller Kortlæser ikke fundet' })
-			return
+		let paymentId: string | undefined
+		if (skipCheckout !== true) {
+			paymentId = await createCheckout(kioskId, subtotal)
+			if (paymentId === undefined) {
+				res.status(500).json({ error: 'Kunne ikke oprette checkout' })
+				return
+			}
 		}
-
-		// Create a checkout for the reader
-		const clientTransactionId = await createReaderCheckout(reader.apiReferenceId, subtotal)
-
-		if (clientTransactionId === undefined) {
-			res.status(500).json({ error: 'Kunne ikke oprette checkout' })
-			return
-		}
-
-		// Create a new payment and order
-		const newPayment = await PaymentModel.create({
-			clientTransactionId,
-			status: 'pending'
-		})
 
 		// Create the order
 		const newOrder = await OrderModel.create({
 			activityId,
 			products: combinedProducts,
 			options: combinedOptions,
-			paymentId: newPayment._id
+			paymentId
 		})
 
 		// Respond with the new order
