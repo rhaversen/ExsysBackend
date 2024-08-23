@@ -17,9 +17,10 @@ const router = Router()
  * @route POST api/v1/orders
  * @desc Create a new order
  * @access Private
- * @param {Types.ObjectId} req.body.activityId - Reference to the activity the order is for
- * @param {Array<{product: Types.ObjectId, quantity: number}>} req.body.products - The products and their quantities
- * @param {Array<{option: Types.ObjectId, quantity: number}>} [req.body.options] - Additional options for the order (optional)
+ * @param {Types.ObjectId} req.body.activityId - Reference to the activity the order is for.
+ * @param {Types.ObjectId} req.body.kioskId - Reference to the kiosk the order is from.
+ * @param {Array<{product: Types.ObjectId, quantity: number}>} req.body.products - The products and their quantities.
+ * @param {Array<{option: Types.ObjectId, quantity: number}>} [req.body.options] - Additional options for the order (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created order.
  */
