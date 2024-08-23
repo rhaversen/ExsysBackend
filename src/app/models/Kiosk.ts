@@ -106,6 +106,12 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 	return true
 }, 'One or more activities do not exist')
 
+kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
+	// Check if reader has been assigned to another kiosk
+	const foundKioskWithReader = await KioskModel.findOne({ readerId: v, _id: { $ne: this._id } })
+	return foundKioskWithReader === null || foundKioskWithReader === undefined
+}, 'Reader is already assigned to another kiosk')
+
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {
 	logger.silly('Saving kiosk')
