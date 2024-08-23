@@ -64,6 +64,7 @@ async function createCheckout (kioskId: string, subtotal: number): Promise<strin
 	const reader = await ReaderModel.findById(kiosk?.readerId)
 
 	if (reader === null || reader === undefined) {
+		logger.error('Reader not found')
 		return
 	}
 
@@ -71,6 +72,7 @@ async function createCheckout (kioskId: string, subtotal: number): Promise<strin
 	const clientTransactionId = await createReaderCheckout(reader.apiReferenceId, subtotal)
 
 	if (clientTransactionId === undefined) {
+		logger.error('Could not create checkout')
 		return
 	}
 
