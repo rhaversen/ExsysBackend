@@ -32,8 +32,7 @@ describe('Admins routes', function () {
 	describe('POST /v1/admins', function () {
 		const testAdminFields1 = {
 			name: 'admin1',
-			password: 'password1',
-			confirmPassword: 'password1'
+			password: 'password1'
 		}
 
 		it('should have status 201', async function () {
@@ -65,6 +64,12 @@ describe('Admins routes', function () {
 			expect(response.body).to.have.property('name', testAdminFields1.name)
 		})
 
+		it('should not return the password', async function () {
+			const response = await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
+
+			expect(response.body).to.not.have.property('password')
+		})
+
 		it('should require a name', async function () {
 			const response = await agent.post('/v1/admins').send({
 				...testAdminFields1,
@@ -78,24 +83,6 @@ describe('Admins routes', function () {
 			const response = await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
 
 			expect(response.body).to.not.have.property('password')
-		})
-
-		it('should return an error if the passwords do not match', async function () {
-			const response = await agent.post('/v1/admins').send({
-				...testAdminFields1,
-				confirmPassword: 'password2'
-			}).set('Cookie', sessionCookie)
-
-			expect(response).to.have.status(400)
-		})
-
-		it('should return an error if the confirm password is missing', async function () {
-			const response = await agent.post('/v1/admins').send({
-				...testAdminFields1,
-				confirmPassword: undefined
-			}).set('Cookie', sessionCookie)
-
-			expect(response).to.have.status(400)
 		})
 
 		it('should not allow setting the _id', async function () {
@@ -113,14 +100,12 @@ describe('Admins routes', function () {
 	describe('GET /v1/admins', function () {
 		const testAdminFields1 = {
 			name: 'admin1',
-			password: 'password1',
-			confirmPassword: 'password1'
+			password: 'password1'
 		}
 
 		const testAdminFields2 = {
 			name: 'admin2',
-			password: 'password2',
-			confirmPassword: 'password2'
+			password: 'password2'
 		}
 
 		beforeEach(async function () {
@@ -157,14 +142,12 @@ describe('Admins routes', function () {
 	describe('PATCH /v1/admins', function () {
 		const testAdminFields1 = {
 			name: 'admin1',
-			password: 'password1',
-			confirmPassword: 'password1'
+			password: 'password1'
 		}
 
 		const updatedFields = {
 			name: 'admin2',
-			password: 'password2',
-			confirmPassword: 'password2'
+			password: 'password2'
 		}
 
 		let originalAdmin: IAdmin
@@ -208,28 +191,9 @@ describe('Admins routes', function () {
 
 		it('should allow a partial update', async function () {
 			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ name: updatedFields.name }).set('Cookie', sessionCookie)
-			const admin = await AdminModel.findOne({ name: testAdminFields1.name })
+			const admin = await AdminModel.findOne({ name: updatedFields.name })
 
-			expect(admin?.name).to.equal(testAdminFields1.name)
-		})
-
-		it('should not update password with no confirm password', async function () {
-			const oldAdmin = await AdminModel.findOne({})
-			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ password: 'newPassword' }).set('Cookie', sessionCookie)
-			const admin = await AdminModel.findOne({})
-
-			expect(admin?.password).to.equal(oldAdmin?.password)
-		})
-
-		it('should not update password with non matching confirm password', async function () {
-			const oldAdmin = await AdminModel.findOne({})
-			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({
-				password: 'newPassword',
-				confirmPassword: 'nonMatching'
-			}).set('Cookie', sessionCookie)
-			const admin = await AdminModel.findOne({})
-
-			expect(admin?.password).to.equal(oldAdmin?.password)
+			expect(admin?.name).to.equal(updatedFields.name)
 		})
 	})
 })

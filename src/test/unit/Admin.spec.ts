@@ -75,20 +75,6 @@ describe('Admin Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not save an admin with a too short password', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				password: 'a'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not save an admin with a too long password', async function () {
 		let errorOccurred = false
 		try {

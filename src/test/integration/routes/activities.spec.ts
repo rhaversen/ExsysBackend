@@ -78,7 +78,16 @@ describe('Activities routes', function () {
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testActivityFields1.name)
-			expect(response.body).to.have.property('roomId', testActivityFields1.roomId)
+			expect(response.body.roomId).to.exist
+		})
+
+		it('should populate the roomId', async function () {
+			const response = await agent.post('/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
+
+			expect(response.body).to.have.property('roomId')
+			expect(response.body.roomId).to.have.property('_id', testActivityFields1.roomId)
+			expect(response.body.roomId).to.have.property('name', 'Room 1')
+			expect(response.body.roomId).to.have.property('description', 'Description for Room 1')
 		})
 
 		it('should not allow setting the _id', async function () {
@@ -140,7 +149,16 @@ describe('Activities routes', function () {
 			const response = await agent.get(`/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', testActivityFields1.name)
-			expect(response.body).to.have.property('roomId', testActivityFields1.roomId)
+			expect(response.body).to.have.property('roomId')
+		})
+
+		it('should populate the roomId', async function () {
+			const response = await agent.get(`/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
+
+			expect(response.body).to.have.property('roomId')
+			expect(response.body.roomId).to.have.property('_id', testActivityFields1.roomId.toString())
+			expect(response.body.roomId).to.have.property('name', 'Room 1')
+			expect(response.body.roomId).to.have.property('description', 'Description for Room 1')
 		})
 
 		it('should return 404 if the activity does not exist', async function () {
@@ -208,7 +226,17 @@ describe('Activities routes', function () {
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
-			expect(response.body.map((activity: IActivity) => activity.roomId)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+		})
+
+		it('should populate the roomId', async function () {
+			const response = await agent.get('/v1/activities').set('Cookie', sessionCookie)
+
+			expect(response.body).to.be.an('array')
+			expect(response.body).to.have.lengthOf(2)
+			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId)).to.have.property('_id', testActivityFields1.roomId)
+			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId.name)).to.have.members(['Room 1', 'Room 2'])
+			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId.description)).to.have.members(['Description for Room 1', 'Description for Room 2'])
 		})
 	})
 
@@ -286,7 +314,25 @@ describe('Activities routes', function () {
 			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body).to.have.property('roomId', updatedFields.roomId)
+			expect(response.body).to.have.property('roomId')
+		})
+
+		it('should populate the roomId', async function () {
+			const testRoom2 = await RoomModel.create({
+				name: 'Room 2',
+				description: 'Description for Room 2'
+			})
+			const updatedFields = {
+				name: 'Updated Activity 1',
+				roomId: testRoom2.id
+			}
+
+			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(response.body).to.have.property('roomId')
+			expect(response.body.roomId).to.have.property('_id', updatedFields.roomId)
+			expect(response.body.roomId).to.have.property('name', 'Room 2')
+			expect(response.body.roomId).to.have.property('description', 'Description for Room 2')
 		})
 
 		it('should allow updating name to current name', async function () {
@@ -297,7 +343,7 @@ describe('Activities routes', function () {
 
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body).to.have.property('roomId', testActivityFields1.roomId)
+			expect(response.body).to.have.property('roomId')
 		})
 
 		it('should allow updating roomId to current roomId', async function () {
@@ -308,8 +354,7 @@ describe('Activities routes', function () {
 			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
-			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body).to.have.property('roomId', testActivityFields1.roomId)
+			expect(response.body.roomId._id).to.equal(testActivityFields1.roomId)
 		})
 
 		it('should allow a partial update', async function () {
