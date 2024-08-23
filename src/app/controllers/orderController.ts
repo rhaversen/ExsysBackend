@@ -122,6 +122,11 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 				res.status(500).json({ error: 'Kunne ikke oprette checkout' })
 				return
 			}
+		} else {
+			const newPayment = await PaymentModel.create({
+				status: 'successful'
+			})
+			paymentId = newPayment.id
 		}
 
 		// Create the order

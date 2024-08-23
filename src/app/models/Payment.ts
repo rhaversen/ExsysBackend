@@ -10,7 +10,7 @@ import logger from '../utils/logger.js'
 export interface IPayment extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	clientTransactionId: string
+	clientTransactionId?: string
 	paymentStatus: 'pending' | 'successful' | 'failed'
 
 	// Timestamps
@@ -24,7 +24,6 @@ export interface IPayment extends Document {
 const paymentSchema = new Schema<IPayment>({
 	clientTransactionId: {
 		type: String,
-		required: [true, 'Client transaction ID is required'],
 		unique: true
 	},
 	paymentStatus: {

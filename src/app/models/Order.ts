@@ -26,7 +26,7 @@ export interface IOrder extends Document {
 		quantity: number
 	}> // Additional options for the order
 	status?: 'pending' | 'confirmed' | 'delivered'
-	paymentId?: Schema.Types.ObjectId | IPayment
+	paymentId: Schema.Types.ObjectId | IPayment
 
 	// Timestamps
 	createdAt: Date
@@ -91,6 +91,7 @@ const orderSchema = new Schema({
 	},
 	paymentId: {
 		type: Schema.Types.ObjectId,
+		required: [true, 'Betaling er påkrævet'],
 		ref: 'Payment'
 	}
 }, {
