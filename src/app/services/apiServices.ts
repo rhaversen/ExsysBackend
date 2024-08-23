@@ -1,4 +1,4 @@
-import logger from '../utils/logger'
+import logger from '../utils/logger.js'
 import axios from 'axios'
 
 const SUMUP_API_KEY = process.env.SUMUP_API_KEY
