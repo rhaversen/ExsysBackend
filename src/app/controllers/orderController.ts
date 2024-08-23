@@ -31,6 +31,10 @@ function combineItemsById (items: OrderItem[]): OrderItem[] {
 	}, [])
 }
 
+function removeItemsWithZeroQuantity (items: OrderItem[]): OrderItem[] {
+	return items.filter(item => item.quantity > 0)
+}
+
 async function countSubtotalOfOrder (products: OrderItem[], options: OrderItem[] = []): Promise<number> {
 	let sum = 0
 	for (const item of products) {
@@ -108,9 +112,13 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
+		// Remove items with zero quantity
+		const filteredProducts = removeItemsWithZeroQuantity(products)
+		const filteredOptions = removeItemsWithZeroQuantity(options ?? [])
+
 		// Combine the products and options by id
-		const combinedProducts = combineItemsById(products)
-		const combinedOptions = combineItemsById(options ?? [])
+		const combinedProducts = combineItemsById(filteredProducts)
+		const combinedOptions = combineItemsById(filteredOptions ?? [])
 
 		// Count the subtotal of the order
 		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
