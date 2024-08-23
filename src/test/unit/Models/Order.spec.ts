@@ -17,6 +17,9 @@ import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
+import KioskModel from '../../../app/models/Kiosk.js'
+import ReaderModel from '../../../app/models/Reader.js'
+import PaymentModel from '../../../app/models/Payment.js'
 
 // Setup test environment
 import '../../testSetup.js'
@@ -27,6 +30,8 @@ describe('Order Model', function () {
 	let testActivity: IActivity
 	let testOption: IOption
 	let testOrderFields: {
+		paymentId: Types.ObjectId
+		kioskId: Types.ObjectId
 		activityId: Types.ObjectId
 		products: Array<{
 			id: Types.ObjectId
@@ -74,7 +79,19 @@ describe('Order Model', function () {
 			price: 50
 		})
 
+		const testReader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '12345' })
+
+		const testKiosk = await KioskModel.create({
+			name: 'Test Kiosk',
+			password: 'Test Password',
+			readerId: testReader.id
+		})
+
+		const testPayment = await PaymentModel.create({})
+
 		testOrderFields = {
+			paymentId: testPayment.id,
+			kioskId: testKiosk.id,
 			activityId: testActivity.id,
 			products: [{
 				id: testProduct.id,

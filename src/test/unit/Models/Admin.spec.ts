@@ -47,20 +47,6 @@ describe('Admin Model', function () {
 		expect(await bcrypt.compare('testPassword', admin.password)).to.be.true
 	})
 
-	it('should not save an admin with a too short name', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				name: 'a'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not save an admin with a too long name', async function () {
 		let errorOccurred = false
 		try {

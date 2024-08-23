@@ -13,6 +13,7 @@ import mongoose from 'mongoose'
 // Own modules
 import KioskModel from '../../../app/models/Kiosk.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
+import ReaderModel from '../../../app/models/Reader.js'
 
 // Setup test environment
 import '../../testSetup.js'
@@ -27,6 +28,7 @@ describe('Kiosk Model', function () {
 		kioskTag: string
 		password: string
 		activities: mongoose.Types.ObjectId[]
+		readerId: mongoose.Types.ObjectId
 	}
 
 	beforeEach(async function () {
@@ -45,11 +47,14 @@ describe('Kiosk Model', function () {
 			roomId: testRoom._id
 		})
 
+		const testReader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '12345' })
+
 		testKioskField = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
 			password: 'Test Password',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+			activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+			readerId: testReader.id
 		}
 	})
 
