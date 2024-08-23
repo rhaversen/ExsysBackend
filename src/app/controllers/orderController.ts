@@ -135,7 +135,7 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 	try {
 		const order = await OrderModel.findById(orderId).populate('paymentId') as IOrderPopulatedPaymentId | null
 		if (order === null) {
-			res.status(404).json({ error: 'Order not found' })
+			res.status(404).json({ error: 'Ordre ikke fundet' })
 			return
 		}
 
