@@ -54,7 +54,7 @@ export async function countSubtotalOfOrder (products: OrderItem[], options: Orde
 
 export function isOrderItemList (items: any[]): items is OrderItem[] {
 	return Array.isArray(items) && items.every((item: OrderItem) => {
-		return item !== null && typeof item === 'object' && typeof item.id === 'string' && typeof item.quantity === 'number'
+		return item !== null && typeof item === 'object' && typeof item.id === 'string' && typeof item.quantity === 'number' && item.quantity >= 0 && Number.isInteger(item.quantity)
 	})
 }
 
