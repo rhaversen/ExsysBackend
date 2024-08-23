@@ -9,16 +9,16 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
+import { compare } from 'bcrypt'
 
 // Own modules
 import KioskModel from '../../../app/models/Kiosk.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
+import RoomModel from '../../../app/models/Room.js'
 import ReaderModel from '../../../app/models/Reader.js'
 
 // Setup test environment
 import '../../testSetup.js'
-import RoomModel from '../../../app/models/Room.js'
-import { compare } from 'bcrypt'
 
 describe('Kiosk Model', function () {
 	let testActivity1: IActivity
@@ -170,6 +170,54 @@ describe('Kiosk Model', function () {
 			await KioskModel.create({
 				...testKioskField,
 				name: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not save a kiosk with a reader that does not exist', async function () {
+		let errorOccurred = false
+		try {
+			await KioskModel.create({
+				...testKioskField,
+				readerId: new mongoose.Types.ObjectId()
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not save a kiosk without a reader', async function () {
+		let errorOccurred = false
+		try {
+			await KioskModel.create({
+				...testKioskField,
+				readerId: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not save a kiosk with a reader that is used by another kiosk', async function () {
+		let errorOccurred = false
+		const reader = await ReaderModel.create({ apiReferenceId: '12346', readerTag: '12346' })
+		await KioskModel.create({
+			readerId: reader.id,
+			name: 'Test Kiosk 2',
+			password: 'Test Password 2'
+		})
+		try {
+			await KioskModel.create({
+				...testKioskField,
+				readerId: reader.id
 			})
 		} catch (err) {
 			// The promise was rejected as expected
