@@ -12,14 +12,14 @@ import { Types } from 'mongoose'
 import sinon from 'sinon'
 
 // Own modules
-import OrderModel from '../../app/models/Order.js'
-import ProductModel, { type IProduct } from '../../app/models/Product.js'
-import RoomModel, { type IRoom } from '../../app/models/Room.js'
-import OptionModel, { type IOption } from '../../app/models/Option.js'
-import ActivityModel, { type IActivity } from '../../app/models/Activity.js'
+import OrderModel from '../../../app/models/Order.js'
+import ProductModel, { type IProduct } from '../../../app/models/Product.js'
+import RoomModel, { type IRoom } from '../../../app/models/Room.js'
+import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 
 // Setup test environment
-import '../testSetup.js'
+import '../../testSetup.js'
 
 describe('Order Model', function () {
 	let testProduct: IProduct

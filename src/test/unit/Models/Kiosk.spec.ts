@@ -11,12 +11,12 @@ import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
 // Own modules
-import KioskModel from '../../app/models/Kiosk.js'
-import ActivityModel, { type IActivity } from '../../app/models/Activity.js'
+import KioskModel from '../../../app/models/Kiosk.js'
+import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 
 // Setup test environment
-import '../testSetup.js'
-import RoomModel from '../../app/models/Room.js'
+import '../../testSetup.js'
+import RoomModel from '../../../app/models/Room.js'
 import { compare } from 'bcrypt'
 
 describe('Kiosk Model', function () {

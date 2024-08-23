@@ -11,10 +11,10 @@ import { describe, it } from 'mocha'
 import bcrypt from 'bcrypt'
 
 // Own modules
-import AdminModel from '../../app/models/Admin.js'
+import AdminModel from '../../../app/models/Admin.js'
 
 // Setup test environment
-import '../testSetup.js'
+import '../../testSetup.js'
 
 describe('Admin Model', function () {
 	const testAdminFields = {

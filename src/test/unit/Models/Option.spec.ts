@@ -10,10 +10,10 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 // Own modules
-import OptionModel from '../../app/models/Option.js'
+import OptionModel from '../../../app/models/Option.js'
 
 // Setup test environment
-import '../testSetup.js'
+import '../../testSetup.js'
 
 describe('Option Model', function () {
 	let testOptionFields: {
