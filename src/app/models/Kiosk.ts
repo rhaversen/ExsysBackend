@@ -29,7 +29,7 @@ export interface IKiosk extends Document {
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
-	readerId?: Schema.Types.ObjectId // The pay station the kiosk is connected to
+	readerId: Schema.Types.ObjectId // The pay station the kiosk is connected to
 
 	// Timestamps
 	createdAt: Date
@@ -62,7 +62,7 @@ const kioskSchema = new Schema<IKiosk>({
 	},
 	readerId: {
 		type: Schema.Types.ObjectId,
-		required: false,
+		required: true,
 		ref: 'Reader'
 	},
 	activities: {
