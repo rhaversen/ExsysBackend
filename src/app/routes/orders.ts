@@ -8,7 +8,7 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
 // Controller functions
-import { createOrder, getOrdersWithQuery, updateOrderStatus } from '../controllers/orderController.js'
+import { createOrder, getOrdersWithQuery, getPaymentStatus, updateOrderStatus } from '../controllers/orderController.js'
 
 // Destructuring and global variables
 const router = Router()
