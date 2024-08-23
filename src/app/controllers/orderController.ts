@@ -95,7 +95,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 
 		// Create a checkout for the reader
 		const readerId = reader.readerId
-		const clientTransactionId = await createReaderCheckout(readerId, subtotal, 'https://kantine.nyskivehus.dk/api/v1/paymentCallback')
+		const clientTransactionId = await createReaderCheckout(readerId, subtotal)
 
 		if (clientTransactionId === undefined) {
 			res.status(500).json({ error: 'Kunne ikke oprette checkout' })

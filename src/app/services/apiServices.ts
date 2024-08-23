@@ -4,7 +4,7 @@ import axios from 'axios'
 const SUMUP_API_KEY = process.env.SUMUP_API_KEY
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
 
-export async function createReaderCheckout (readerId: string, totalAmount: number, returnUrl: string): Promise<string | undefined> {
+export async function createReaderCheckout (readerId: string, totalAmount: number): Promise<string | undefined> {
 	logger.silly('Creating reader checkout')
 
 	if (process.env.NODE_ENV === 'test') {
@@ -18,7 +18,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 				currency: 'DKK',
 				minor_unit: 2
 			},
-			return_url: returnUrl
+			return_url: 'https://kantine.nyskivehus.dk/api/v1/paymentCallback'
 		}, {
 			headers: {
 				Authorization: `Bearer ${SUMUP_API_KEY}`,
