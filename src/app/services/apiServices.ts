@@ -4,11 +4,7 @@ import axios from 'axios'
 const SUMUP_API_KEY = process.env.SUMUP_API_KEY
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
 
-interface ICreateReaderCheckout {
-	client_transaction_id: string
-}
-
-export async function createReaderCheckout (readerId: string, totalAmount: number, returnUrl: string): Promise<ICreateReaderCheckout | undefined> {
+export async function createReaderCheckout (readerId: string, totalAmount: number, returnUrl: string): Promise<string | undefined> {
 	try {
 		const response = await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/checkout`, {
 			total_amount: {
@@ -23,7 +19,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 				'Content-Type': 'application/json'
 			}
 		})
-		return response.data
+		return response.data.client_transaction_id
 	} catch (error) {
 		logger.error(error)
 	}
