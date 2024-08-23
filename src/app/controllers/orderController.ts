@@ -57,7 +57,7 @@ function isOrderItemList (items: any[]): items is OrderItem[] {
 async function createCheckout (kioskId: string, subtotal: number): Promise<string | undefined> {
 	// Find the reader associated with the kiosk
 	const kiosk = await KioskModel.findById(kioskId)
-	const reader = await ReaderModel.findOne({ readerId: kiosk?.readerId })
+	const reader = await ReaderModel.findById(kiosk?.readerId)
 
 	if (reader === null || reader === undefined) {
 		return
