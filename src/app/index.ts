@@ -31,6 +31,9 @@ import activityRoutes from './routes/activities.js'
 import kioskRoutes from './routes/kiosks.js'
 import readerRoutes from './routes/readers.js'
 
+// Callback routes
+import readerCallbackRoutes from './routes/readerCallback.js'
+
 // Service routes
 import serviceRoutes from './routes/service.js'
 
@@ -48,6 +51,7 @@ const {
 	mediumSensitivityApiLimiterConfig,
 	expressPort,
 	corsConfig,
+	webhookCorsConfig,
 	cookieOptions
 } = config
 
@@ -103,6 +107,7 @@ app.use('/v1/auth', mediumSensitivityApiLimiter, authRoutes)
 app.use('/v1/activities', mediumSensitivityApiLimiter, activityRoutes)
 app.use('/v1/kiosks', mediumSensitivityApiLimiter, kioskRoutes)
 app.use('/v1/readers', mediumSensitivityApiLimiter, readerRoutes)
+app.use('/v1/reader-callback', mediumSensitivityApiLimiter, readerCallbackRoutes)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
@@ -116,6 +121,9 @@ app.use('/v1/options', mediumSensitivityApiLimiter)
 
 // Apply stricter rate limiters to routes
 // none
+
+// Apply webhook cors config to webhook routes
+app.use('/v1/reader-callback', cors(webhookCorsConfig))
 
 // Global error handler middleware
 app.use(globalErrorHandler)
