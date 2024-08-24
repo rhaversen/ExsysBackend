@@ -45,8 +45,18 @@ describe('Readers routes', function () {
 		it('should return the newly created object', async function () {
 			const response = await agent.post('/v1/readers').send({ pairingCode: '12345', readerTag: '54321' }).set('Cookie', sessionCookie)
 
+			const reader = await ReaderModel.findOne({})
+
 			expect(response.status).to.equal(201)
 			expect(response.body).to.have.property('readerTag', '54321')
+			expect(response.body).to.have.property('_id', reader?._id.toString())
+		})
+
+		it('should return a readerTag even if not provided', async function () {
+			const response = await agent.post('/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
+
+			expect(response.status).to.equal(201)
+			expect(response.body).to.have.property('readerTag')
 		})
 
 		it('should create a new reader', async function () {
