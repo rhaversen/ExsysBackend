@@ -134,7 +134,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 			}
 		} else {
 			const newPayment = await PaymentModel.create({
-				status: 'successful'
+				paymentStatus: 'successful'
 			})
 			paymentId = newPayment.id
 		}
