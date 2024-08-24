@@ -23,10 +23,10 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 		return
 	}
 
-	const pairReaderObj = await pairReader(allowedFields.pairingCode)
+	const apiReferenceId = await pairReader(pairingCode)
 
-	if (pairReaderObj === null || pairReaderObj === undefined) {
-		res.status(400).json({ error: 'Fejl ved parring af læser' })
+	if (apiReferenceId === undefined) {
+		res.status(500).json({ error: 'Fejl ved parring af læser' })
 		return
 	}
 

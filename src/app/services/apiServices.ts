@@ -32,23 +32,11 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	}
 }
 
-interface IPairReader {
-	id: string
-	name: string
-	status: string
-	device: {
-		identifier: string
-		model: string
-	}
-	created_at: string
-	updated_at: string
-}
-
-export async function pairReader (pairingCode: string): Promise<IPairReader | undefined> {
+export async function pairReader (pairingCode: string): Promise<string | undefined> {
 	logger.silly('Pairing reader')
 
 	if (process.env.NODE_ENV === 'test') {
-		return 'test' as any
+		return 'test'
 	}
 
 	try {
@@ -60,7 +48,7 @@ export async function pairReader (pairingCode: string): Promise<IPairReader | un
 				'Content-Type': 'application/json'
 			}
 		})
-		return response.data
+		return response.data.id
 	} catch (error) {
 		logger.error(error)
 		return undefined
