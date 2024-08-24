@@ -3,7 +3,6 @@
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { compare, hash } from 'bcrypt'
-import validator from 'validator'
 
 // Own modules
 import logger from '../utils/logger.js'

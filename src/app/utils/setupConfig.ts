@@ -33,7 +33,8 @@ const AppConfig = {
 	bcryptSaltRounds: config.get('bcrypt.saltRounds') as number,
 	corsConfig: config.get('cors') as CorsOptions,
 	cookieOptions: config.get('cookieOptions') as CookieOptions,
-	sessionExpiry: config.get('session.expiry') as number
+	sessionExpiry: config.get('session.expiry') as number,
+	webhookCorsConfig: config.get('webhook.cors') as CorsOptions
 }
 
 export default AppConfig

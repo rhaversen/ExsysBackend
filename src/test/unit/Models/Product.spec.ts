@@ -11,11 +11,11 @@ import { describe, it } from 'mocha'
 import { Types } from 'mongoose'
 
 // Own modules
-import ProductModel from '../../app/models/Product.js'
-import OptionModel, { type IOption } from '../../app/models/Option.js'
+import ProductModel from '../../../app/models/Product.js'
+import OptionModel, { type IOption } from '../../../app/models/Option.js'
 
 // Setup test environment
-import '../testSetup.js'
+import '../../testSetup.js'
 
 describe('Product Model', function () {
 	let testOption: IOption

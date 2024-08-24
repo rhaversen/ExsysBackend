@@ -54,5 +54,11 @@
 	},
 	"session": {
 		"expiry": 2592000000
+	},
+	"webhook": {
+		"cors": {
+			"origin": "*",
+			"credentials": true
+		}
 	}
 }

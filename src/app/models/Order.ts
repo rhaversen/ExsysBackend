@@ -8,6 +8,7 @@ import logger from '../utils/logger.js'
 import OptionModel from './Option.js'
 import ProductModel from './Product.js'
 import ActivityModel from './Activity.js'
+import PaymentModel, { type IPayment } from './Payment.js'
 
 // Destructuring and global variables
 
@@ -25,10 +26,15 @@ export interface IOrder extends Document {
 		quantity: number
 	}> // Additional options for the order
 	status?: 'pending' | 'confirmed' | 'delivered'
+	paymentId: Schema.Types.ObjectId | IPayment
 
 	// Timestamps
 	createdAt: Date
 	updatedAt: Date
+}
+
+export interface IOrderPopulatedPaymentId extends IOrder {
+	paymentId: IPayment
 }
 
 // Sub-schema for products
@@ -82,6 +88,11 @@ const orderSchema = new Schema({
 		type: Schema.Types.String,
 		enum: ['pending', 'confirmed', 'delivered'],
 		default: 'pending'
+	},
+	paymentId: {
+		type: Schema.Types.ObjectId,
+		required: [true, 'Betaling er påkrævet'],
+		ref: 'Payment'
 	}
 }, {
 	timestamps: true
@@ -145,6 +156,11 @@ orderSchema.path('options.id').validate(async function (v: Schema.Types.ObjectId
 orderSchema.path('options.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Tilvalg mængde skal være et heltal')
+
+orderSchema.path('paymentId').validate(async function (v: Schema.Types.ObjectId) {
+	const payment = await PaymentModel.findById(v)
+	return payment !== null && payment !== undefined
+}, 'Betalingen eksisterer ikke')
 
 // Adding indexes
 orderSchema.index({ createdAt: 1 })

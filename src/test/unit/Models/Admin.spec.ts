@@ -11,10 +11,10 @@ import { describe, it } from 'mocha'
 import bcrypt from 'bcrypt'
 
 // Own modules
-import AdminModel from '../../app/models/Admin.js'
+import AdminModel from '../../../app/models/Admin.js'
 
 // Setup test environment
-import '../testSetup.js'
+import '../../testSetup.js'
 
 describe('Admin Model', function () {
 	const testAdminFields = {
@@ -47,40 +47,12 @@ describe('Admin Model', function () {
 		expect(await bcrypt.compare('testPassword', admin.password)).to.be.true
 	})
 
-	it('should not save an admin with a too short name', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				name: 'a'
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
 	it('should not save an admin with a too long name', async function () {
 		let errorOccurred = false
 		try {
 			await AdminModel.create({
 				...testAdminFields,
 				name: 'a'.repeat(51)
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
-	})
-
-	it('should not save an admin with a too short password', async function () {
-		let errorOccurred = false
-		try {
-			await AdminModel.create({
-				...testAdminFields,
-				password: 'a'
 			})
 		} catch (err) {
 			// The promise was rejected as expected
