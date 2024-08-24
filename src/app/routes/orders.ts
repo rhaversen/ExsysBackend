@@ -39,7 +39,7 @@ router.post('/',
  * @return {object} res.body - The payment status of the order.
  */
 router.get('/:id/paymentStatus',
-	isAdmin,
+	isAdminOrKiosk,
 	asyncErrorHandler(getPaymentStatus)
 )
 
