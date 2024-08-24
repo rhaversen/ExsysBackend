@@ -59,6 +59,11 @@ readerSchema.path('readerTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
 }, 'ReaderTag must only contain numbers')
 
+readerSchema.path('apiReferenceId').validate(async function (v: string) {
+	const foundReaderWithApiReferenceId = await ReaderModel.findOne({ apiReferenceId: v, _id: { $ne: this._id } })
+	return foundReaderWithApiReferenceId === null || foundReaderWithApiReferenceId === undefined
+}, 'ApiReferenceId is already in use')
+
 // Pre-save middleware
 // Pre-save middleware
 readerSchema.pre('save', async function (next) {
