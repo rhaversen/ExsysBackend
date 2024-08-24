@@ -23,8 +23,7 @@ export interface IPayment extends Document {
 // Schema
 const paymentSchema = new Schema<IPayment>({
 	clientTransactionId: {
-		type: String,
-		unique: true
+		type: String
 	},
 	paymentStatus: {
 		type: String,
