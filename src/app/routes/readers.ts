@@ -56,6 +56,7 @@ router.patch('/:id',
  * @desc Delete a reader
  * @access Private
  * @param {string} req.params.id - The id of the reader to be deleted.
+ * @param {boolean} req.body.confirm - Confirm the deletion.
  * @return {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
