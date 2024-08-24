@@ -28,6 +28,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 		return response.data.client_transaction_id
 	} catch (error) {
 		logger.error(error)
+		return undefined
 	}
 }
 
@@ -62,6 +63,7 @@ export async function pairReader (pairingCode: string): Promise<IPairReader | un
 		return response.data
 	} catch (error) {
 		logger.error(error)
+		return undefined
 	}
 }
 
