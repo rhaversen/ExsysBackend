@@ -564,8 +564,235 @@ describe('Orders routes', function () {
 				})
 			})
 		})
-	})
 
+		describe('Dont skip checkout', function () {
+			it('should create a paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(order?.paymentId).to.exist
+			})
+
+			it('should create a paymentId', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment).to.exist
+			})
+
+			it('should return the paymentId', async function () {
+				const res = await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the payment status to pending', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.paymentStatus).to.equal('pending')
+			})
+
+			it('should set the clientTransactionId on the payment', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.clientTransactionId).to.exist
+			})
+		})
+
+		describe('Skip checkout', function () {
+			it('should create a paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(order?.paymentId).to.exist
+			})
+
+			it('should create a paymentId', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment).to.exist
+			})
+
+			it('should return the paymentId', async function () {
+				const res = await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the payment status to successful', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.paymentStatus).to.equal('successful')
+			})
+
+			it('should not set the clientTransactionId on the payment', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.clientTransactionId).to.not.exist
+			})
+		})
+	})
 	describe('GET /v1/orders', function () {
 		let testProduct1: IProduct
 		let testProduct2: IProduct
