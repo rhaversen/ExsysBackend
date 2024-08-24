@@ -25,7 +25,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 				'Content-Type': 'application/json'
 			}
 		})
-		return response.data.client_transaction_id
+		return response.data.data.client_transaction_id
 	} catch (error) {
 		logger.error(error)
 		return undefined
