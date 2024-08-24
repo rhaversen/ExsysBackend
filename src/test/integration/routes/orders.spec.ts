@@ -804,7 +804,8 @@ describe('Orders routes', function () {
 		let testOption: IOption
 		let testReader: IReader
 		let testKiosk: IKiosk
-		let testPayment: IPayment
+		let testPayment1: IPayment
+		let testPayment2: IPayment
 
 		let clock: sinon.SinonFakeTimers
 
@@ -908,11 +909,12 @@ describe('Orders routes', function () {
 
 			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
 
-			testPayment = await PaymentModel.create({})
+			testPayment1 = await PaymentModel.create({ paymentStatus: 'successful' })
+			testPayment2 = await PaymentModel.create({ paymentStatus: 'failed' })
 
 			await OrderModel.create({
 				activityId: testActivity.id,
-				paymentId: testPayment.id,
+				paymentId: testPayment1.id,
 				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
@@ -925,7 +927,7 @@ describe('Orders routes', function () {
 			})
 
 			await OrderModel.create({
-				paymentId: testPayment.id,
+				paymentId: testPayment2.id,
 				activityId: testActivity.id,
 				kioskId: testKiosk.id,
 				products: [{
@@ -983,7 +985,7 @@ describe('Orders routes', function () {
 					options: { $elemMatch: { id: testOption.id } }
 				}, { status: 'delivered' })
 				await OrderModel.create({
-					paymentId: testPayment.id,
+					paymentId: testPayment1.id,
 					activityId: testActivity.id,
 					kioskId: testKiosk.id,
 					products: [{
@@ -997,7 +999,7 @@ describe('Orders routes', function () {
 					status: 'pending'
 				})
 				await OrderModel.create({
-					paymentId: testPayment.id,
+					paymentId: testPayment2.id,
 					activityId: testActivity.id,
 					kioskId: testKiosk.id,
 					products: [{
@@ -1041,7 +1043,7 @@ describe('Orders routes', function () {
 			beforeEach(async function () {
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by 24 hours
 				await OrderModel.create({
-					paymentId: testPayment.id,
+					paymentId: testPayment1.id,
 					activityId: testActivity.id,
 					kioskId: testKiosk.id,
 					products: [{
@@ -1055,7 +1057,7 @@ describe('Orders routes', function () {
 				})
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by another 24 hours
 				await OrderModel.create({
-					paymentId: testPayment.id,
+					paymentId: testPayment2.id,
 					activityId: testActivity.id,
 					kioskId: testKiosk.id,
 					products: [{
@@ -1143,6 +1145,34 @@ describe('Orders routes', function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date3.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
+			})
+		})
+
+		describe('GET /v1/orders/?paymentStatus', function () {
+			it('should return all orders with paymentStatus successful', async function () {
+				const res = await agent.get('/v1/orders/?paymentStatus=successful').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(1)
+				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			})
+
+			it('should return an empty array if there are no orders with paymentStatus', async function () {
+				const testPayment3 = await PaymentModel.create({ paymentStatus: 'pending' })
+				await OrderModel.findOneAndUpdate({
+					products: { $elemMatch: { id: testProduct1.id } },
+					options: { $elemMatch: { id: testOption.id } }
+				}, { paymentId: testPayment3.id })
+				const res = await agent.get('/v1/orders/?paymentStatus=successful').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(0)
+			})
+
+			it('should allow multiple paymentStatuses', async function () {
+				const res = await agent.get('/v1/orders/?paymentStatus=successful,failed').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(2)
+				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
 			})
 		})
 	})
