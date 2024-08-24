@@ -78,15 +78,15 @@ const kioskSchema = new Schema<IKiosk>({
 kioskSchema.path('kioskTag').validate(async function (v: string) {
 	const foundKioskWithTag = await KioskModel.findOne({ kioskTag: v, _id: { $ne: this._id } })
 	return foundKioskWithTag === null || foundKioskWithTag === undefined
-}, 'KioskTag is already in use')
+}, 'KioskTag er allerede i brug')
 
 kioskSchema.path('kioskTag').validate(function (v: string) {
 	return v.length === 5
-}, 'KioskTag must be 5 characters long')
+}, 'KioskTag skal mindst være 5 tegn')
 
 kioskSchema.path('kioskTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
-}, 'KioskTag must only contain numbers')
+}, 'KioskTag kan kun indeholde tal')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
 	if (v === undefined || v === null) {
@@ -94,7 +94,7 @@ kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) 
 	}
 	const foundReader = await ReaderModel.findOne({ _id: v })
 	return foundReader !== null && foundReader !== undefined
-}, 'Reader does not exist')
+}, 'Kortlæseren findes ikke')
 
 kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
 	for (const activity of v) {
@@ -104,13 +104,13 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 		}
 	}
 	return true
-}, 'One or more activities do not exist')
+}, 'En eller flere aktiviteter findes ikke')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
 	// Check if reader has been assigned to another kiosk
 	const foundKioskWithReader = await KioskModel.findOne({ readerId: v, _id: { $ne: this._id } })
 	return foundKioskWithReader === null || foundKioskWithReader === undefined
-}, 'Reader is already assigned to another kiosk')
+}, 'Kortlæser er allerede tildelt en kiosk')
 
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {

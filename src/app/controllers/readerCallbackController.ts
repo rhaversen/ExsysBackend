@@ -38,7 +38,7 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 	try {
 		const payment = await PaymentModel.findOne({ clientTransactionId })
 		if (payment === null || payment.clientTransactionId !== clientTransactionId) {
-			res.status(404).json({ error: 'Payment not found' })
+			res.status(404).json({ error: 'Kunne ikke finde betaling' })
 			return
 		}
 		if (typeof status !== 'string' || !isPaymentStatus(status)) {

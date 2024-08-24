@@ -49,20 +49,20 @@ const readerSchema = new Schema<IReader>({
 readerSchema.path('readerTag').validate(async function (v: string) {
 	const foundReaderWithTag = await ReaderModel.findOne({ readerTag: v, _id: { $ne: this._id } })
 	return foundReaderWithTag === null || foundReaderWithTag === undefined
-}, 'ReaderTag is already in use')
+}, 'Kortlæser tag er allerede i brug')
 
 readerSchema.path('readerTag').validate(function (v: string) {
 	return v.length === 5
-}, 'ReaderTag must be 5 characters long')
+}, 'Kortlæser tag skal være 5 tegn langt')
 
 readerSchema.path('readerTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
-}, 'ReaderTag must only contain numbers')
+}, 'Kortlæser tag kan kun indeholde tal')
 
 readerSchema.path('apiReferenceId').validate(async function (v: string) {
 	const foundReaderWithApiReferenceId = await ReaderModel.findOne({ apiReferenceId: v, _id: { $ne: this._id } })
 	return foundReaderWithApiReferenceId === null || foundReaderWithApiReferenceId === undefined
-}, 'ApiReferenceId is already in use')
+}, 'ApiReferenceId er allerede i brug')
 
 // Pre-save middleware
 // Pre-save middleware
