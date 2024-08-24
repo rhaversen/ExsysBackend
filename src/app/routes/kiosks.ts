@@ -19,8 +19,9 @@ const router = Router()
  * @access Private
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} [req.body.kioskTag] - The tag of the kiosk.
+ * @param {string} [req.body.readerId - The id of the reader the kiosk should send checkouts to (optional).
  * @param {string} req.body.password - The password of the kiosk.
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for.
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @return {number} res.status - The status code of the HTTP response.
  * @return {object} res.body - The newly created kiosk.
  */
@@ -73,6 +74,7 @@ router.get('/',
  * @param {string} req.params.id - The id of the kiosk to be patched.
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
+ * @param {string} [req.body.readerId] - The id of the reader the kiosk should send checkouts to (optional).
  * @param {string} [req.body.password] - The password of the kiosk (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @return {number} res.status - The status code of the HTTP response.

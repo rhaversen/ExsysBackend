@@ -36,6 +36,7 @@
 	},
 	"dependencies": {
 		"@logtail/node": "^0.4.21",
+		"axios": "^1.7.4",
 		"bcrypt": "^5.1.1",
 		"config": "^3.3.12",
 		"connect-mongo": "^5.1.0",

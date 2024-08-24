@@ -3,12 +3,13 @@
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
-import ActivityModel from './Activity.js'
+import { compare, hash } from 'bcrypt'
 
 // Own modules
 import logger from '../utils/logger.js'
-import { compare, hash } from 'bcrypt'
 import config from '../utils/setupConfig.js'
+import ReaderModel from './Reader.js'
+import ActivityModel from './Activity.js'
 
 // Destructuring and global variables
 const {
@@ -28,6 +29,7 @@ export interface IKiosk extends Document {
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
+	readerId: Schema.Types.ObjectId // The pay station the kiosk is connected to
 
 	// Timestamps
 	createdAt: Date
@@ -58,6 +60,11 @@ const kioskSchema = new Schema<IKiosk>({
 		minlength: [4, 'Password skal være mindst 4 tegn'],
 		maxlength: [100, 'Password kan højest være 100 tegn']
 	},
+	readerId: {
+		type: Schema.Types.ObjectId,
+		required: true,
+		ref: 'Reader'
+	},
 	activities: {
 		type: [Schema.Types.ObjectId],
 		ref: 'Activity',
@@ -71,15 +78,23 @@ const kioskSchema = new Schema<IKiosk>({
 kioskSchema.path('kioskTag').validate(async function (v: string) {
 	const foundKioskWithTag = await KioskModel.findOne({ kioskTag: v, _id: { $ne: this._id } })
 	return foundKioskWithTag === null || foundKioskWithTag === undefined
-}, 'KioskTag is already in use')
+}, 'KioskTag er allerede i brug')
 
 kioskSchema.path('kioskTag').validate(function (v: string) {
 	return v.length === 5
-}, 'KioskTag must be 5 characters long')
+}, 'KioskTag skal mindst være 5 tegn')
 
 kioskSchema.path('kioskTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
-}, 'KioskTag must only contain numbers')
+}, 'KioskTag kan kun indeholde tal')
+
+kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
+	if (v === undefined || v === null) {
+		return true
+	}
+	const foundReader = await ReaderModel.findOne({ _id: v })
+	return foundReader !== null && foundReader !== undefined
+}, 'Kortlæseren findes ikke')
 
 kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
 	for (const activity of v) {
@@ -89,7 +104,13 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 		}
 	}
 	return true
-})
+}, 'En eller flere aktiviteter findes ikke')
+
+kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
+	// Check if reader has been assigned to another kiosk
+	const foundKioskWithReader = await KioskModel.findOne({ readerId: v, _id: { $ne: this._id } })
+	return foundKioskWithReader === null || foundKioskWithReader === undefined
+}, 'Kortlæser er allerede tildelt en kiosk')
 
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {

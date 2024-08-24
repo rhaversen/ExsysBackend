@@ -9,15 +9,16 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
+import { compare } from 'bcrypt'
 
 // Own modules
-import KioskModel from '../../app/models/Kiosk.js'
-import ActivityModel, { type IActivity } from '../../app/models/Activity.js'
+import KioskModel from '../../../app/models/Kiosk.js'
+import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
+import RoomModel from '../../../app/models/Room.js'
+import ReaderModel from '../../../app/models/Reader.js'
 
 // Setup test environment
-import '../testSetup.js'
-import RoomModel from '../../app/models/Room.js'
-import { compare } from 'bcrypt'
+import '../../testSetup.js'
 
 describe('Kiosk Model', function () {
 	let testActivity1: IActivity
@@ -27,6 +28,7 @@ describe('Kiosk Model', function () {
 		kioskTag: string
 		password: string
 		activities: mongoose.Types.ObjectId[]
+		readerId: mongoose.Types.ObjectId
 	}
 
 	beforeEach(async function () {
@@ -45,11 +47,14 @@ describe('Kiosk Model', function () {
 			roomId: testRoom._id
 		})
 
+		const testReader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '12345' })
+
 		testKioskField = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
 			password: 'Test Password',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+			activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+			readerId: testReader.id
 		}
 	})
 
@@ -173,10 +178,59 @@ describe('Kiosk Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
+	it('should not save a kiosk with a reader that does not exist', async function () {
+		let errorOccurred = false
+		try {
+			await KioskModel.create({
+				...testKioskField,
+				readerId: new mongoose.Types.ObjectId()
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not save a kiosk without a reader', async function () {
+		let errorOccurred = false
+		try {
+			await KioskModel.create({
+				...testKioskField,
+				readerId: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not save a kiosk with a reader that is used by another kiosk', async function () {
+		let errorOccurred = false
+		const reader = await ReaderModel.create({ apiReferenceId: '12346', readerTag: '12346' })
+		await KioskModel.create({
+			readerId: reader.id,
+			name: 'Test Kiosk 2',
+			password: 'Test Password 2'
+		})
+		try {
+			await KioskModel.create({
+				...testKioskField,
+				readerId: reader.id
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
 	it('should generate a new kiosk tag', async function () {
 		const kiosk = await KioskModel.create(testKioskField)
 		const oldKioskTag = kiosk.kioskTag
-		await kiosk.generateNewKioskTag()
+		const newKioskTag = await kiosk.generateNewKioskTag()
+		expect(newKioskTag).to.exist
 		expect(kiosk.kioskTag).to.not.equal(oldKioskTag)
 	})
 

@@ -13,6 +13,7 @@ import { chaiAppServer as agent } from '../../testSetup.js'
 import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import config from '../../../app/utils/setupConfig.js'
+import ReaderModel from '../../../app/models/Reader.js'
 
 // Config
 const {
@@ -254,7 +255,8 @@ describe('Auth routes', function () {
 		}
 
 		beforeEach(async function () {
-			testKiosk = new KioskModel(testKioskFields)
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
 			await testKiosk.save()
 		})
 
@@ -484,7 +486,8 @@ describe('Auth routes', function () {
 			}
 
 			beforeEach(async function () {
-				testKiosk = new KioskModel(testKioskFields)
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
 				await testKiosk.save()
 			})
 
@@ -603,7 +606,8 @@ describe('Auth routes', function () {
 			}
 
 			beforeEach(async function () {
-				testKiosk = new KioskModel(testKioskFields)
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
 				await testKiosk.save()
 			})
 

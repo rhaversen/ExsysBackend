@@ -19,6 +19,9 @@ import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import { chaiAppServer as agent } from '../../testSetup.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import AdminModel from '../../../app/models/Admin.js'
+import ReaderModel, { type IReader } from '../../../app/models/Reader.js'
+import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
+import PaymentModel, { type IPayment } from '../../../app/models/Payment.js'
 
 describe('Orders routes', function () {
 	let sessionCookie: string
@@ -40,6 +43,8 @@ describe('Orders routes', function () {
 		let testRoom: IRoom
 		let testActivity: IActivity
 		let testOption1: IOption
+		let testReader: IReader
+		let testKiosk: IKiosk
 
 		beforeEach(async function () {
 			testProduct1 = await ProductModel.create({
@@ -71,10 +76,15 @@ describe('Orders routes', function () {
 				name: 'Test Option',
 				price: 50
 			})
+
+			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
+			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
 		})
 
 		it('should have status 201', async function () {
 			const response = await agent.post('/v1/orders').send({
+				kioskId: testKiosk.id,
 				activityId: testActivity.id,
 				products: [{
 					id: testProduct1.id,
@@ -91,6 +101,7 @@ describe('Orders routes', function () {
 
 		it('should have status 403 if not logged in', async function () {
 			const response = await agent.post('/v1/orders').send({
+				kioskId: testKiosk.id,
 				activityId: testActivity.id,
 				products: [{
 					id: testProduct1.id,
@@ -107,6 +118,7 @@ describe('Orders routes', function () {
 
 		it('should create a valid order', async function () {
 			await agent.post('/v1/orders').send({
+				kioskId: testKiosk.id,
 				activityId: testActivity.id,
 				products: [{
 					id: testProduct1.id,
@@ -129,6 +141,7 @@ describe('Orders routes', function () {
 
 		it('should return the order', async function () {
 			const res = await agent.post('/v1/orders').send({
+				kioskId: testKiosk.id,
 				activityId: testActivity.id,
 				products: [{
 					id: testProduct1.id,
@@ -150,6 +163,7 @@ describe('Orders routes', function () {
 		it('should handle orders with undefined options', async function () {
 			await agent.post('/v1/orders').send({
 				activityId: testActivity.id,
+				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -162,6 +176,7 @@ describe('Orders routes', function () {
 		it('should handle orders with undefined products', async function () {
 			await agent.post('/v1/orders').send({
 				activityId: testActivity.id,
+				kioskId: testKiosk.id,
 				options: [{
 					id: testOption1.id,
 					quantity: 1
@@ -204,6 +219,7 @@ describe('Orders routes', function () {
 
 				it('should create a order with a product with quantity 0 and product with quantity 1', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -220,6 +236,7 @@ describe('Orders routes', function () {
 
 				it('should remove products with quantity 0', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -236,6 +253,7 @@ describe('Orders routes', function () {
 
 				it('should combine products with the same product id', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -252,6 +270,7 @@ describe('Orders routes', function () {
 
 				it('should handle two duplicate and a unique products', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -274,6 +293,7 @@ describe('Orders routes', function () {
 
 				it('should handle unique products with different quantities', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -292,6 +312,7 @@ describe('Orders routes', function () {
 
 				it('should handle products with quantity 0 and products with quantity 1', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -319,8 +340,7 @@ describe('Orders routes', function () {
 						}]
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
-					expect(order?.products.length).to.equal(1)
-					expect(order?.products[0].quantity).to.equal(1)
+					expect(order).to.not.exist
 				})
 			})
 
@@ -336,6 +356,7 @@ describe('Orders routes', function () {
 
 				it('should create a order with a option with quantity 0 and option with quantity 1', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -356,6 +377,7 @@ describe('Orders routes', function () {
 
 				it('should create a order with a option with quantity 0', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -372,6 +394,7 @@ describe('Orders routes', function () {
 
 				it('should remove option with quantity 0', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -388,6 +411,7 @@ describe('Orders routes', function () {
 
 				it('should remove options with quantity 0', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -408,6 +432,7 @@ describe('Orders routes', function () {
 
 				it('should combine options with the same option id', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -428,6 +453,7 @@ describe('Orders routes', function () {
 
 				it('should handle two duplicate options with different quantities', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -448,6 +474,7 @@ describe('Orders routes', function () {
 
 				it('should handle two duplicate and a unique option', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -474,6 +501,7 @@ describe('Orders routes', function () {
 
 				it('should handle unique options with different quantities', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -496,6 +524,7 @@ describe('Orders routes', function () {
 
 				it('should handle options with quantity 0 and options with quantity 1', async function () {
 					await agent.post('/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -531,13 +560,239 @@ describe('Orders routes', function () {
 						}]
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
-					expect(order?.options?.length).to.equal(1)
-					expect(order?.options?.[0].quantity).to.equal(1)
+					expect(order).to.not.exist
 				})
 			})
 		})
-	})
 
+		describe('Dont skip checkout', function () {
+			it('should create a paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(order?.paymentId).to.exist
+			})
+
+			it('should create a paymentId', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment).to.exist
+			})
+
+			it('should return the paymentId', async function () {
+				const res = await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the payment status to pending', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.paymentStatus).to.equal('pending')
+			})
+
+			it('should set the clientTransactionId on the payment', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.clientTransactionId).to.exist
+			})
+		})
+
+		describe('Skip checkout', function () {
+			it('should create a paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(order?.paymentId).to.exist
+			})
+
+			it('should create a paymentId', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment).to.exist
+			})
+
+			it('should return the paymentId', async function () {
+				const res = await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the paymentId on the order', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
+			})
+
+			it('should set the payment status to successful', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.paymentStatus).to.equal('successful')
+			})
+
+			it('should not set the clientTransactionId on the payment', async function () {
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: testKiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				const payment = await PaymentModel.findById(order?.paymentId)
+				expect(payment?.clientTransactionId).to.not.exist
+			})
+		})
+	})
 	describe('GET /v1/orders', function () {
 		let testProduct1: IProduct
 		let testProduct2: IProduct
@@ -547,6 +802,10 @@ describe('Orders routes', function () {
 		let testRoom: IRoom
 		let testActivity: IActivity
 		let testOption: IOption
+		let testReader: IReader
+		let testKiosk: IKiosk
+		let testPayment1: IPayment
+		let testPayment2: IPayment
 
 		let clock: sinon.SinonFakeTimers
 
@@ -646,8 +905,17 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
+			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
+			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+
+			testPayment1 = await PaymentModel.create({ paymentStatus: 'successful' })
+			testPayment2 = await PaymentModel.create({ paymentStatus: 'failed' })
+
 			await OrderModel.create({
 				activityId: testActivity.id,
+				paymentId: testPayment1.id,
+				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -659,7 +927,9 @@ describe('Orders routes', function () {
 			})
 
 			await OrderModel.create({
+				paymentId: testPayment2.id,
 				activityId: testActivity.id,
+				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct2.id,
 					quantity: 1
@@ -715,7 +985,9 @@ describe('Orders routes', function () {
 					options: { $elemMatch: { id: testOption.id } }
 				}, { status: 'delivered' })
 				await OrderModel.create({
+					paymentId: testPayment1.id,
 					activityId: testActivity.id,
+					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct3.id,
 						quantity: 1
@@ -727,7 +999,9 @@ describe('Orders routes', function () {
 					status: 'pending'
 				})
 				await OrderModel.create({
+					paymentId: testPayment2.id,
 					activityId: testActivity.id,
+					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct4.id,
 						quantity: 1
@@ -769,7 +1043,9 @@ describe('Orders routes', function () {
 			beforeEach(async function () {
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by 24 hours
 				await OrderModel.create({
+					paymentId: testPayment1.id,
 					activityId: testActivity.id,
+					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct3.id,
 						quantity: 1
@@ -781,7 +1057,9 @@ describe('Orders routes', function () {
 				})
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by another 24 hours
 				await OrderModel.create({
+					paymentId: testPayment2.id,
 					activityId: testActivity.id,
+					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct4.id,
 						quantity: 1
@@ -869,6 +1147,34 @@ describe('Orders routes', function () {
 				expect(res.body.length).to.equal(0)
 			})
 		})
+
+		describe('GET /v1/orders/?paymentStatus', function () {
+			it('should return all orders with paymentStatus successful', async function () {
+				const res = await agent.get('/v1/orders/?paymentStatus=successful').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(1)
+				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			})
+
+			it('should return an empty array if there are no orders with paymentStatus', async function () {
+				const testPayment3 = await PaymentModel.create({ paymentStatus: 'pending' })
+				await OrderModel.findOneAndUpdate({
+					products: { $elemMatch: { id: testProduct1.id } },
+					options: { $elemMatch: { id: testOption.id } }
+				}, { paymentId: testPayment3.id })
+				const res = await agent.get('/v1/orders/?paymentStatus=successful').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(0)
+			})
+
+			it('should allow multiple paymentStatuses', async function () {
+				const res = await agent.get('/v1/orders/?paymentStatus=successful,failed').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(2)
+				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+			})
+		})
 	})
 
 	describe('PATCH /v1/orders', function () {
@@ -876,6 +1182,9 @@ describe('Orders routes', function () {
 		let testRoom: IRoom
 		let testActivity: IActivity
 		let testOption1: IOption
+		let testReader: IReader
+		let testKiosk: IKiosk
+		let testPayment: IPayment
 
 		let order1: IOrder
 		let order2: IOrder
@@ -911,8 +1220,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
+			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
+			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+
+			testPayment = await PaymentModel.create({})
+
 			order1 = await OrderModel.create({
+				paymentId: testPayment.id,
 				activityId: testActivity.id,
+				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -924,7 +1241,9 @@ describe('Orders routes', function () {
 			})
 
 			order2 = await OrderModel.create({
+				paymentId: testPayment.id,
 				activityId: testActivity.id,
+				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1

@@ -7,7 +7,9 @@ import AdminModel from '../app/models/Admin.js'
 import KioskModel from '../app/models/Kiosk.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'
+import PaymentModel from '../app/models/Payment.js'
 import ProductModel from '../app/models/Product.js'
+import ReaderModel from '../app/models/Reader.js'
 import RoomModel from '../app/models/Room.js'
 import logger from '../app/utils/logger.js'
 
@@ -588,8 +590,23 @@ await ActivityModel.create({
 	name: 'Cooking'
 })
 
+// Payments
+const payment1 = await PaymentModel.create({
+	paymentStatus: 'successful'
+})
+const payment2 = await PaymentModel.create({
+	paymentStatus: 'successful'
+})
+const payment3 = await PaymentModel.create({
+	paymentStatus: 'successful'
+})
+const payment4 = await PaymentModel.create({
+	paymentStatus: 'pending'
+})
+
 // Orders
 await OrderModel.create({
+	paymentId: payment1.id,
 	activityId: activity1.id,
 	products: [{
 		id: product1.id,
@@ -601,6 +618,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
+	paymentId: payment2.id,
 	activityId: activity2.id,
 	products: [{
 		id: product2.id,
@@ -615,6 +633,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
+	paymentId: payment3.id,
 	activityId: activity3.id,
 	products: [{
 		id: product3.id,
@@ -632,6 +651,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
+	paymentId: payment4.id,
 	activityId: activity4.id,
 	products: [{
 		id: product1.id,
@@ -649,21 +669,29 @@ await AdminModel.create({
 	password: 'password'
 })
 
+// Readers
+const reader1 = await ReaderModel.create({ apiReferenceId: '12345' })
+const reader2 = await ReaderModel.create({ apiReferenceId: '54321' })
+const reader3 = await ReaderModel.create({ apiReferenceId: '67890' })
+
 // Kiosks
 await KioskModel.create({
 	name: 'Kiosk with activities',
+	readerId: reader1.id,
 	kioskTag: '11111',
 	password: 'password',
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 await KioskModel.create({
 	name: 'Kiosk with one activity',
+	readerId: reader2.id,
 	kioskTag: '22222',
 	password: 'password',
 	activities: [activity1.id]
 })
 await KioskModel.create({
 	name: 'Kiosk without activities',
+	readerId: reader3.id,
 	kioskTag: '33333',
 	password: 'password'
 })
