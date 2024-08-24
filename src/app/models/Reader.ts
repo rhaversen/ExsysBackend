@@ -38,7 +38,6 @@ const readerSchema = new Schema<IReader>({
 	},
 	readerTag: {
 		type: Schema.Types.String,
-		required: true,
 		trim: true,
 		unique: true
 	}
