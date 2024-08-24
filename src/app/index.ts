@@ -57,7 +57,6 @@ const {
 
 // Global variables and setup
 const app = express()
-app.use(cors(corsConfig))
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
@@ -74,6 +73,15 @@ app.use(helmet()) // Security headers
 app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
 app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
+
+// Apply webhook cors config to webhook routes
+app.use('/v1/reader-callback', cors(webhookCorsConfig))
+app.use('/v1/reader-callback', readerCallbackRoutes)
+
+// Apply cors config to all other routes
+app.use(cors(corsConfig))
+
+// Session management
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
@@ -107,7 +115,7 @@ app.use('/v1/auth', mediumSensitivityApiLimiter, authRoutes)
 app.use('/v1/activities', mediumSensitivityApiLimiter, activityRoutes)
 app.use('/v1/kiosks', mediumSensitivityApiLimiter, kioskRoutes)
 app.use('/v1/readers', mediumSensitivityApiLimiter, readerRoutes)
-app.use('/v1/reader-callback', mediumSensitivityApiLimiter, readerCallbackRoutes)
+app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
@@ -121,9 +129,6 @@ app.use('/v1/options', mediumSensitivityApiLimiter)
 
 // Apply stricter rate limiters to routes
 // none
-
-// Apply webhook cors config to webhook routes
-app.use('/v1/reader-callback', cors(webhookCorsConfig))
 
 // Global error handler middleware
 app.use(globalErrorHandler)
