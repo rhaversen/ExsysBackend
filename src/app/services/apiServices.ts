@@ -14,7 +14,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	try {
 		const response = await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/checkout`, {
 			total_amount: {
-				value: totalAmount,
+				value: totalAmount * 100,
 				currency: 'DKK',
 				minor_unit: 2
 			},
