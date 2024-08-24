@@ -1,7 +1,6 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import validator from 'validator'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { type PassportStatic } from 'passport'
 

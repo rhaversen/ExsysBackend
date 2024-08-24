@@ -20,7 +20,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 	// Check if name and password are provided
 	if (req.body.name === undefined || req.body.password === undefined) {
-		res.status(400).json({ auth: false, error: 'name or password is missing.' })
+		res.status(400).json({ auth: false, error: 'Navn eller kodeord mangler' })
 		return
 	}
 
@@ -54,7 +54,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 	// Check if kioskTag and password are provided
 	if (req.body.kioskTag === undefined || req.body.password === undefined) {
-		res.status(400).json({ auth: false, error: 'kioskTag or password is missing.' })
+		res.status(400).json({ auth: false, error: 'kioskTag eller kodeord mangler' })
 		return
 	}
 
@@ -95,7 +95,7 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 				next(sessionErr)
 				return
 			}
-			res.status(200).json({ message: 'Logged out successfully' })
+			res.status(200).json({ message: 'Succesfuldt logget ud' })
 		})
 	})
 }

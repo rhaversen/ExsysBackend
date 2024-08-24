@@ -29,6 +29,10 @@ import optionRoutes from './routes/options.js'
 import authRoutes from './routes/auth.js'
 import activityRoutes from './routes/activities.js'
 import kioskRoutes from './routes/kiosks.js'
+import readerRoutes from './routes/readers.js'
+
+// Callback routes
+import readerCallbackRoutes from './routes/readerCallback.js'
 
 // Service routes
 import serviceRoutes from './routes/service.js'
@@ -47,12 +51,12 @@ const {
 	mediumSensitivityApiLimiterConfig,
 	expressPort,
 	corsConfig,
+	webhookCorsConfig,
 	cookieOptions
 } = config
 
 // Global variables and setup
 const app = express()
-app.use(cors(corsConfig))
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
@@ -69,6 +73,15 @@ app.use(helmet()) // Security headers
 app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
 app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
+
+// Apply webhook cors config to webhook routes
+app.use('/v1/reader-callback', cors(webhookCorsConfig))
+app.use('/v1/reader-callback', readerCallbackRoutes)
+
+// Apply cors config to all other routes
+app.use(cors(corsConfig))
+
+// Session management
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
@@ -83,37 +96,33 @@ app.use(session({ // Session management
 }))
 app.use(passport.initialize()) // Initialize Passport
 app.use(passport.session()) // Passport session handling
-
-// Function invocations
 configurePassport(passport) // Use passportConfig
 
 // Rate limiters
 const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfig)
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
-// Use all routes with medium sensitivity rate limiter
-app.use('/v1/orders', mediumSensitivityApiLimiter, orderRoutes)
-app.use('/v1/products', mediumSensitivityApiLimiter, productRoutes)
-app.use('/v1/admins', mediumSensitivityApiLimiter, adminRoutes)
-app.use('/v1/rooms', mediumSensitivityApiLimiter, roomRoutes)
-app.use('/v1/options', mediumSensitivityApiLimiter, optionRoutes)
-app.use('/service', mediumSensitivityApiLimiter, serviceRoutes)
-app.use('/v1/auth', mediumSensitivityApiLimiter, authRoutes)
-app.use('/v1/activities', mediumSensitivityApiLimiter, activityRoutes)
-app.use('/v1/kiosks', mediumSensitivityApiLimiter, kioskRoutes)
+// Use all routes
+app.use('/v1/orders', orderRoutes)
+app.use('/v1/products', productRoutes)
+app.use('/v1/admins', adminRoutes)
+app.use('/v1/rooms', roomRoutes)
+app.use('/v1/options', optionRoutes)
+app.use('/service', serviceRoutes)
+app.use('/v1/auth', authRoutes)
+app.use('/v1/activities', activityRoutes)
+app.use('/v1/kiosks', kioskRoutes)
+app.use('/v1/readers', readerRoutes)
+app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
 
-// Apply medium sensitivity for all database operation routes
-app.use('/v1/orders', mediumSensitivityApiLimiter)
-app.use('/v1/products', mediumSensitivityApiLimiter)
-app.use('/v1/admins', mediumSensitivityApiLimiter)
-app.use('/v1/rooms', mediumSensitivityApiLimiter)
-app.use('/v1/options', mediumSensitivityApiLimiter)
+// Apply medium sensitivity for callback routes
+app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
 
-// Apply stricter rate limiters to routes
-// none
+// Apply medium sensitivity for all other routes
+app.use(mediumSensitivityApiLimiter)
 
 // Global error handler middleware
 app.use(globalErrorHandler)

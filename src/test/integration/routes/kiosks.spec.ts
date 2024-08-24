@@ -13,9 +13,10 @@ import mongoose from 'mongoose'
 // Own modules
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import { chaiAppServer as agent } from '../../testSetup.js'
-import RoomModel from '../../../app/models/Room.js'
+import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import AdminModel from '../../../app/models/Admin.js'
+import ReaderModel from '../../../app/models/Reader.js'
 
 describe('Kiosks routes', function () {
 	let sessionCookie: string
@@ -34,12 +35,22 @@ describe('Kiosks routes', function () {
 
 	describe('POST /v1/kiosks', function () {
 		describe('No activities', function () {
-			const testKioskFields = {
-				name: 'Test Kiosk',
-				kioskTag: '12345',
-				password: 'Test Password',
-				confirmPassword: 'Test Password'
+			let testKioskFields: {
+				name: string
+				kioskTag: string
+				password: string
+				readerId: mongoose.Types.ObjectId
 			}
+
+			beforeEach(async function () {
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				testKioskFields = {
+					name: 'Test Kiosk',
+					kioskTag: '12345',
+					password: 'Test Password',
+					readerId: testReader.id
+				}
+			})
 
 			it('should have status 201', async function () {
 				const response = await agent.post('/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
@@ -71,7 +82,12 @@ describe('Kiosks routes', function () {
 
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-				expect(response.body).to.have.property('password')
+			})
+
+			it('should not return the password', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
+
+				expect(response.body).to.not.have.property('password')
 			})
 
 			it('should have an empty activities array', async function () {
@@ -82,19 +98,21 @@ describe('Kiosks routes', function () {
 		})
 
 		describe('No kioskTag', function () {
+			let testRoom1: IRoom
+			let testRoom2: IRoom
 			let testKioskFields: {
 				name: string
 				password: string
-				confirmPassword: string
 				activities: mongoose.Types.ObjectId[]
+				readerId: mongoose.Types.ObjectId
 			}
 
 			beforeEach(async function () {
-				const testRoom1 = await RoomModel.create({
+				testRoom1 = await RoomModel.create({
 					name: 'Room 1',
 					description: 'Description for Room 1'
 				})
-				const testRoom2 = await RoomModel.create({
+				testRoom2 = await RoomModel.create({
 					name: 'Room 2',
 					description: 'Description for Room 2'
 				})
@@ -108,11 +126,13 @@ describe('Kiosks routes', function () {
 					roomId: testRoom2.id
 				})
 
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 				testKioskFields = {
 					name: 'Test Kiosk',
 					password: 'Test Password',
-					confirmPassword: 'Test Password',
-					activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+					activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+					readerId: testReader.id
 				}
 			})
 
@@ -147,25 +167,29 @@ describe('Kiosks routes', function () {
 				expect(response.body.kioskTag).to.exist
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('activities')
-				expect(response.body.activities).to.have.members(testKioskFields.activities)
+				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
+				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
+				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
 			})
 		})
 
 		describe('All fields', function () {
+			let testRoom1: IRoom
+			let testRoom2: IRoom
 			let testKioskFields: {
 				name: string
 				kioskTag: string
 				password: string
-				confirmPassword: string
 				activities: mongoose.Types.ObjectId[]
+				readerId: mongoose.Types.ObjectId
 			}
 
 			beforeEach(async function () {
-				const testRoom1 = await RoomModel.create({
+				testRoom1 = await RoomModel.create({
 					name: 'Room 1',
 					description: 'Description for Room 1'
 				})
-				const testRoom2 = await RoomModel.create({
+				testRoom2 = await RoomModel.create({
 					name: 'Room 2',
 					description: 'Description for Room 2'
 				})
@@ -179,12 +203,14 @@ describe('Kiosks routes', function () {
 					roomId: testRoom2.id
 				})
 
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 				testKioskFields = {
 					name: 'Test Kiosk',
 					kioskTag: '12345',
 					password: 'Test Password',
-					confirmPassword: 'Test Password',
-					activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+					activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+					readerId: testReader.id
 				}
 			})
 
@@ -232,7 +258,9 @@ describe('Kiosks routes', function () {
 
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-				expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
+				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
+				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
+				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
 			})
 		})
 	})
@@ -244,6 +272,7 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -265,11 +294,14 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 			testKioskFields = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader.id
 			}
 
 			testKiosk1 = await KioskModel.create(testKioskFields)
@@ -292,7 +324,20 @@ describe('Kiosks routes', function () {
 
 			expect(response.body).to.have.property('name', testKioskFields.name)
 			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-			expect(response.body).to.have.property('activities').that.have.members(testKioskFields.activities)
+			expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
+		})
+
+		it('should not return the password', async function () {
+			const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
+
+			expect(response.body).to.not.have.property('password')
+		})
+
+		it('should populate the activities', async function () {
+			const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
+
+			expect(response.body.activities[0]).to.have.property('name', 'Activity 1')
+			expect(response.body.activities[1]).to.have.property('name', 'Activity 2')
 		})
 
 		it('should return 404 if the kiosk does not exist', async function () {
@@ -308,12 +353,14 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -335,17 +382,22 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader1 = await ReaderModel.create({ apiReferenceId: 'test1', readerTag: '12345' })
+			const testReader2 = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString()]
+				activities: [testActivity1.id.toString()],
+				readerId: testReader2.id
 			}
 
 			await KioskModel.create(testKioskFields1)
@@ -371,10 +423,25 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body[0]).to.have.property('kioskTag', testKioskFields1.kioskTag)
 			expect(response.body[0]).to.have.property('name', testKioskFields1.name)
-			expect(response.body[0]).to.have.property('activities').that.have.members(testKioskFields1.activities)
+			expect(response.body[0].activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields1.activities)
 			expect(response.body[1]).to.have.property('kioskTag', testKioskFields2.kioskTag)
 			expect(response.body[1]).to.have.property('name', testKioskFields2.name)
-			expect(response.body[1]).to.have.property('activities').that.have.members(testKioskFields2.activities)
+			expect(response.body[1].activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields2.activities)
+		})
+
+		it('should not return the password', async function () {
+			const response = await agent.get('/v1/kiosks').set('Cookie', sessionCookie)
+
+			expect(response.body[0]).to.not.have.property('password')
+			expect(response.body[1]).to.not.have.property('password')
+		})
+
+		it('should populate the activities', async function () {
+			const response = await agent.get('/v1/kiosks').set('Cookie', sessionCookie)
+
+			expect(response.body[0].activities[0]).to.have.property('name', 'Activity 1')
+			expect(response.body[0].activities[1]).to.have.property('name', 'Activity 2')
+			expect(response.body[1].activities[0]).to.have.property('name', 'Activity 1')
 		})
 	})
 
@@ -389,12 +456,14 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -416,17 +485,22 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader1 = await ReaderModel.create({ apiReferenceId: 'test1', readerTag: '12345' })
+			const testReader2 = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString()]
+				activities: [testActivity1.id.toString()],
+				readerId: testReader2.id
 			}
 
 			testKiosk1 = await KioskModel.create(testKioskFields1)
@@ -478,7 +552,18 @@ describe('Kiosks routes', function () {
 			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('kioskTag', updatedFields.kioskTag)
-			expect(response.body.activities[0].toString()).to.equal(updatedFields.activities[0])
+			expect(response.body.activities[0]._id.toString()).to.equal(updatedFields.activities[0])
+		})
+
+		it('should populate the activities', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(response.body.activities[0]).to.have.property('name', 'Activity 2')
 		})
 
 		it('should allow a partial update', async function () {
@@ -493,10 +578,9 @@ describe('Kiosks routes', function () {
 			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
 		})
 
-		it('should update the password with confirmPassword', async function () {
+		it('should update the password', async function () {
 			const updatedFields = {
-				password: 'New Password',
-				confirmPassword: 'New Password'
+				password: 'New Password'
 			}
 
 			await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
@@ -505,17 +589,6 @@ describe('Kiosks routes', function () {
 			expect(kiosk).to.have.property('password')
 			const passwordMatch = await kiosk?.comparePassword(updatedFields.password)
 			expect(passwordMatch).to.be.true
-		})
-
-		it('should require password and confirmPassword to match', async function () {
-			const updatedFields = {
-				password: 'New Password',
-				confirmPassword: 'Different Password'
-			}
-
-			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
-
-			expect(response).to.have.status(400)
 		})
 
 		it('should not update other fields', async function () {
@@ -590,11 +663,13 @@ describe('Kiosks routes', function () {
 				name: 'Activity 1',
 				roomId: testRoom1.id
 			})
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
 			testKiosk1 = await KioskModel.create({
 				name: 'Kiosk 1',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id]
+				activities: [testActivity1.id],
+				readerId: testReader.id
 			})
 		})
 
@@ -643,6 +718,7 @@ describe('Kiosks routes', function () {
 			kioskTag: string
 			password: string
 			activities: mongoose.Types.ObjectId[]
+			readerId: mongoose.Types.ObjectId
 		}
 
 		beforeEach(async function () {
@@ -664,11 +740,14 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+
 			testKioskFields1 = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString(), testActivity2.id.toString()]
+				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				readerId: testReader.id
 			}
 
 			testKiosk1 = await KioskModel.create(testKioskFields1)
@@ -696,11 +775,13 @@ describe('Kiosks routes', function () {
 		})
 
 		it('should not delete other kiosks', async function () {
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
 			const testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
 				password: 'Test Password',
-				activities: [testActivity1.id.toString()]
+				activities: [testActivity1.id.toString()],
+				readerId: testReader.id
 			}
 			const testKiosk2 = await KioskModel.create(testKioskFields2)
 

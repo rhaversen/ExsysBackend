@@ -10,10 +10,10 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 // Own modules
-import RoomModel from '../../app/models/Room.js'
+import RoomModel from '../../../app/models/Room.js'
 
 // Setup test environment
-import '../testSetup.js'
+import '../../testSetup.js'
 
 describe('Room Model', function () {
 	const testRoomField = {
