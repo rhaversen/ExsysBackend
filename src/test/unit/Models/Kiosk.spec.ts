@@ -229,7 +229,8 @@ describe('Kiosk Model', function () {
 	it('should generate a new kiosk tag', async function () {
 		const kiosk = await KioskModel.create(testKioskField)
 		const oldKioskTag = kiosk.kioskTag
-		await kiosk.generateNewKioskTag()
+		const newKioskTag = await kiosk.generateNewKioskTag()
+		expect(newKioskTag).to.exist
 		expect(kiosk.kioskTag).to.not.equal(oldKioskTag)
 	})
 
