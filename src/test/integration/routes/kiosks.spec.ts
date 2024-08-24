@@ -775,7 +775,7 @@ describe('Kiosks routes', function () {
 		})
 
 		it('should not delete other kiosks', async function () {
-			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '54321' })
+			const testReader = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
 			const testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
