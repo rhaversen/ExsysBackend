@@ -12,13 +12,13 @@ import { pairReader, unpairReader } from '../services/apiServices.js'
 export async function createReader (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating reader')
 
-	// Create a new object with only the allowed fields
-	const allowedFields: Record<string, unknown> = {
-		pairingCode: req.body.pairingCode,
-		readerTag: req.body.readerTag
-	}
+	// Destructure the pairingCode and readerTag from the request body
+	const {
+		pairingCode,
+		readerTag
+	} = req.body as Record<string, unknown>
 
-	if (allowedFields.pairingCode === undefined || allowedFields.pairingCode === null || typeof allowedFields.pairingCode !== 'string') {
+	if (pairingCode === undefined || pairingCode === null || typeof pairingCode !== 'string') {
 		res.status(400).json({ error: 'Mangler pairingCode' })
 		return
 	}
