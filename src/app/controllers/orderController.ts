@@ -223,15 +223,18 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 	}
 
 	try {
-		const orders = await OrderModel.find({
-			...query,
-			'paymentId.paymentStatus': paymentStatus
-		})
-			.populate('paymentId', 'paymentStatus') // Populate the paymentId with only the paymentStatus
-			.select('-paymentId') // Exclude the paymentId from the results
-			.exec()
+		// Fetch and populate orders
+		const orders = await OrderModel.find({ ...query })
+			.populate({ path: 'paymentId', select: 'paymentStatus' })
+			.exec() as IOrderPopulatedPaymentId[] | null
 
-		res.status(200).json(orders)
+		// Concisely filter orders based on paymentStatus
+		const filteredOrders = orders?.filter(order =>
+			paymentStatus === undefined ||
+			(order.paymentId?.paymentStatus !== null && paymentStatus.split(',').includes(order.paymentId.paymentStatus))
+		)
+
+		res.status(200).json(filteredOrders)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
