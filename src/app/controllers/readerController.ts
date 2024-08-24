@@ -31,11 +31,11 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 	}
 
 	try {
-		await ReaderModel.create({
+		const newReader = await ReaderModel.create({
 			apiReferenceId,
 			readerTag
 		})
-		res.status(201).json({ readerTag })
+		res.status(201).json({ readerTag: newReader.readerTag, _id: newReader._id })
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
