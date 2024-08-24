@@ -84,7 +84,7 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 
-		res.json(reader)
+		res.status(200).json(reader)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
