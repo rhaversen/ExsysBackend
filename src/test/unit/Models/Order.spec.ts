@@ -671,7 +671,7 @@ describe('Order Model', function () {
 
 		it('should allow products to be ordered inside the order window before midnight when the order window is moves across midnight', async function () {
 			// Set the fake time to a specific date and time that is before lunch
-			const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+			const fakeTime = new Date('2024-04-21T21:00:00Z').getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -686,7 +686,7 @@ describe('Order Model', function () {
 
 		it('should allow products to be ordered inside the order window after midnight when the order window moves across midnight', async function () {
 			// Set the fake time to a specific date and time that is after lunch
-			const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+			const fakeTime = new Date('2024-04-21T03:00:00Z').getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
