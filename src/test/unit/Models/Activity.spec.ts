@@ -78,17 +78,11 @@ describe('Activity Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create an activity without a roomId', async function () {
-		let errorOccurred = false
-		try {
-			await ActivityModel.create({
-				...testActivityField,
-				roomId: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
+	it('should create an activity without a roomId', async function () {
+		const activity = await ActivityModel.create({
+			...testActivityField,
+			roomId: undefined
+		})
+		expect(activity).to.exist
 	})
 })

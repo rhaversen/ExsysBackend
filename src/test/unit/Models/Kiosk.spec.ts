@@ -192,18 +192,20 @@ describe('Kiosk Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not save a kiosk without a reader', async function () {
-		let errorOccurred = false
-		try {
-			await KioskModel.create({
-				...testKioskField,
-				readerId: undefined
-			})
-		} catch (err) {
-			// The promise was rejected as expected
-			errorOccurred = true
-		}
-		expect(errorOccurred).to.be.true
+	it('should save a kiosk without a reader', async function () {
+		const kiosk = await KioskModel.create({
+			...testKioskField,
+			readerId: undefined
+		})
+		expect(kiosk).to.exist
+	})
+
+	it('should save a kiosk without activities', async function () {
+		const kiosk = await KioskModel.create({
+			...testKioskField,
+			activities: undefined
+		})
+		expect(kiosk).to.exist
 	})
 
 	it('should not save a kiosk with a reader that is used by another kiosk', async function () {
