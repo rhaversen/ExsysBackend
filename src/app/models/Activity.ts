@@ -3,12 +3,13 @@
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import logger from '../utils/logger.js'
+import RoomModel from './Room.js'
 
 // Interfaces
 export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	roomId: Schema.Types.ObjectId // Where the activity is dining
+	roomId: Schema.Types.ObjectId | null // Where the activity is dining
 	name: string
 
 	// Timestamps
@@ -20,8 +21,7 @@ export interface IActivity extends Document {
 const activitySchema = new Schema<IActivity>({
 	roomId: {
 		type: Schema.Types.ObjectId,
-		ref: 'Room',
-		required: true
+		ref: 'Room'
 	},
 	name: {
 		type: Schema.Types.String,
