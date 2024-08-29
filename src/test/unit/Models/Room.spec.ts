@@ -14,6 +14,7 @@ import RoomModel from '../../../app/models/Room.js'
 
 // Setup test environment
 import '../../testSetup.js'
+import ActivityModel from '../../../app/models/Activity.js'
 
 describe('Room Model', function () {
 	const testRoomField = {
@@ -84,5 +85,18 @@ describe('Room Model', function () {
 			errorOccurred = true
 		}
 		expect(errorOccurred).to.be.true
+	})
+
+	it('should remove the room from any activities when deleted', async function () {
+		const room = await RoomModel.create(testRoomField)
+		const activity = await ActivityModel.create({
+			name: 'TestActivity',
+			roomId: room._id
+		})
+
+		await RoomModel.findByIdAndDelete(room._id)
+
+		const updatedActivity = await ActivityModel.findById(activity._id)
+		expect(updatedActivity?.roomId).to.be.undefined
 	})
 })

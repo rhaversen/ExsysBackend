@@ -163,6 +163,20 @@ describe('Product Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
+	it('should not create a product with a non-existent option and a real option', async function () {
+		let errorOccurred = false
+		try {
+			await ProductModel.create({
+				...testProductFields,
+				options: [new Types.ObjectId(), testOption.id]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
 	it('should not create a product with duplicate options', async function () {
 		let errorOccurred = false
 		try {

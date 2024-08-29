@@ -677,6 +677,25 @@ describe('Orders routes', function () {
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.clientTransactionId).to.exist
 			})
+
+			it('should not create an order if the kiosk has no reader', async function () {
+				const kiosk = await KioskModel.create({ name: 'Test Kiosk', password: 'password' })
+				await agent.post('/v1/orders').send({
+					skipCheckout: false,
+					kioskId: kiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(order).to.not.exist
+			})
 		})
 
 		describe('Skip checkout', function () {
@@ -790,6 +809,25 @@ describe('Orders routes', function () {
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.clientTransactionId).to.not.exist
+			})
+
+			it('should not create an order if the kiosk has no reader', async function () {
+				const kiosk = await KioskModel.create({ name: 'Test Kiosk', password: 'password' })
+				await agent.post('/v1/orders').send({
+					skipCheckout: true,
+					kioskId: kiosk.id,
+					activityId: testActivity.id,
+					products: [{
+						id: testProduct1.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption1.id,
+						quantity: 1
+					}]
+				}).set('Cookie', sessionCookie)
+				const order = await OrderModel.findOne({})
+				expect(order).to.not.exist
 			})
 		})
 	})

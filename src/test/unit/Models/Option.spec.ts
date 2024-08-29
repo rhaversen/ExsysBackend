@@ -14,6 +14,7 @@ import OptionModel from '../../../app/models/Option.js'
 
 // Setup test environment
 import '../../testSetup.js'
+import ProductModel from '../../../app/models/Product.js'
 
 describe('Option Model', function () {
 	let testOptionFields: {
@@ -137,5 +138,30 @@ describe('Option Model', function () {
 			errorOccurred = true
 		}
 		expect(errorOccurred).to.be.true
+	})
+
+	it('should remove the option from any products when deleted', async function () {
+		const option = await OptionModel.create(testOptionFields)
+		const product = await ProductModel.create({
+			name: 'TestProduct',
+			imageURL: 'https://example.com/image.jpg',
+			price: 100,
+			options: [option._id],
+			orderWindow: {
+				from: {
+					hour: 12,
+					minute: 0
+				},
+				to: {
+					hour: 18,
+					minute: 0
+				}
+			}
+		})
+
+		await OptionModel.deleteOne({ _id: option._id })
+
+		const updatedProduct = await ProductModel.findById(product._id)
+		expect(updatedProduct?.options).to.be.empty
 	})
 })
