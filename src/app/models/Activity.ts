@@ -40,6 +40,12 @@ activitySchema.path('name').validate(async function (v: string) {
 	return foundActivityWithName === null || foundActivityWithName === undefined
 }, 'Navnet er allerede i brug')
 
+activitySchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
+	if (v === null || v === undefined) return true
+	const foundRoom = await RoomModel.findOne({ _id: v })
+	return foundRoom !== null && foundRoom !== undefined
+}, 'Rummet findes ikke')
+
 // Pre-save middleware
 activitySchema.pre('save', async function (next) {
 	logger.silly('Saving activity')
