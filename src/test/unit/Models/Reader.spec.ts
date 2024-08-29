@@ -14,6 +14,7 @@ import ReaderModel from '../../../app/models/Reader.js'
 
 // Setup test environment
 import '../../testSetup.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 
 describe('Reader Model', function () {
 	it('should create a valid reader', async function () {
@@ -110,5 +111,19 @@ describe('Reader Model', function () {
 		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
 		await reader.generateNewReaderTag()
 		expect(reader.readerTag).to.match(/^[0-9]+$/)
+	})
+
+	it('should remove the reader from any kiosks when deleted', async function () {
+		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const kiosk = await KioskModel.create({
+			name: 'Test Kiosk',
+			readerId: reader.id,
+			password: 'Test Password'
+		})
+
+		await ReaderModel.deleteOne({ _id: reader.id })
+
+		const updatedKiosk = await KioskModel.findById(kiosk.id)
+		expect(updatedKiosk?.readerId).to.be.undefined
 	})
 })

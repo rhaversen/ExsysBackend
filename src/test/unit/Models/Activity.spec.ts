@@ -15,6 +15,8 @@ import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
 // Setup test environment
 import '../../testSetup.js'
+import KioskModel from '../../../app/models/Kiosk.js'
+import mongoose from 'mongoose'
 
 describe('Activity Model', function () {
 	let testRoom: IRoom
@@ -78,12 +80,34 @@ describe('Activity Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should not create an activity without a roomId', async function () {
+	it('should create an activity without a roomId', async function () {
+		const activity = await ActivityModel.create({
+			...testActivityField,
+			roomId: undefined
+		})
+		expect(activity).to.exist
+	})
+
+	it('should remove the activity from any kiosks when deleted', async function () {
+		const activity = await ActivityModel.create(testActivityField)
+		const kiosk = await KioskModel.create({
+			name: 'TestKiosk',
+			activities: [activity._id],
+			password: 'TestPassword'
+		})
+
+		await ActivityModel.deleteOne({ _id: activity._id })
+
+		const updatedKiosk = await KioskModel.findById(kiosk._id)
+		expect(updatedKiosk?.activities).to.be.empty
+	})
+
+	it('should not create an activity with a non-existing roomId', async function () {
 		let errorOccurred = false
 		try {
 			await ActivityModel.create({
 				...testActivityField,
-				roomId: undefined
+				roomId: new mongoose.Types.ObjectId().toString()
 			})
 		} catch (err) {
 			// The promise was rejected as expected

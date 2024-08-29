@@ -6,6 +6,7 @@ import { customAlphabet } from 'nanoid'
 
 // Own modules
 import logger from '../utils/logger.js'
+import KioskModel from './Kiosk.js'
 
 // Nanoid setup
 const nanoidAlphabet = '123465789'
@@ -65,12 +66,34 @@ readerSchema.path('apiReferenceId').validate(async function (v: string) {
 }, 'ApiReferenceId er allerede i brug')
 
 // Pre-save middleware
-// Pre-save middleware
 readerSchema.pre('save', async function (next) {
 	logger.silly('Saving reader')
 	if (this.readerTag === undefined) {
 		// Set default value to accessToken
 		this.readerTag = await generateUniqueReaderTag()
+	}
+	next()
+})
+
+// Pre-delete middleware
+readerSchema.pre(['deleteOne', 'findOneAndDelete'], async function (next) {
+	const doc = await ReaderModel.findOne(this.getQuery())
+	if (doc !== null && doc !== undefined) {
+		logger.silly('Removing reader from kiosks with ID:', doc._id)
+		// Set readerId to undefined
+		await KioskModel.updateMany({ readerId: doc._id }, { $unset: { readerId: '' } })
+	}
+	next()
+})
+
+// Pre-delete-many middleware
+readerSchema.pre('deleteMany', async function (next) {
+	const docs = await ReaderModel.find(this.getQuery())
+	const docIds = docs.map(doc => doc._id)
+	if (docIds.length > 0) {
+		logger.silly('Removing reader from kiosks with IDs:', docIds)
+		// Set readerId to undefined
+		await KioskModel.updateMany({ readerId: { $in: docIds } }, { $unset: { readerId: '' } })
 	}
 	next()
 })
