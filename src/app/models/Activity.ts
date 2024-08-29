@@ -10,7 +10,7 @@ import KioskModel from './Kiosk.js'
 export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	roomId: Schema.Types.ObjectId | null // Where the activity is dining
+	roomId: Schema.Types.ObjectId | undefined // Where the activity is dining
 	name: string
 
 	// Timestamps
