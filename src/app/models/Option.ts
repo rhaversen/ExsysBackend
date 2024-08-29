@@ -5,6 +5,7 @@ import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
+import ProductModel from './Product.js'
 
 // Destructuring and global variables
 
@@ -50,6 +51,27 @@ const optionSchema = new Schema<IOption>({
 // Pre-save middleware
 optionSchema.pre('save', function (next) {
 	logger.silly('Saving option')
+	next()
+})
+
+// Pre-delete middleware
+optionSchema.pre(['deleteOne', 'findOneAndDelete'], async function (next) {
+	const doc = await OptionModel.findOne(this.getQuery())
+	if (doc !== null && doc !== undefined) {
+		logger.silly('Removing options from products with ID:', doc._id)
+		await ProductModel.updateMany({ options: doc._id }, { $pull: { options: doc._id } })
+	}
+	next()
+})
+
+// Pre-delete-many middleware
+optionSchema.pre('deleteMany', async function (next) {
+	const docs = await OptionModel.find(this.getQuery())
+	const docIds = docs.map(doc => doc._id)
+	if (docIds.length > 0) {
+		logger.silly('Removing options from products with IDs:', docIds)
+		await ProductModel.updateMany({ options: { $in: docIds } }, { $pull: { options: { $in: docIds } } })
+	}
 	next()
 })
 

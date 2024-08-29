@@ -218,6 +218,52 @@ describe('Order Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
+	it('should not create an order with a valid product and a non-existent product', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				products: [
+					{
+						id: testProduct._id,
+						quantity: 1
+					},
+					{
+						id: new Types.ObjectId(),
+						quantity: 1
+					}
+				]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not create an order with a valid option and a non-existent option', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				options: [
+					{
+						id: testOption._id,
+						quantity: 1
+					},
+					{
+						id: new Types.ObjectId(),
+						quantity: 1
+					}
+				]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
 	it('should require that products are unique', async function () {
 		let errorOccurred = false
 		try {
@@ -440,6 +486,7 @@ describe('Order Model', function () {
 	describe('Order Window Validation', function () {
 		let testProductBeforeLunch: IProduct
 		let testProductAfterLunch: IProduct
+		let testProductAcrossMidnight: IProduct
 
 		beforeEach(async function () {
 			sinon.restore() // Restore the JavaScript environment's time
@@ -470,6 +517,21 @@ describe('Order Model', function () {
 					to: {
 						hour: 23,
 						minute: 59
+					}
+				}
+			})
+
+			testProductAcrossMidnight = await ProductModel.create({
+				name: 'Across Midnight',
+				price: 100,
+				orderWindow: {
+					from: {
+						hour: 20,
+						minute: 0
+					},
+					to: {
+						hour: 4,
+						minute: 0
 					}
 				}
 			})
@@ -575,6 +637,93 @@ describe('Order Model', function () {
 				}]
 			})
 			expect(order).to.exist
+		})
+
+		it('should allow products to be ordered at the exact start of the order window', async function () {
+			// Set the fake time to a specific date and time that is at the exact start of the order window
+			const fakeTime = new Date('2024-04-21T12:00:00Z').getTime()
+			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
+			const order = await OrderModel.create({
+				...testOrderFields,
+				products: [{
+					id: testProductAfterLunch._id,
+					quantity: 1
+				}]
+			})
+			expect(order).to.exist
+		})
+
+		it('should allow products to be ordered at the exact end of the order window', async function () {
+			// Set the fake time to a specific date and time that is at the exact end of the order window
+			const fakeTime = new Date('2024-04-21T12:00:00Z').getTime()
+			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
+			const order = await OrderModel.create({
+				...testOrderFields,
+				products: [{
+					id: testProductBeforeLunch._id,
+					quantity: 1
+				}]
+			})
+			expect(order).to.exist
+		})
+
+		it('should allow products to be ordered inside the order window before midnight when the order window is moves across midnight', async function () {
+			// Set the fake time to a specific date and time that is before lunch
+			const fakeTime = new Date('2024-04-21T21:00:00Z').getTime()
+			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
+			const order = await OrderModel.create({
+				...testOrderFields,
+				products: [{
+					id: testProductAcrossMidnight._id,
+					quantity: 1
+				}]
+			})
+			expect(order).to.exist
+		})
+
+		it('should allow products to be ordered inside the order window after midnight when the order window moves across midnight', async function () {
+			// Set the fake time to a specific date and time that is after lunch
+			const fakeTime = new Date('2024-04-21T03:00:00Z').getTime()
+			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
+			const order = await OrderModel.create({
+				...testOrderFields,
+				products: [{
+					id: testProductAcrossMidnight._id,
+					quantity: 1
+				}]
+			})
+			expect(order).to.exist
+		})
+
+		it('should not allow products to be ordered when only one is withing the order window', async function () {
+			// Set the fake time to a specific date and time that is after lunch
+			const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
+			let errorOccurred = false
+			try {
+				await OrderModel.create({
+					...testOrderFields,
+					products: [
+						{
+							id: testProductBeforeLunch._id,
+							quantity: 1
+						},
+						{
+							id: testProductAfterLunch._id,
+							quantity: 1
+						}
+					]
+				})
+			} catch (err) {
+				// The promise was rejected as expected
+				errorOccurred = true
+			}
+			expect(errorOccurred).to.be.true
 		})
 	})
 })
