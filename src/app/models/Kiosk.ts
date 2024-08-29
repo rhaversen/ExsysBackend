@@ -29,7 +29,7 @@ export interface IKiosk extends Document {
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] // Activities the kiosk is responsible for
-	readerId: Schema.Types.ObjectId // The pay station the kiosk is connected to
+	readerId: Schema.Types.ObjectId | null // The pay station the kiosk is connected to
 
 	// Timestamps
 	createdAt: Date
@@ -89,9 +89,7 @@ kioskSchema.path('kioskTag').validate(function (v: string) {
 }, 'KioskTag kan kun indeholde tal')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
-	if (v === undefined || v === null) {
-		return true
-	}
+	if (v === undefined || v === null) return true
 	const foundReader = await ReaderModel.findOne({ _id: v })
 	return foundReader !== null && foundReader !== undefined
 }, 'Kortlæseren findes ikke')
@@ -107,7 +105,7 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 }, 'En eller flere aktiviteter findes ikke')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
-	// Check if reader has been assigned to another kiosk
+	if (v === undefined || v === null) return true
 	const foundKioskWithReader = await KioskModel.findOne({ readerId: v, _id: { $ne: this._id } })
 	return foundKioskWithReader === null || foundKioskWithReader === undefined
 }, 'Kortlæser er allerede tildelt en kiosk')
