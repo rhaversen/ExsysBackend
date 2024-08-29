@@ -120,4 +120,16 @@ describe('Admin Model', function () {
 		expect(admin).to.exist
 		expect(admin.password).to.not.equal(testAdminFields.password)
 	})
+
+	it('should compare the password', async function () {
+		const admin = await AdminModel.create(testAdminFields)
+		expect(admin).to.exist
+		expect(await admin.comparePassword(testAdminFields.password)).to.be.true
+	})
+
+	it('should not compare the wrong password', async function () {
+		const admin = await AdminModel.create(testAdminFields)
+		expect(admin).to.exist
+		expect(await admin.comparePassword('wrongPassword')).to.be.false
+	})
 })
