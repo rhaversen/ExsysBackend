@@ -132,9 +132,19 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 	const from = product.orderWindow.from
 	const to = product.orderWindow.to
 
-	const isWithinHour = from.hour < nowHour && nowHour < to.hour
-	const isStartHour = nowHour === from.hour && nowMinute >= from.minute
-	const isEndHour = nowHour === to.hour && nowMinute <= to.minute
+	let isWithinHour, isStartHour, isEndHour
+
+	if (from.hour <= to.hour) {
+		// Time window does not cross midnight
+		isWithinHour = from.hour < nowHour && nowHour < to.hour
+		isStartHour = nowHour === from.hour && nowMinute >= from.minute
+		isEndHour = nowHour === to.hour && nowMinute <= to.minute
+	} else {
+		// Time window crosses midnight
+		isWithinHour = from.hour < nowHour || nowHour < to.hour
+		isStartHour = nowHour === from.hour && nowMinute >= from.minute
+		isEndHour = nowHour === to.hour && nowMinute <= to.minute
+	}
 
 	return isWithinHour || isStartHour || isEndHour
 }, 'Bestillingen er uden for bestillingsvinduet')
