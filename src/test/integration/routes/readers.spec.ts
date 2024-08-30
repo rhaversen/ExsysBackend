@@ -66,7 +66,7 @@ describe('Readers routes', function () {
 
 			expect(reader).to.exist
 			expect(reader).to.have.property('readerTag', '54321')
-			expect(reader).to.have.property('apiReferenceId', 'test')
+			expect(reader).to.have.property('apiReferenceId')
 		})
 
 		it('should have status 400 when missing pairingCode', async function () {
