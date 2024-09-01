@@ -1,5 +1,11 @@
-import logger from '../utils/logger.js'
+// Node.js built-in modules
+
+// Third-party libraries
+import { nanoid } from 'nanoid'
 import axios from 'axios'
+
+// Own modules
+import logger from '../utils/logger.js'
 
 const SUMUP_API_KEY = process.env.SUMUP_API_KEY
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
@@ -8,7 +14,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	logger.silly('Creating reader checkout')
 
 	if (process.env.NODE_ENV === 'test') {
-		return 'test'
+		return nanoid() // Return a random string
 	}
 
 	try {
@@ -36,7 +42,7 @@ export async function pairReader (pairingCode: string): Promise<string | undefin
 	logger.silly('Pairing reader')
 
 	if (process.env.NODE_ENV === 'test') {
-		return 'test'
+		return nanoid() // Return a random string
 	}
 
 	try {

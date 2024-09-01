@@ -445,18 +445,19 @@ describe('Auth routes', function () {
 			})
 
 			/**
-			it('should remove the session from the database', async function () {
+			it('should remove the passport.user from the session JSON in the database', async function () {
 				const sessionCollection = mongoose.connection.collection('sessions')
 
-				// Log the admin in to get a token
-				await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
+				const loginRes = await agent.post('/v1/auth/login-Admin-local').send(testAdminFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the admin out to remove the session
-				await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				const session = await sessionCollection.findOne({})
+				const sessionData = JSON.parse(session?.session as string)
 
-				expect(session).to.equal(null)
+				expect(sessionData.passport.user).to.not.exist
 			})
 			 */
 
@@ -467,12 +468,13 @@ describe('Auth routes', function () {
 				// Log the admin out to remove the session
 				const res = await agent.post('/v1/auth/logout-local')
 
-				// Check if the cookie header is defined and look for the 'connect.sid' cookie
-				// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-				const cookies = res.headers['set-cookie'] || []
+				// Check if the 'Set-Cookie' header is present and ensures the 'connect.sid' cookie is cleared
+				const cookies = res.headers['set-cookie'] ?? []
 				const sidCookie = cookies.find((cookie: string) => cookie.includes('connect.sid'))
 
-				expect(sidCookie).to.be.undefined
+				expect(sidCookie).to.exist
+				expect(sidCookie).to.include('connect.sid=;')
+				expect(sidCookie).to.include('Expires=')
 			})
 		})
 
@@ -493,43 +495,46 @@ describe('Auth routes', function () {
 
 			it('should have status 200', async function () {
 				// Log the kiosk in to get a token
-				await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the kiosk out to remove the session
-				const res = await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				expect(res).to.have.status(200)
 			})
 
 			/**
-			it('should remove the session from the database', async function () {
+			it('should remove the passport.user from the session JSON in the database', async function () {
 				const sessionCollection = mongoose.connection.collection('sessions')
 
-				// Log the kiosk in to get a token
-				await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the kiosk out to remove the session
-				await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				const session = await sessionCollection.findOne({})
+				const sessionData = JSON.parse(session?.session as string)
 
-				expect(session).to.equal(null)
+				expect(sessionData.passport.user).to.not.exist
 			})
 			 */
 
 			it('should remove the session cookie', async function () {
-				// Log the kiosk in to get a token
-				await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the kiosk out to remove the session
-				const res = await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
-				// Check if the cookie header is defined and look for the 'connect.sid' cookie
-				// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-				const cookies = res.headers['set-cookie'] || []
+				// Check if the 'Set-Cookie' header is present and ensures the 'connect.sid' cookie is cleared
+				const cookies = res.headers['set-cookie'] ?? []
 				const sidCookie = cookies.find((cookie: string) => cookie.includes('connect.sid'))
 
-				expect(sidCookie).to.be.undefined
+				expect(sidCookie).to.exist
+				expect(sidCookie).to.include('connect.sid=;')
+				expect(sidCookie).to.include('Expires=')
 			})
 		})
 	})
@@ -739,6 +744,278 @@ describe('Auth routes', function () {
 
 			// Validate the authenticated response
 			expect(res).to.have.status(401)
+		})
+	})
+
+	describe('GET /v1/auth/is-admin', function () {
+		describe('with Admin', function () {
+			let testAdmin: IAdmin
+
+			const testAdminFields = {
+				name: 'TestAdmin',
+				password: 'testPassword'
+			}
+
+			beforeEach(async function () {
+				testAdmin = new AdminModel(testAdminFields)
+				await testAdmin.save()
+			})
+
+			it('should return 200 with a valid session', async function () {
+				// Log the admin in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Use the session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-admin').set('Cookie', sessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(200)
+			})
+
+			it('should return 403 without a valid session', async function () {
+				// Send the request without a session cookie
+				const res = await agent.get('/v1/auth/is-admin')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with an invalid session', async function () {
+				// Send the request with an invalid session cookie
+				const res = await agent.get('/v1/auth/is-admin').set('Cookie', 'connect.sid=invalidSession')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with a session that has been tampered with', async function () {
+				// Log the admin in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Tamper with the session cookie
+				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
+
+				// Use the tampered session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-admin').set('Cookie', tamperedSessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
+		})
+
+		describe('with Kiosk', function () {
+			let testKiosk: IKiosk
+
+			const testKioskFields = {
+				name: 'TestKiosk',
+				kioskTag: '12345',
+				password: 'testPassword'
+			}
+
+			beforeEach(async function () {
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+				await testKiosk.save()
+			})
+
+			it('should return 403 with a valid session', async function () {
+				// Log the kiosk in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Use the session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-admin').set('Cookie', sessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 without a valid session', async function () {
+				// Send the request without a session cookie
+				const res = await agent.get('/v1/auth/is-admin')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with an invalid session', async function () {
+				// Send the request with an invalid session cookie
+				const res = await agent.get('/v1/auth/is-admin').set('Cookie', 'connect.sid=invalidSession')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with a session that has been tampered with', async function () {
+				// Log the kiosk in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Tamper with the session cookie
+				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
+
+				// Use the tampered session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-admin').set('Cookie', tamperedSessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
+		})
+	})
+
+	describe('GET /v1/auth/is-kiosk', function () {
+		describe('with Admin', function () {
+			let testAdmin: IAdmin
+
+			const testAdminFields = {
+				name: 'TestAdmin',
+				password: 'testPassword'
+			}
+
+			beforeEach(async function () {
+				testAdmin = new AdminModel(testAdminFields)
+				await testAdmin.save()
+			})
+
+			it('should return 403 with a valid session', async function () {
+				// Log the admin in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Use the session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', sessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 without a valid session', async function () {
+				// Send the request without a session cookie
+				const res = await agent.get('/v1/auth/is-kiosk')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with an invalid session', async function () {
+				// Send the request with an invalid session cookie
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', 'connect.sid=invalidSession')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with a session that has been tampered with', async function () {
+				// Log the admin in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Tamper with the session cookie
+				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
+
+				// Use the tampered session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', tamperedSessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
+		})
+
+		describe('with Kiosk', function () {
+			let testKiosk: IKiosk
+
+			const testKioskFields = {
+				name: 'TestKiosk',
+				kioskTag: '12345',
+				password: 'testPassword'
+			}
+
+			beforeEach(async function () {
+				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+				await testKiosk.save()
+			})
+
+			it('should return 200 with a valid session', async function () {
+				// Log the kiosk in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Use the session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', sessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(200)
+			})
+
+			it('should return 403 without a valid session', async function () {
+				// Send the request without a session cookie
+				const res = await agent.get('/v1/auth/is-kiosk')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with an invalid session', async function () {
+				// Send the request with an invalid session cookie
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', 'connect.sid=invalidSession')
+
+				// Validate the response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with a session that has been tampered with', async function () {
+				// Log the kiosk in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Tamper with the session cookie
+				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
+
+				// Use the tampered session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', tamperedSessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
+
+			it('should return 403 with an expired session', async function () {
+				// Fake time with sinon
+				const clock = sinon.useFakeTimers(new Date('2024-01-01'))
+
+				// Log the kiosk in to get a session cookie
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+
+				// Move the clock past the session expiry
+				clock.tick(sessionExpiry + 1000)
+
+				// Extract the session cookie directly
+				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+
+				// Use the session cookie in the authenticated request
+				const res = await agent.get('/v1/auth/is-kiosk').set('Cookie', sessionCookie)
+
+				// Validate the authenticated response
+				expect(res).to.have.status(403)
+			})
 		})
 	})
 })
