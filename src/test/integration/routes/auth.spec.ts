@@ -494,10 +494,11 @@ describe('Auth routes', function () {
 
 			it('should have status 200', async function () {
 				// Log the kiosk in to get a token
-				await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the kiosk out to remove the session
-				const res = await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				expect(res).to.have.status(200)
 			})
