@@ -467,12 +467,13 @@ describe('Auth routes', function () {
 				// Log the admin out to remove the session
 				const res = await agent.post('/v1/auth/logout-local')
 
-				// Check if the cookie header is defined and look for the 'connect.sid' cookie
-				// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-				const cookies = res.headers['set-cookie'] || []
+				// Check if the 'Set-Cookie' header is present and ensures the 'connect.sid' cookie is cleared
+				const cookies = res.headers['set-cookie'] ?? []
 				const sidCookie = cookies.find((cookie: string) => cookie.includes('connect.sid'))
 
-				expect(sidCookie).to.be.undefined
+				expect(sidCookie).to.exist
+				expect(sidCookie).to.include('connect.sid=;')
+				expect(sidCookie).to.include('Expires=')
 			})
 		})
 
@@ -518,18 +519,19 @@ describe('Auth routes', function () {
 			 */
 
 			it('should remove the session cookie', async function () {
-				// Log the kiosk in to get a token
-				await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the kiosk out to remove the session
-				const res = await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
-				// Check if the cookie header is defined and look for the 'connect.sid' cookie
-				// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-				const cookies = res.headers['set-cookie'] || []
+				// Check if the 'Set-Cookie' header is present and ensures the 'connect.sid' cookie is cleared
+				const cookies = res.headers['set-cookie'] ?? []
 				const sidCookie = cookies.find((cookie: string) => cookie.includes('connect.sid'))
 
-				expect(sidCookie).to.be.undefined
+				expect(sidCookie).to.exist
+				expect(sidCookie).to.include('connect.sid=;')
+				expect(sidCookie).to.include('Expires=')
 			})
 		})
 	})
