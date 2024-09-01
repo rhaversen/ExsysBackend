@@ -95,6 +95,7 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 				next(sessionErr)
 				return
 			}
+			res.clearCookie('connect.sid')
 			res.status(200).json({ message: 'Succesfuldt logget ud' })
 		})
 	})
