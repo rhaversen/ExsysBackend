@@ -8,6 +8,7 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Controller functions
 import { ensureAuthenticated, loginAdminLocal, loginKioskLocal, logoutLocal } from '../controllers/authController.js'
+import { isAdmin, isKiosk } from '../middleware/authorization.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -59,6 +60,33 @@ router.post('/logout-local',
  */
 router.get('/is-authenticated',
 	ensureAuthenticated,
+	(req, res) => {
+		res.status(200).send()
+	}
+)
+
+/**
+ * @route GET api/v1/auth/is-admin
+ * @desc Check if user is an admin
+ * @access Private
+ * @return {number} res.status The status code of the HTTP response.
+ */
+router.get('/is-admin',
+	isAdmin,
+	(req, res) => {
+		res.status(200).send()
+	}
+)
+
+/**
+ * @route GET api/v1/auth/is-kiosk
+ * @desc Check if user is a kiosk
+ * @access Private
+ * @return {number} res.status The status code of the HTTP response.
+ * @return {object} res.body The kiosk object.
+ */
+router.get('/is-kiosk',
+	isKiosk,
 	(req, res) => {
 		res.status(200).send()
 	}
