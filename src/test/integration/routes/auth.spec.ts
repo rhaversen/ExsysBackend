@@ -445,18 +445,19 @@ describe('Auth routes', function () {
 			})
 
 			/**
-			it('should remove the session from the database', async function () {
+			it('should remove the passport.user from the session JSON in the database', async function () {
 				const sessionCollection = mongoose.connection.collection('sessions')
 
-				// Log the admin in to get a token
-				await agent.post('/v1/auth/login-admin-local').send(testAdminFields)
+				const loginRes = await agent.post('/v1/auth/login-Admin-local').send(testAdminFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the admin out to remove the session
-				await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				const session = await sessionCollection.findOne({})
+				const sessionData = JSON.parse(session?.session as string)
 
-				expect(session).to.equal(null)
+				expect(sessionData.passport.user).to.not.exist
 			})
 			 */
 
@@ -504,18 +505,19 @@ describe('Auth routes', function () {
 			})
 
 			/**
-			it('should remove the session from the database', async function () {
+			it('should remove the passport.user from the session JSON in the database', async function () {
 				const sessionCollection = mongoose.connection.collection('sessions')
 
-				// Log the kiosk in to get a token
-				await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const loginRes = await agent.post('/v1/auth/login-kiosk-local').send(testKioskFields)
+				const sessionCookie = loginRes.headers['set-cookie'] as string
 
 				// Log the kiosk out to remove the session
-				await agent.post('/v1/auth/logout-local')
+				const res = await agent.post('/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				const session = await sessionCollection.findOne({})
+				const sessionData = JSON.parse(session?.session as string)
 
-				expect(session).to.equal(null)
+				expect(sessionData.passport.user).to.not.exist
 			})
 			 */
 
