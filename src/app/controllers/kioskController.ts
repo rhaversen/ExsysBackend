@@ -21,7 +21,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
-		const newKiosk = await (await KioskModel.create(allowedFields)).populate('activities')
+		const newKiosk = await (await (await KioskModel.create(allowedFields)).populate('activities')).populate('readerId')
 		res.status(201).json({
 			_id: newKiosk._id,
 			name: newKiosk.name,
@@ -51,7 +51,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 			return
 		}
 
-		await kiosk.populate('activities')
+		await (await kiosk.populate('activities')).populate('readerId')
 
 		res.status(200).json({
 			_id: kiosk._id,
@@ -75,7 +75,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 	logger.silly('Getting kiosk')
 
 	try {
-		const kiosk = await KioskModel.findById(req.params.id).populate('activities')
+		const kiosk = await KioskModel.findById(req.params.id).populate('activities').populate('readerId')
 
 		if (kiosk === null || kiosk === undefined) {
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
@@ -104,7 +104,7 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 	logger.silly('Getting kiosks')
 
 	try {
-		const kiosks = await KioskModel.find({}).populate('activities')
+		const kiosks = await KioskModel.find({}).populate('activities').populate('readerId')
 		res.status(200).json(
 			kiosks.map(kiosk => ({
 				_id: kiosk._id,
@@ -150,7 +150,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		await kiosk.validate()
 		await kiosk.save({ session })
 
-		await kiosk.populate('activities')
+		await (await kiosk.populate('activities')).populate('readerId')
 
 		await session.commitTransaction()
 		res.status(200).json({

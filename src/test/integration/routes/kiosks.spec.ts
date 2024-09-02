@@ -83,7 +83,11 @@ describe('Kiosks routes', function () {
 				const response = await agent.post('/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
 
 				expect(response.body).to.have.property('name', testKioskFields.name)
-				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(response.body).to.have.property('kioskTag')
+				expect(response.body).to.have.property('readerId').that.is.an('object')
+				expect(response.body.readerId).to.have.property('_id', testKioskFields.readerId)
+				expect(response.body.readerId).to.have.property('readerTag', '12345')
+				expect(response.body).to.have.property('activities').that.is.an('array').that.is.empty
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
@@ -177,6 +181,7 @@ describe('Kiosks routes', function () {
 				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
 				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
 				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
+				expect(response.body.readerId).to.have.property('_id', testKioskFields.readerId)
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
@@ -276,9 +281,11 @@ describe('Kiosks routes', function () {
 
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(response.body).to.have.property('activities')
 				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
 				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
 				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
+				expect(response.body.readerId).to.have.property('_id', testKioskFields.readerId)
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
@@ -368,6 +375,12 @@ describe('Kiosks routes', function () {
 
 			expect(response.body.activities[0]).to.have.property('name', 'Activity 1')
 			expect(response.body.activities[1]).to.have.property('name', 'Activity 2')
+		})
+
+		it('should populate the reader', async function () {
+			const response = await agent.get(`/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
+
+			expect(response.body.readerId).to.have.property('readerTag', '12345')
 		})
 
 		it('should return 404 if the kiosk does not exist', async function () {
@@ -475,6 +488,13 @@ describe('Kiosks routes', function () {
 			expect(response.body[0].activities[0]).to.have.property('name', 'Activity 1')
 			expect(response.body[0].activities[1]).to.have.property('name', 'Activity 2')
 			expect(response.body[1].activities[0]).to.have.property('name', 'Activity 1')
+		})
+
+		it('should populate the reader', async function () {
+			const response = await agent.get('/v1/kiosks').set('Cookie', sessionCookie)
+
+			expect(response.body[0].readerId).to.have.property('readerTag', '12345')
+			expect(response.body[1].readerId).to.have.property('readerTag', '54321')
 		})
 	})
 
@@ -613,6 +633,16 @@ describe('Kiosks routes', function () {
 			expect(response.body.activities[0]).to.have.property('name', 'Activity 2')
 		})
 
+		it('should populate the reader', async function () {
+			const updatedFields = {
+				readerId: testKioskFields1.readerId
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(response.body.readerId).to.have.property('readerTag', '12345')
+		})
+
 		it('should allow a partial update', async function () {
 			const updatedFields = {
 				kioskTag: '45678'
@@ -648,9 +678,10 @@ describe('Kiosks routes', function () {
 
 			const kiosk = await KioskModel.findById(testKiosk1.id)
 
-			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
 			const populatedKiosk = await kiosk?.populate('activities')
 			expect(populatedKiosk?.activities[0]).to.have.property('id', updatedFields.activities[0])
+			expect(kiosk).to.have.property('name', testKioskFields1.name)
+			expect(kiosk).to.have.property('readerId').that.is.not.null
 		})
 
 		it('should not update other kiosks', async function () {
