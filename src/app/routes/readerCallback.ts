@@ -18,7 +18,7 @@ const router = Router()
  * @access Public
  * @param {string} req.body.payload.client_transaction_id - The ID of the transaction.
  * @param {string} req.body.payload.status - The status of the transaction.
-*/
+ */
 router.post('/',
 	asyncErrorHandler(updatePaymentStatus)
 )

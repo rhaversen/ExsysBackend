@@ -47,7 +47,10 @@ describe('Kiosk Model', function () {
 			roomId: testRoom._id
 		})
 
-		const testReader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '12345' })
+		const testReader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '12345'
+		})
 
 		testKioskField = {
 			name: 'Test Kiosk',
@@ -210,7 +213,10 @@ describe('Kiosk Model', function () {
 
 	it('should not save a kiosk with a reader that is used by another kiosk', async function () {
 		let errorOccurred = false
-		const reader = await ReaderModel.create({ apiReferenceId: '12346', readerTag: '12346' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12346',
+			readerTag: '12346'
+		})
 		await KioskModel.create({
 			readerId: reader.id,
 			name: 'Test Kiosk 2',
@@ -257,7 +263,10 @@ describe('Kiosk Model', function () {
 	})
 
 	it('should generate a kiosk tag by default', async function () {
-		const kiosk = await KioskModel.create({ ...testKioskField, kioskTag: undefined })
+		const kiosk = await KioskModel.create({
+			...testKioskField,
+			kioskTag: undefined
+		})
 		expect(kiosk.kioskTag).to.exist
 	})
 

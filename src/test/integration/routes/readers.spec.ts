@@ -31,24 +31,35 @@ describe('Readers routes', function () {
 
 	describe('POST /v1/readers', function () {
 		it('should have status 201 when creating a reader', async function () {
-			const response = await agent.post('/v1/readers').set('Cookie', sessionCookie).send({ pairingCode: '12345', readerTag: '54321' })
+			const response = await agent.post('/v1/readers').set('Cookie', sessionCookie).send({
+				pairingCode: '12345',
+				readerTag: '54321'
+			})
 
 			expect(response.status).to.equal(201)
 		})
 
 		it('should have status 403 when not logged in', async function () {
-			const response = await agent.post('/v1/readers').send({ pairingCode: '12345', readerTag: '54321' })
+			const response = await agent.post('/v1/readers').send({
+				pairingCode: '12345',
+				readerTag: '54321'
+			})
 
 			expect(response.status).to.equal(403)
 		})
 
 		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/readers').send({ pairingCode: '12345', readerTag: '54321' }).set('Cookie', sessionCookie)
+			const response = await agent.post('/v1/readers').send({
+				pairingCode: '12345',
+				readerTag: '54321'
+			}).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
 
 			expect(response.status).to.equal(201)
 			expect(response.body).to.have.property('readerTag', '54321')
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
 			expect(response.body).to.have.property('_id', reader?._id.toString())
 		})
 
@@ -60,13 +71,18 @@ describe('Readers routes', function () {
 		})
 
 		it('should create a new reader', async function () {
-			await agent.post('/v1/readers').send({ pairingCode: '12345', readerTag: '54321' }).set('Cookie', sessionCookie)
+			await agent.post('/v1/readers').send({
+				pairingCode: '12345',
+				readerTag: '54321'
+			}).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
 
 			expect(reader).to.exist
 			expect(reader).to.have.property('readerTag', '54321')
 			expect(reader).to.have.property('apiReferenceId')
+			expect(reader).to.have.property('createdAt')
+			expect(reader).to.have.property('updatedAt')
 		})
 
 		it('should have status 400 when missing pairingCode', async function () {
@@ -118,12 +134,18 @@ describe('Readers routes', function () {
 		})
 
 		it('should return an array of readers', async function () {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.lengthOf(1)
 			expect(response.body[0]).to.have.property('readerTag', '54321')
+			expect(response.body[0]).to.have.property('createdAt')
+			expect(response.body[0]).to.have.property('updatedAt')
+			expect(response.body[0]).to.have.property('_id')
 		})
 
 		it('should return an empty array when no readers exist', async function () {
@@ -133,19 +155,31 @@ describe('Readers routes', function () {
 		})
 
 		it('should return multiple readers', async function () {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '23456' })
-			await ReaderModel.create({ apiReferenceId: '34567', readerTag: '45678' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '23456'
+			})
+			await ReaderModel.create({
+				apiReferenceId: '34567',
+				readerTag: '45678'
+			})
 
 			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body.map((reader: any) => reader.readerTag)).to.have.members(['23456', '45678'])
+			expect(response.body.map((reader: any) => reader.createdAt)).to.have.lengthOf(2)
+			expect(response.body.map((reader: any) => reader.updatedAt)).to.have.lengthOf(2)
+			expect(response.body.map((reader: any) => reader._id)).to.have.lengthOf(2)
 		})
 	})
 
 	describe('PATCH /v1/readers/:id', function () {
 		it('should have status 200 when updating a reader', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
@@ -153,7 +187,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 403 when not logged in', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' })
 
@@ -161,15 +198,24 @@ describe('Readers routes', function () {
 		})
 
 		it('should return the updated object', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('readerTag', '65432')
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id', reader.id.toString())
 		})
 
 		it('should update the reader', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
@@ -185,7 +231,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should not update the reader when the reader does not exist', async function () {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 			await agent.patch('/v1/readers/123456789012345678901234').send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
@@ -196,7 +245,10 @@ describe('Readers routes', function () {
 
 	describe('DELETE /v1/readers/:id', function () {
 		it('should have status 204 when deleting a reader', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.delete(`/v1/readers/${reader.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
@@ -204,7 +256,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 403 when not logged in', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.delete(`/v1/readers/${reader.id}`).send({ confirm: true })
 
@@ -212,7 +267,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should delete the reader', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			await agent.delete(`/v1/readers/${reader.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
@@ -222,7 +280,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 404 when the reader does not exist', async function () {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.delete('/v1/readers/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
 
@@ -230,7 +291,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should not delete the reader when the reader does not exist', async function () {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			await agent.delete('/v1/readers/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
 
@@ -240,7 +304,10 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 400 when missing confirm', async function () {
-			const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+			const reader = await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
 
 			const response = await agent.delete(`/v1/readers/${reader.id}`).set('Cookie', sessionCookie)
 

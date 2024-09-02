@@ -48,7 +48,10 @@ const readerSchema = new Schema<IReader>({
 
 // Validations
 readerSchema.path('readerTag').validate(async function (v: string) {
-	const foundReaderWithTag = await ReaderModel.findOne({ readerTag: v, _id: { $ne: this._id } })
+	const foundReaderWithTag = await ReaderModel.findOne({
+		readerTag: v,
+		_id: { $ne: this._id }
+	})
 	return foundReaderWithTag === null || foundReaderWithTag === undefined
 }, 'Kortlæser tag er allerede i brug')
 
@@ -61,7 +64,10 @@ readerSchema.path('readerTag').validate(function (v: string) {
 }, 'Kortlæser tag kan kun indeholde tal')
 
 readerSchema.path('apiReferenceId').validate(async function (v: string) {
-	const foundReaderWithApiReferenceId = await ReaderModel.findOne({ apiReferenceId: v, _id: { $ne: this._id } })
+	const foundReaderWithApiReferenceId = await ReaderModel.findOne({
+		apiReferenceId: v,
+		_id: { $ne: this._id }
+	})
 	return foundReaderWithApiReferenceId === null || foundReaderWithApiReferenceId === undefined
 }, 'ApiReferenceId er allerede i brug')
 

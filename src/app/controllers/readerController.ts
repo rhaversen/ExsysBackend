@@ -35,7 +35,12 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 			apiReferenceId,
 			readerTag
 		})
-		res.status(201).json({ readerTag: newReader.readerTag, _id: newReader._id })
+		res.status(201).json({
+			_id: newReader._id,
+			readerTag: newReader.readerTag,
+			createdAt: newReader.createdAt,
+			updatedAt: newReader.updatedAt
+		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
