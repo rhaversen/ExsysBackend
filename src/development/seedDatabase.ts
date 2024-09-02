@@ -589,6 +589,9 @@ await ActivityModel.create({
 	roomId: room5.id,
 	name: 'Cooking'
 })
+await ActivityModel.create({
+	name: 'No Room'
+})
 
 // Activities with custom timestamps
 // Created today
@@ -784,6 +787,11 @@ await KioskModel.create({
 	name: 'Kiosk without activities',
 	readerId: reader3.id,
 	kioskTag: '33333',
+	password: 'password'
+})
+await KioskModel.create({
+	name: 'Kiosk without reader',
+	kioskTag: '44444',
 	password: 'password'
 })
 
