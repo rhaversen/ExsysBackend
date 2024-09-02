@@ -181,6 +181,12 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
 			})
+
+			it('should not return the password', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
+
+				expect(response.body).to.not.have.property('password')
+			})
 		})
 
 		describe('All fields', function () {
@@ -276,6 +282,12 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
+			})
+
+			it('should not return the password', async function () {
+				const response = await agent.post('/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
+
+				expect(response.body).to.not.have.property('password')
 			})
 		})
 	})
@@ -577,6 +589,17 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.property('createdAt')
 			expect(response.body).to.have.property('updatedAt')
 			expect(response.body).to.have.property('_id')
+		})
+
+		it('should not return the password', async function () {
+			const updatedFields = {
+				kioskTag: '45678',
+				activities: [testActivity2.id.toString()]
+			}
+
+			const response = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(response.body).to.not.have.property('password')
 		})
 
 		it('should populate the activities', async function () {
