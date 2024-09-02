@@ -1086,6 +1086,24 @@ describe('Orders routes', function () {
 				})
 			})
 
+			it('should have status 200', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res).to.have.status(200)
+			})
+
+			it('should have status 403 if not logged in', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z')
+				expect(res).to.have.status(403)
+			})
+
+			it('should include timestamp and id in the response', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
+				expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
+				expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
+			})
+
 			it('should not include the paymentId in the response', async function () {
 				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
@@ -1195,6 +1213,60 @@ describe('Orders routes', function () {
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
 				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+			})
+		})
+
+		describe('GET /v1/orders/?fromDate&toDate&status&paymentStatus', function () {
+			beforeEach(async function () {
+				await OrderModel.findOneAndUpdate({
+					products: { $elemMatch: { id: testProduct1.id } },
+					options: { $elemMatch: { id: testOption.id } }
+				}, { status: 'delivered' })
+				await OrderModel.findOneAndUpdate({
+					products: { $elemMatch: { id: testProduct2.id } },
+					options: { $elemMatch: { id: testOption.id } }
+				}, { status: 'delivered' })
+				await OrderModel.create({
+					paymentId: testPayment1.id,
+					activityId: testActivity.id,
+					kioskId: testKiosk.id,
+					products: [{
+						id: testProduct3.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption.id,
+						quantity: 1
+					}],
+					status: 'pending'
+				})
+				await OrderModel.create({
+					paymentId: testPayment2.id,
+					activityId: testActivity.id,
+					kioskId: testKiosk.id,
+					products: [{
+						id: testProduct4.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption.id,
+						quantity: 1
+					}],
+					status: 'confirmed'
+				})
+			})
+
+			it('should return all orders with status delivered and paymentStatus successful', async function () {
+				const res = await agent.get('/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(1)
+				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			})
+
+			it('should return an empty array if there are no orders with status and paymentStatus', async function () {
+				const res = await agent.get('/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-25T00:00:00.000Z&toDate=2024-04-25T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(0)
 			})
 		})
 	})
