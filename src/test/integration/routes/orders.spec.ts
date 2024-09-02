@@ -1037,6 +1037,13 @@ describe('Orders routes', function () {
 				expect(res.body.length).to.equal(0)
 			})
 
+			it('should not include the paymentId in the response', async function () {
+				const res = await agent.get('/v1/orders/?status=delivered').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body[0].paymentId).to.not.exist
+				expect(res.body[1].paymentId).to.not.exist
+			})
+
 			it('should allow multiple statuses', async function () {
 				const res = await agent.get('/v1/orders/?status=delivered,pending').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
@@ -1077,6 +1084,13 @@ describe('Orders routes', function () {
 						quantity: 1
 					}]
 				})
+			})
+
+			it('should not include the paymentId in the response', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body[0].paymentId).to.not.exist
+				expect(res.body[1].paymentId).to.not.exist
 			})
 
 			it('should return an empty array if there are no orders in the interval', async function () {

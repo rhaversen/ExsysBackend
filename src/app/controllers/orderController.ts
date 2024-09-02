@@ -234,6 +234,11 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 			(order.paymentId?.paymentStatus !== null && paymentStatus.split(',').includes(order.paymentId.paymentStatus))
 		)
 
+		// Remove the paymentId from the response
+		filteredOrders?.forEach((order: any) => {
+			order.paymentId = undefined
+		})
+
 		res.status(200).json(filteredOrders)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
