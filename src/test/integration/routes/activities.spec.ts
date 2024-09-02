@@ -71,6 +71,8 @@ describe('Activities routes', function () {
 			expect(activity).to.have.property('name', testActivityFields1.name)
 			const populatedActivity = await activity?.populate('roomId')
 			expect(populatedActivity?.roomId).to.have.property('id', testActivityFields1.roomId)
+			expect(activity).to.have.property('createdAt')
+			expect(activity).to.have.property('updatedAt')
 		})
 
 		it('should return the newly created object', async function () {
@@ -79,6 +81,9 @@ describe('Activities routes', function () {
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testActivityFields1.name)
 			expect(response.body.roomId).to.exist
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should populate the roomId', async function () {
@@ -150,6 +155,9 @@ describe('Activities routes', function () {
 
 			expect(response.body).to.have.property('name', testActivityFields1.name)
 			expect(response.body).to.have.property('roomId')
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id', testActivity1.id)
 		})
 
 		it('should populate the roomId', async function () {
@@ -226,7 +234,12 @@ describe('Activities routes', function () {
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			expect(response.body.map((activity: {
+				roomId: IRoom
+			}) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			expect(response.body.map((activity: IActivity) => activity.createdAt)).to.have.lengthOf(2)
+			expect(response.body.map((activity: IActivity) => activity.updatedAt)).to.have.lengthOf(2)
+			expect(response.body.map((activity: IActivity) => activity._id)).to.have.lengthOf(2)
 		})
 
 		it('should populate the roomId', async function () {
@@ -234,10 +247,14 @@ describe('Activities routes', function () {
 
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			expect(response.body.map((activity: {
+				roomId: IRoom
+			}) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
 			const roomNames = response.body.map((activity: { roomId: { name: string } }) => activity.roomId.name)
 			expect(roomNames).to.have.members(['Room 1', 'Room 2'])
-			const roomDescriptions = response.body.map((activity: { roomId: { description: string } }) => activity.roomId.description)
+			const roomDescriptions = response.body.map((activity: {
+				roomId: { description: string }
+			}) => activity.roomId.description)
 			expect(roomDescriptions).to.have.members(['Description for Room 1', 'Description for Room 2'])
 		})
 	})
@@ -317,6 +334,22 @@ describe('Activities routes', function () {
 
 			expect(response.body).to.have.property('name', updatedFields.name)
 			expect(response.body).to.have.property('roomId')
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body.roomId).to.have.property('_id', updatedFields.roomId)
+		})
+
+		it('should unset the roomId when setting to null', async function () {
+			const updatedFields = {
+				name: 'Updated Activity 1',
+				roomId: null
+			}
+
+			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(response.body).to.have.property('roomId', null)
+			const activity = await ActivityModel.findById(testActivity1.id)
+			expect(activity).to.have.property('roomId', null)
 		})
 
 		it('should populate the roomId', async function () {

@@ -79,7 +79,10 @@ describe('Order Model', function () {
 			price: 50
 		})
 
-		const testReader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '12345' })
+		const testReader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '12345'
+		})
 
 		const testKiosk = await KioskModel.create({
 			name: 'Test Kiosk',

@@ -55,6 +55,8 @@ describe('Rooms routes', function () {
 			expect(room).to.exist
 			expect(room).to.have.property('name', testRoomFields1.name)
 			expect(room).to.have.property('description', testRoomFields1.description)
+			expect(room).to.have.property('createdAt')
+			expect(room).to.have.property('updatedAt')
 		})
 
 		it('should return the newly created object', async function () {
@@ -62,6 +64,9 @@ describe('Rooms routes', function () {
 
 			expect(response.body).to.have.property('name', testRoomFields1.name)
 			expect(response.body).to.have.property('description', testRoomFields1.description)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should not allow setting the _id', async function () {
@@ -111,6 +116,8 @@ describe('Rooms routes', function () {
 
 			expect(response.body).to.have.property('name', testRoomFields1.name)
 			expect(response.body).to.have.property('description', testRoomFields1.description)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
 		})
 
 		it('should return 404 if the room does not exist', async function () {
@@ -154,6 +161,10 @@ describe('Rooms routes', function () {
 			expect(response).to.have.status(200)
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
+			expect(response.body.map((room: IRoom) => room.name)).to.include.members([testRoomFields1.name, testRoomFields2.name])
+			expect(response.body.map((room: IRoom) => room.createdAt)).to.have.lengthOf(2)
+			expect(response.body.map((room: IRoom) => room.updatedAt)).to.have.lengthOf(2)
+			expect(response.body.map((room: IRoom) => room._id)).to.have.lengthOf(2)
 		})
 	})
 
@@ -208,6 +219,9 @@ describe('Rooms routes', function () {
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', updatedFields.name)
 			expect(response.body).to.have.property('description', updatedFields.description)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should allow updating name to current name', async function () {

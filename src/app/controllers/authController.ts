@@ -20,22 +20,34 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 	// Check if name and password are provided
 	if (req.body.name === undefined || req.body.password === undefined) {
-		res.status(400).json({ auth: false, error: 'Navn eller kodeord mangler' })
+		res.status(400).json({
+			auth: false,
+			error: 'Navn eller kodeord mangler'
+		})
 		return
 	}
 
 	passport.authenticate('admin-local', (err: Error, user: Express.User, info: { message: string }) => {
 		if (err !== null && err !== undefined) {
-			return res.status(500).json({ auth: false, error: err.message })
+			return res.status(500).json({
+				auth: false,
+				error: err.message
+			})
 		}
 
 		if (user === null || user === undefined || user === false) {
-			return res.status(401).json({ auth: false, error: info.message })
+			return res.status(401).json({
+				auth: false,
+				error: info.message
+			})
 		}
 
 		req.logIn(user, loginErr => {
 			if (loginErr !== null && loginErr !== undefined) {
-				return res.status(500).json({ auth: false, error: loginErr.message })
+				return res.status(500).json({
+					auth: false,
+					error: loginErr.message
+				})
 			}
 
 			// Set maxAge for persistent sessions if requested
@@ -44,7 +56,10 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 
 			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
-			return res.status(200).json({ auth: true, user })
+			return res.status(200).json({
+				auth: true,
+				user
+			})
 		})
 	})(req, res, next)
 }
@@ -54,29 +69,44 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 	// Check if kioskTag and password are provided
 	if (req.body.kioskTag === undefined || req.body.password === undefined) {
-		res.status(400).json({ auth: false, error: 'kioskTag eller kodeord mangler' })
+		res.status(400).json({
+			auth: false,
+			error: 'kioskTag eller kodeord mangler'
+		})
 		return
 	}
 
 	passport.authenticate('kiosk-local', (err: Error, user: Express.User, info: { message: string }) => {
 		if (err !== null && err !== undefined) {
-			return res.status(500).json({ auth: false, error: err.message })
+			return res.status(500).json({
+				auth: false,
+				error: err.message
+			})
 		}
 
 		if (user === null || user === undefined || user === false) {
-			return res.status(401).json({ auth: false, error: info.message })
+			return res.status(401).json({
+				auth: false,
+				error: info.message
+			})
 		}
 
 		req.logIn(user, loginErr => {
 			if (loginErr !== null && loginErr !== undefined) {
-				return res.status(500).json({ auth: false, error: loginErr.message })
+				return res.status(500).json({
+					auth: false,
+					error: loginErr.message
+				})
 			}
 
 			// Set maxAge for persistent sessions always
 			req.session.cookie.maxAge = sessionExpiry
 
 			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
-			return res.status(200).json({ auth: true, user })
+			return res.status(200).json({
+				auth: true,
+				user
+			})
 		})
 	})(req, res, next)
 }

@@ -8,7 +8,15 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
 
 // Controller functions
-import { createKiosk, deleteKiosk, getKiosk, getKiosks, createNewKioskTag, patchKiosk, getMe } from '../controllers/kioskController.js'
+import {
+	createKiosk,
+	createNewKioskTag,
+	deleteKiosk,
+	getKiosk,
+	getKiosks,
+	getMe,
+	patchKiosk
+} from '../controllers/kioskController.js'
 
 // Destructuring and global variables
 const router = Router()

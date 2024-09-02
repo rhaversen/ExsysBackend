@@ -42,7 +42,10 @@ const roomSchema = new Schema<IRoom>({
 
 // Validations
 roomSchema.path('name').validate(async function (v: string) {
-	const foundRoomWithName = await RoomModel.findOne({ name: v, _id: { $ne: this._id } })
+	const foundRoomWithName = await RoomModel.findOne({
+		name: v,
+		_id: { $ne: this._id }
+	})
 	return foundRoomWithName === null || foundRoomWithName === undefined
 }, 'Navnet er allerede i brug')
 

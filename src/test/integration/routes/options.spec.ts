@@ -57,6 +57,8 @@ describe('Options routes', function () {
 			expect(option).to.have.property('name', testOptionFields1.name)
 			expect(option).to.have.property('imageURL', testOptionFields1.imageURL)
 			expect(option).to.have.property('price', testOptionFields1.price)
+			expect(option).to.have.property('createdAt')
+			expect(option).to.have.property('updatedAt')
 		})
 
 		it('should return the newly created object', async function () {
@@ -66,6 +68,9 @@ describe('Options routes', function () {
 			expect(response.body).to.have.property('name', testOptionFields1.name)
 			expect(response.body).to.have.property('imageURL', testOptionFields1.imageURL)
 			expect(response.body).to.have.property('price', testOptionFields1.price)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should not allow setting the _id', async function () {
@@ -121,6 +126,9 @@ describe('Options routes', function () {
 			expect(response.body[1]).to.have.property('name', testOptionFields2.name)
 			expect(response.body[1]).to.have.property('imageURL', testOptionFields2.imageURL)
 			expect(response.body[1]).to.have.property('price', testOptionFields2.price)
+			expect(response.body.map((option: IOption) => option.createdAt)).to.have.lengthOf(2)
+			expect(response.body.map((option: IOption) => option.updatedAt)).to.have.lengthOf(2)
+			expect(response.body.map((option: IOption) => option._id)).to.have.lengthOf(2)
 		})
 
 		it('should return an empty array if no options exist', async function () {
@@ -185,11 +193,29 @@ describe('Options routes', function () {
 				price: 15
 			}
 
+			await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const option = await OptionModel.findById(testOption1.id)
+			expect(option).to.exist
+			expect(option).to.have.property('name', updatedFields.name)
+			expect(option).to.have.property('imageURL', updatedFields.imageURL)
+			expect(option).to.have.property('price', updatedFields.price)
+		})
+
+		it('should return the patched option', async function () {
+			const updatedFields = {
+				name: 'Updated Option 1',
+				imageURL: 'https://example.com/imageNew.jpg',
+				price: 15
+			}
+
 			const response = await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', updatedFields.name)
 			expect(response.body).to.have.property('imageURL', updatedFields.imageURL)
 			expect(response.body).to.have.property('price', updatedFields.price)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should allow a partial update', async function () {
@@ -197,12 +223,11 @@ describe('Options routes', function () {
 				name: 'Updated Option 1'
 			}
 
-			const response = await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
-			expect(response).to.have.status(200)
-			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body).to.have.property('imageURL', testOptionFields1.imageURL)
-			expect(response.body).to.have.property('price', testOptionFields1.price)
+			const option = await OptionModel.findById(testOption1.id)
+
+			expect(option?.name).to.equal(updatedFields.name)
 		})
 
 		it('should patch a field which is not present', async function () {
@@ -211,13 +236,11 @@ describe('Options routes', function () {
 				imageURL: 'https://example.com/imageNew.jpg'
 			}
 
-			const response = await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
-			expect(response.body).to.exist
-			expect(response).to.have.status(200)
-			expect(response.body).to.have.property('name', testOptionFields1.name)
-			expect(response.body).to.have.property('imageURL', updatedFields.imageURL)
-			expect(response.body).to.have.property('price', testOptionFields1.price)
+			const option = await OptionModel.findById(testOption1.id)
+
+			expect(option?.imageURL).to.equal(updatedFields.imageURL)
 		})
 
 		it('should return 404 if the option does not exist', async function () {

@@ -255,8 +255,14 @@ describe('Auth routes', function () {
 		}
 
 		beforeEach(async function () {
-			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
-			testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+			const testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
+			testKiosk = new KioskModel({
+				...testKioskFields,
+				readerId: testReader.id
+			})
 			await testKiosk.save()
 		})
 
@@ -488,8 +494,14 @@ describe('Auth routes', function () {
 			}
 
 			beforeEach(async function () {
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
-				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
+				testKiosk = new KioskModel({
+					...testKioskFields,
+					readerId: testReader.id
+				})
 				await testKiosk.save()
 			})
 
@@ -611,8 +623,14 @@ describe('Auth routes', function () {
 			}
 
 			beforeEach(async function () {
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
-				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
+				testKiosk = new KioskModel({
+					...testKioskFields,
+					readerId: testReader.id
+				})
 				await testKiosk.save()
 			})
 
@@ -819,8 +837,14 @@ describe('Auth routes', function () {
 			}
 
 			beforeEach(async function () {
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
-				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
+				testKiosk = new KioskModel({
+					...testKioskFields,
+					readerId: testReader.id
+				})
 				await testKiosk.save()
 			})
 
@@ -945,8 +969,14 @@ describe('Auth routes', function () {
 			}
 
 			beforeEach(async function () {
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
-				testKiosk = new KioskModel({ ...testKioskFields, readerId: testReader.id })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
+				testKiosk = new KioskModel({
+					...testKioskFields,
+					readerId: testReader.id
+				})
 				await testKiosk.save()
 			})
 
