@@ -75,6 +75,8 @@ describe('Kiosks routes', function () {
 				expect(kiosk).to.have.property('password')
 				const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
 				expect(passwordMatch).to.be.true
+				expect(kiosk).to.have.property('createdAt')
+				expect(kiosk).to.have.property('updatedAt')
 			})
 
 			it('should return the newly created object', async function () {
@@ -82,6 +84,9 @@ describe('Kiosks routes', function () {
 
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
+				expect(response.body).to.have.property('createdAt')
+				expect(response.body).to.have.property('updatedAt')
+				expect(response.body).to.have.property('_id')
 			})
 
 			it('should not return the password', async function () {
@@ -159,6 +164,8 @@ describe('Kiosks routes', function () {
 				const populatedKiosk = await kiosk?.populate('activities')
 				expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
 				expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
+				expect(kiosk).to.have.property('createdAt')
+				expect(kiosk).to.have.property('updatedAt')
 			})
 
 			it('should return the newly created object', async function () {
@@ -170,6 +177,9 @@ describe('Kiosks routes', function () {
 				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
 				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
 				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
+				expect(response.body).to.have.property('createdAt')
+				expect(response.body).to.have.property('updatedAt')
+				expect(response.body).to.have.property('_id')
 			})
 		})
 
@@ -251,6 +261,8 @@ describe('Kiosks routes', function () {
 				const populatedKiosk = await kiosk?.populate('activities')
 				expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
 				expect(populatedKiosk?.activities[1]).to.have.property('id', testKioskFields.activities[1])
+				expect(kiosk).to.have.property('createdAt')
+				expect(kiosk).to.have.property('updatedAt')
 			})
 
 			it('should return the newly created object', async function () {
@@ -261,6 +273,9 @@ describe('Kiosks routes', function () {
 				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
 				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
 				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
+				expect(response.body).to.have.property('createdAt')
+				expect(response.body).to.have.property('updatedAt')
+				expect(response.body).to.have.property('_id')
 			})
 		})
 	})
@@ -325,6 +340,9 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.property('name', testKioskFields.name)
 			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
 			expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should not return the password', async function () {
@@ -427,6 +445,9 @@ describe('Kiosks routes', function () {
 			expect(response.body[1]).to.have.property('kioskTag', testKioskFields2.kioskTag)
 			expect(response.body[1]).to.have.property('name', testKioskFields2.name)
 			expect(response.body[1].activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields2.activities)
+			expect(response.body.map((kiosk: IKiosk) => kiosk.createdAt)).to.have.lengthOf(2)
+			expect(response.body.map((kiosk: IKiosk) => kiosk.updatedAt)).to.have.lengthOf(2)
+			expect(response.body.map((kiosk: IKiosk) => kiosk._id)).to.have.lengthOf(2)
 		})
 
 		it('should not return the password', async function () {
@@ -553,6 +574,9 @@ describe('Kiosks routes', function () {
 
 			expect(response.body).to.have.property('kioskTag', updatedFields.kioskTag)
 			expect(response.body.activities[0]._id.toString()).to.equal(updatedFields.activities[0])
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should populate the activities', async function () {

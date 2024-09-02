@@ -49,6 +49,8 @@ describe('Readers routes', function () {
 
 			expect(response.status).to.equal(201)
 			expect(response.body).to.have.property('readerTag', '54321')
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
 			expect(response.body).to.have.property('_id', reader?._id.toString())
 		})
 
@@ -67,6 +69,8 @@ describe('Readers routes', function () {
 			expect(reader).to.exist
 			expect(reader).to.have.property('readerTag', '54321')
 			expect(reader).to.have.property('apiReferenceId')
+			expect(reader).to.have.property('createdAt')
+			expect(reader).to.have.property('updatedAt')
 		})
 
 		it('should have status 400 when missing pairingCode', async function () {
@@ -124,6 +128,9 @@ describe('Readers routes', function () {
 
 			expect(response.body).to.have.lengthOf(1)
 			expect(response.body[0]).to.have.property('readerTag', '54321')
+			expect(response.body[0]).to.have.property('createdAt')
+			expect(response.body[0]).to.have.property('updatedAt')
+			expect(response.body[0]).to.have.property('_id')
 		})
 
 		it('should return an empty array when no readers exist', async function () {
@@ -140,6 +147,9 @@ describe('Readers routes', function () {
 
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body.map((reader: any) => reader.readerTag)).to.have.members(['23456', '45678'])
+			expect(response.body.map((reader: any) => reader.createdAt)).to.have.lengthOf(2)
+			expect(response.body.map((reader: any) => reader.updatedAt)).to.have.lengthOf(2)
+			expect(response.body.map((reader: any) => reader._id)).to.have.lengthOf(2)
 		})
 	})
 
@@ -166,6 +176,9 @@ describe('Readers routes', function () {
 			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('readerTag', '65432')
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id', reader.id.toString())
 		})
 
 		it('should update the reader', async function () {

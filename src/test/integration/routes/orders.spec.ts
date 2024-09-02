@@ -137,6 +137,8 @@ describe('Orders routes', function () {
 			expect(order?.products[0].quantity).to.equal(1)
 			expect(order?.options?.[0].id.toString()).to.equal(testOption1.id)
 			expect(order?.options?.[0].quantity).to.equal(1)
+			expect(order).to.have.property('createdAt')
+			expect(order).to.have.property('updatedAt')
 		})
 
 		it('should return the order', async function () {
@@ -158,6 +160,9 @@ describe('Orders routes', function () {
 			expect(res.body.products[0].quantity).to.equal(1)
 			expect(res.body.options?.[0].id).to.equal(testOption1.id)
 			expect(res.body.options?.[0].quantity).to.equal(1)
+			expect(res.body).to.have.property('createdAt')
+			expect(res.body).to.have.property('updatedAt')
+			expect(res.body).to.have.property('_id')
 		})
 
 		it('should handle orders with undefined options', async function () {
@@ -965,6 +970,9 @@ describe('Orders routes', function () {
 			expect(res.body[1].options[0].id).to.equal(testOption.id)
 			expect(res.body[1].options[0].quantity).to.equal(1)
 			expect(res.body.length).to.equal(2)
+			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
 		})
 
 		it('should return an empty array if there are no orders', async function () {
@@ -1288,6 +1296,9 @@ describe('Orders routes', function () {
 			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
+			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(1)
+			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(1)
+			expect(res.body.map((order: any) => order._id)).to.have.lengthOf(1)
 		})
 
 		it('should update the status of multiple orders', async function () {
@@ -1311,6 +1322,9 @@ describe('Orders routes', function () {
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
 			expect(res.body[1].status).to.equal('delivered')
+			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
 		})
 
 		it('should return an error if orderIds is missing', async function () {

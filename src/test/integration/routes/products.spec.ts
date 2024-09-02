@@ -100,6 +100,8 @@ describe('Products routes', function () {
 			expect(order?.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 			expect(order?.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
 			expect(order?.options?.[0].toString()).to.equal(testOption.id)
+			expect(order).to.have.property('createdAt')
+			expect(order).to.have.property('updatedAt')
 		})
 
 		it('should return the product', async function () {
@@ -113,6 +115,9 @@ describe('Products routes', function () {
 			expect(res.body.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 			expect(res.body.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
 			expect(res.body.options[0]._id.toString()).to.equal(testOption.id)
+			expect(res.body).to.have.property('createdAt')
+			expect(res.body).to.have.property('updatedAt')
+			expect(res.body).to.have.property('_id')
 		})
 
 		it('should populate the options', async function () {
@@ -202,6 +207,9 @@ describe('Products routes', function () {
 			expect(res.body[0].orderWindow.from.minute).to.equal(testProduct.orderWindow.from.minute)
 			expect(res.body[0].orderWindow.to.hour).to.equal(testProduct.orderWindow.to.hour)
 			expect(res.body[0].orderWindow.to.minute).to.equal(testProduct.orderWindow.to.minute)
+			expect(res.body[0]).to.have.property('createdAt')
+			expect(res.body[0]).to.have.property('updatedAt')
+			expect(res.body[0]).to.have.property('_id')
 		})
 
 		it('should populate the options', async function () {
@@ -249,6 +257,12 @@ describe('Products routes', function () {
 			expect(res.body[0].imageURL).to.equal(testProduct.imageURL)
 			expect(res.body[1].name).to.equal('Test Product 2')
 			expect(res.body[1].imageURL).to.equal('https://example.com/image2.jpg')
+			expect(res.body[0]).to.have.property('createdAt')
+			expect(res.body[0]).to.have.property('updatedAt')
+			expect(res.body[1]).to.have.property('createdAt')
+			expect(res.body[1]).to.have.property('updatedAt')
+			expect(res.body[0]).to.have.property('_id')
+			expect(res.body[1]).to.have.property('_id')
 		})
 	})
 

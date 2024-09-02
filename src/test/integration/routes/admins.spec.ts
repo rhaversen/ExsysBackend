@@ -55,6 +55,8 @@ describe('Admins routes', function () {
 			expect(admin).to.have.property('name', testAdminFields1.name)
 			expect(admin).to.have.property('password')
 			expect(await admin?.comparePassword(testAdminFields1.password)).to.be.true
+			expect(admin).to.have.property('createdAt')
+			expect(admin).to.have.property('updatedAt')
 		})
 
 		it('should return the newly created object', async function () {
@@ -62,6 +64,9 @@ describe('Admins routes', function () {
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testAdminFields1.name)
+			expect(response.body).to.have.property('createdAt')
+			expect(response.body).to.have.property('updatedAt')
+			expect(response.body).to.have.property('_id')
 		})
 
 		it('should not return the password', async function () {
@@ -130,6 +135,9 @@ describe('Admins routes', function () {
 
 			expect(response.body).to.be.an('array')
 			expect(response.body.map((admin: IAdmin) => admin.name)).to.include.members([testAdminFields1.name, testAdminFields2.name])
+			expect(response.body.map((admin: IAdmin) => admin.createdAt)).to.have.lengthOf(3)
+			expect(response.body.map((admin: IAdmin) => admin.updatedAt)).to.have.lengthOf(3)
+			expect(response.body.map((admin: IAdmin) => admin._id)).to.have.lengthOf(3)
 		})
 
 		it('should not send the password', async function () {
@@ -181,6 +189,9 @@ describe('Admins routes', function () {
 			const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(res.body.name).to.equal(updatedFields.name)
+			expect(res.body).to.have.property('createdAt')
+			expect(res.body).to.have.property('updatedAt')
+			expect(res.body).to.have.property('_id')
 		})
 
 		it('should not return the password', async function () {

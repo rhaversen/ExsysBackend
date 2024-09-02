@@ -27,7 +27,9 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 			name: newKiosk.name,
 			readerId: newKiosk.readerId,
 			kioskTag: newKiosk.kioskTag,
-			activities: newKiosk.activities
+			activities: newKiosk.activities,
+			createdAt: newKiosk.createdAt,
+			updatedAt: newKiosk.updatedAt
 		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -56,7 +58,9 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 			name: kiosk.name,
 			readerId: kiosk.readerId,
 			kioskTag: kiosk.kioskTag,
-			activities: kiosk.activities
+			activities: kiosk.activities,
+			createdAt: kiosk.createdAt,
+			updatedAt: kiosk.updatedAt
 		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -83,7 +87,9 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 			name: kiosk.name,
 			kioskTag: kiosk.kioskTag,
 			readerId: kiosk.readerId,
-			activities: kiosk.activities
+			activities: kiosk.activities,
+			createdAt: kiosk.createdAt,
+			updatedAt: kiosk.updatedAt
 		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -105,7 +111,9 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 				name: kiosk.name,
 				readerId: kiosk.readerId,
 				kioskTag: kiosk.kioskTag,
-				activities: kiosk.activities
+				activities: kiosk.activities,
+				createdAt: kiosk.createdAt,
+				updatedAt: kiosk.updatedAt
 			}))
 		)
 	} catch (error) {
@@ -150,7 +158,9 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 			name: kiosk.name,
 			readerId: kiosk.readerId,
 			kioskTag: kiosk.kioskTag,
-			activities: kiosk.activities
+			activities: kiosk.activities,
+			createdAt: kiosk.createdAt,
+			updatedAt: kiosk.updatedAt
 		})
 	} catch (error) {
 		await session.abortTransaction()
