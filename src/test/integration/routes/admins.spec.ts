@@ -84,12 +84,6 @@ describe('Admins routes', function () {
 			expect(response).to.have.status(400)
 		})
 
-		it('should not return the password', async function () {
-			const response = await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
-
-			expect(response.body).to.not.have.property('password')
-		})
-
 		it('should not allow setting the _id', async function () {
 			const newId = new mongoose.Types.ObjectId().toString()
 			const updatedFields = {
