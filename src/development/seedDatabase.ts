@@ -590,6 +590,97 @@ await ActivityModel.create({
 	name: 'Cooking'
 })
 
+// Activities with custom timestamps
+// Created today
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created today',
+	createdAt: new Date()
+})
+
+// Created yesterday
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created yesterday',
+	createdAt: new Date(Date.now() - 86400000)
+})
+
+// Created 2 days ago
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 2 days ago',
+	createdAt: new Date(Date.now() - 172800000)
+})
+
+// Created 1 week ago
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 1 week ago',
+	createdAt: new Date(Date.now() - 604800000)
+})
+
+// Created 1 month ago
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 1 month ago',
+	createdAt: new Date(Date.now() - 2592000000)
+})
+
+// Created 2 months ago
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 2 months ago',
+	createdAt: new Date(Date.now() - 5184000000)
+})
+
+// Created and updated 1 year ago
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 1 year ago',
+	createdAt: new Date(Date.now() - 31536000000)
+})
+
+// Created 2 years ago
+await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 2 years ago',
+	createdAt: new Date(Date.now() - 63072000000)
+})
+
+// Created 1 week ago and updated now
+const activityWithTimestamp1 = await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 1 week ago, updated now',
+	createdAt: new Date(Date.now() - 604800000)
+})
+
+// Created 1 month ago and updated now
+const activityWithTimestamp2 = await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 1 month ago, updated now',
+	createdAt: new Date(Date.now() - 2592000000)
+})
+
+// Created 1 year ago and updated now
+const activityWithTimestamp3 = await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 1 year ago, updated now',
+	createdAt: new Date(Date.now() - 31536000000)
+})
+
+// Created 2 years ago and updated now
+const activityWithTimestamp4 = await ActivityModel.create({
+	roomId: room1.id,
+	name: 'Created 2 years ago, updated now',
+	createdAt: new Date(Date.now() - 63072000000)
+})
+
+// Updating activities
+await ActivityModel.updateMany(
+	{ _id: { $in: [activityWithTimestamp1._id, activityWithTimestamp2._id, activityWithTimestamp3._id, activityWithTimestamp4._id] } },
+	{ $set: { room: room2.id } }
+)
+
 // Payments
 const payment1 = await PaymentModel.create({
 	paymentStatus: 'successful'
