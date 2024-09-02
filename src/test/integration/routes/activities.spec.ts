@@ -333,6 +333,19 @@ describe('Activities routes', function () {
 			expect(response.body.roomId).to.have.property('_id', updatedFields.roomId)
 		})
 
+		it('should unset the roomId when setting to null', async function () {
+			const updatedFields = {
+				name: 'Updated Activity 1',
+				roomId: null
+			}
+
+			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(response.body).to.have.property('roomId', null)
+			const activity = await ActivityModel.findById(testActivity1.id)
+			expect(activity).to.have.property('roomId', null)
+		})
+
 		it('should populate the roomId', async function () {
 			const testRoom2 = await RoomModel.create({
 				name: 'Room 2',

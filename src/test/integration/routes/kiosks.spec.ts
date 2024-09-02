@@ -622,6 +622,18 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.not.have.property('password')
 		})
 
+		it('should unset the readerId when setting to null', async function () {
+			const updatedFields = {
+				readerId: null
+			}
+
+			const res = await agent.patch(`/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+
+			expect(res.body).to.have.property('readerId', null)
+			const kiosk = await KioskModel.findById(testKiosk1.id)
+			expect(kiosk).to.have.property('readerId', null)
+		})
+
 		it('should populate the activities', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
