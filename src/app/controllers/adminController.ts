@@ -19,10 +19,15 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 
 	try {
 		// Creating a new admin with the password and name
-		const newAdmin = await AdminModel.create({ password, name })
+		const newAdmin = await AdminModel.create({
+			password,
+			name
+		})
 		res.status(201).json({
 			_id: newAdmin._id,
-			name: newAdmin.name
+			name: newAdmin.name,
+			createdAt: newAdmin.createdAt,
+			updatedAt: newAdmin.updatedAt
 		})
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -41,7 +46,9 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 		res.status(200).json(
 			admins.map(admin => ({
 				_id: admin._id,
-				name: admin.name
+				name: admin.name,
+				createdAt: admin.createdAt,
+				updatedAt: admin.updatedAt
 			}))
 		)
 	} catch (error) {
@@ -80,7 +87,9 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		res.status(200).json({
 			_id: admin._id,
-			name: admin.name
+			name: admin.name,
+			createdAt: admin.createdAt,
+			updatedAt: admin.updatedAt
 		})
 	} catch (error) {
 		await session.abortTransaction()

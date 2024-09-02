@@ -77,9 +77,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
-			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
-			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+			testKiosk = await KioskModel.create({
+				readerId: testReader.id,
+				name: 'Test Kiosk',
+				password: 'password'
+			})
 		})
 
 		it('should have status 201', async function () {
@@ -137,6 +144,8 @@ describe('Orders routes', function () {
 			expect(order?.products[0].quantity).to.equal(1)
 			expect(order?.options?.[0].id.toString()).to.equal(testOption1.id)
 			expect(order?.options?.[0].quantity).to.equal(1)
+			expect(order).to.have.property('createdAt')
+			expect(order).to.have.property('updatedAt')
 		})
 
 		it('should return the order', async function () {
@@ -158,6 +167,9 @@ describe('Orders routes', function () {
 			expect(res.body.products[0].quantity).to.equal(1)
 			expect(res.body.options?.[0].id).to.equal(testOption1.id)
 			expect(res.body.options?.[0].quantity).to.equal(1)
+			expect(res.body).to.have.property('createdAt')
+			expect(res.body).to.have.property('updatedAt')
+			expect(res.body).to.have.property('_id')
 		})
 
 		it('should handle orders with undefined options', async function () {
@@ -905,9 +917,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
-			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
-			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+			testKiosk = await KioskModel.create({
+				readerId: testReader.id,
+				name: 'Test Kiosk',
+				password: 'password'
+			})
 
 			testPayment1 = await PaymentModel.create({ paymentStatus: 'successful' })
 			testPayment2 = await PaymentModel.create({ paymentStatus: 'failed' })
@@ -965,6 +984,9 @@ describe('Orders routes', function () {
 			expect(res.body[1].options[0].id).to.equal(testOption.id)
 			expect(res.body[1].options[0].quantity).to.equal(1)
 			expect(res.body.length).to.equal(2)
+			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
 		})
 
 		it('should return an empty array if there are no orders', async function () {
@@ -1029,6 +1051,13 @@ describe('Orders routes', function () {
 				expect(res.body.length).to.equal(0)
 			})
 
+			it('should not include the paymentId in the response', async function () {
+				const res = await agent.get('/v1/orders/?status=delivered').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body[0].paymentId).to.not.exist
+				expect(res.body[1].paymentId).to.not.exist
+			})
+
 			it('should allow multiple statuses', async function () {
 				const res = await agent.get('/v1/orders/?status=delivered,pending').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
@@ -1069,6 +1098,31 @@ describe('Orders routes', function () {
 						quantity: 1
 					}]
 				})
+			})
+
+			it('should have status 200', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res).to.have.status(200)
+			})
+
+			it('should have status 403 if not logged in', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z')
+				expect(res).to.have.status(403)
+			})
+
+			it('should include timestamp and id in the response', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
+				expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
+				expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
+			})
+
+			it('should not include the paymentId in the response', async function () {
+				const res = await agent.get('/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body[0].paymentId).to.not.exist
+				expect(res.body[1].paymentId).to.not.exist
 			})
 
 			it('should return an empty array if there are no orders in the interval', async function () {
@@ -1175,6 +1229,60 @@ describe('Orders routes', function () {
 				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
 			})
 		})
+
+		describe('GET /v1/orders/?fromDate&toDate&status&paymentStatus', function () {
+			beforeEach(async function () {
+				await OrderModel.findOneAndUpdate({
+					products: { $elemMatch: { id: testProduct1.id } },
+					options: { $elemMatch: { id: testOption.id } }
+				}, { status: 'delivered' })
+				await OrderModel.findOneAndUpdate({
+					products: { $elemMatch: { id: testProduct2.id } },
+					options: { $elemMatch: { id: testOption.id } }
+				}, { status: 'delivered' })
+				await OrderModel.create({
+					paymentId: testPayment1.id,
+					activityId: testActivity.id,
+					kioskId: testKiosk.id,
+					products: [{
+						id: testProduct3.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption.id,
+						quantity: 1
+					}],
+					status: 'pending'
+				})
+				await OrderModel.create({
+					paymentId: testPayment2.id,
+					activityId: testActivity.id,
+					kioskId: testKiosk.id,
+					products: [{
+						id: testProduct4.id,
+						quantity: 1
+					}],
+					options: [{
+						id: testOption.id,
+						quantity: 1
+					}],
+					status: 'confirmed'
+				})
+			})
+
+			it('should return all orders with status delivered and paymentStatus successful', async function () {
+				const res = await agent.get('/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(1)
+				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			})
+
+			it('should return an empty array if there are no orders with status and paymentStatus', async function () {
+				const res = await agent.get('/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-25T00:00:00.000Z&toDate=2024-04-25T23:59:59.999Z').set('Cookie', sessionCookie)
+				expect(res.body).to.exist
+				expect(res.body.length).to.equal(0)
+			})
+		})
 	})
 
 	describe('PATCH /v1/orders', function () {
@@ -1220,9 +1328,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
-			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
-			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+			testKiosk = await KioskModel.create({
+				readerId: testReader.id,
+				name: 'Test Kiosk',
+				password: 'password'
+			})
 
 			testPayment = await PaymentModel.create({})
 
@@ -1288,6 +1403,9 @@ describe('Orders routes', function () {
 			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
+			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(1)
+			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(1)
+			expect(res.body.map((order: any) => order._id)).to.have.lengthOf(1)
 		})
 
 		it('should update the status of multiple orders', async function () {
@@ -1311,6 +1429,9 @@ describe('Orders routes', function () {
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
 			expect(res.body[1].status).to.equal('delivered')
+			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
+			expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
 		})
 
 		it('should return an error if orderIds is missing', async function () {

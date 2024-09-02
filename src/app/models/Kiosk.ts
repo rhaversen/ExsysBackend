@@ -75,7 +75,10 @@ const kioskSchema = new Schema<IKiosk>({
 
 // Validations
 kioskSchema.path('kioskTag').validate(async function (v: string) {
-	const foundKioskWithTag = await KioskModel.findOne({ kioskTag: v, _id: { $ne: this._id } })
+	const foundKioskWithTag = await KioskModel.findOne({
+		kioskTag: v,
+		_id: { $ne: this._id }
+	})
 	return foundKioskWithTag === null || foundKioskWithTag === undefined
 }, 'KioskTag er allerede i brug')
 
@@ -105,7 +108,10 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
 	if (v === undefined || v === null) return true
-	const foundKioskWithReader = await KioskModel.findOne({ readerId: v, _id: { $ne: this._id } })
+	const foundKioskWithReader = await KioskModel.findOne({
+		readerId: v,
+		_id: { $ne: this._id }
+	})
 	return foundKioskWithReader === null || foundKioskWithReader === undefined
 }, 'Kortlæser er allerede tildelt en kiosk')
 

@@ -18,7 +18,10 @@ import KioskModel from '../../../app/models/Kiosk.js'
 
 describe('Reader Model', function () {
 	it('should create a valid reader', async function () {
-		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '54321'
+		})
 		expect(reader).to.exist
 		expect(reader.apiReferenceId).to.equal('12345')
 		expect(reader.readerTag).to.equal('54321')
@@ -63,8 +66,14 @@ describe('Reader Model', function () {
 	it('should not create a reader with the same apiReferenceId', async function () {
 		let errorOccurred = false
 		try {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '65432' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '65432'
+			})
 		} catch (err) {
 			// The promise was rejected as expected
 			errorOccurred = true
@@ -75,8 +84,14 @@ describe('Reader Model', function () {
 	it('should not create a reader with the same readerTag', async function () {
 		let errorOccurred = false
 		try {
-			await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
-			await ReaderModel.create({ apiReferenceId: '23456', readerTag: '54321' })
+			await ReaderModel.create({
+				apiReferenceId: '12345',
+				readerTag: '54321'
+			})
+			await ReaderModel.create({
+				apiReferenceId: '23456',
+				readerTag: '54321'
+			})
 		} catch (err) {
 			// The promise was rejected as expected
 			errorOccurred = true
@@ -85,7 +100,10 @@ describe('Reader Model', function () {
 	})
 
 	it('should generate a new readerTag and return it', async function () {
-		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '54321'
+		})
 		const oldReaderTag = reader.readerTag
 		const newReaderTag = await reader.generateNewReaderTag()
 		expect(newReaderTag).to.exist
@@ -93,7 +111,10 @@ describe('Reader Model', function () {
 	})
 
 	it('should generate a new readerTag and save it', async function () {
-		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '54321'
+		})
 		const newReaderTag = await reader.generateNewReaderTag()
 		const updatedReader = await ReaderModel.findById(reader.id)
 		expect(updatedReader).to.exist
@@ -102,19 +123,28 @@ describe('Reader Model', function () {
 	})
 
 	it('should generate a new readerTag that is 5 characters long', async function () {
-		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '54321'
+		})
 		await reader.generateNewReaderTag()
 		expect(reader.readerTag).to.have.lengthOf(5)
 	})
 
 	it('should generate a new readerTag that only contains numbers', async function () {
-		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '54321'
+		})
 		await reader.generateNewReaderTag()
 		expect(reader.readerTag).to.match(/^[0-9]+$/)
 	})
 
 	it('should remove the reader from any kiosks when deleted', async function () {
-		const reader = await ReaderModel.create({ apiReferenceId: '12345', readerTag: '54321' })
+		const reader = await ReaderModel.create({
+			apiReferenceId: '12345',
+			readerTag: '54321'
+		})
 		const kiosk = await KioskModel.create({
 			name: 'Test Kiosk',
 			readerId: reader.id,
