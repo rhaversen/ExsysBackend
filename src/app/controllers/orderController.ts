@@ -225,7 +225,10 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 	try {
 		// Fetch and populate orders
 		const orders = await OrderModel.find({ ...query })
-			.populate({ path: 'paymentId', select: 'paymentStatus' })
+			.populate({
+				path: 'paymentId',
+				select: 'paymentStatus'
+			})
 			.exec() as IOrderPopulatedPaymentId[] | null
 
 		// Concisely filter orders based on paymentStatus
@@ -253,7 +256,10 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 export async function updateOrderStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Updating order status')
 
-	const { orderIds, status } = req.body
+	const {
+		orderIds,
+		status
+	} = req.body
 
 	if (orderIds === undefined || status === undefined) {
 		res.status(400).json({ error: 'Mangler orderIds eller status' })

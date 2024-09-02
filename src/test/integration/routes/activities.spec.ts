@@ -234,7 +234,9 @@ describe('Activities routes', function () {
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			expect(response.body.map((activity: {
+				roomId: IRoom
+			}) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
 			expect(response.body.map((activity: IActivity) => activity.createdAt)).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity.updatedAt)).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity._id)).to.have.lengthOf(2)
@@ -245,10 +247,14 @@ describe('Activities routes', function () {
 
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
-			expect(response.body.map((activity: { roomId: IRoom }) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
+			expect(response.body.map((activity: {
+				roomId: IRoom
+			}) => activity.roomId._id)).to.have.members([testActivityFields1.roomId, testActivityFields2.roomId])
 			const roomNames = response.body.map((activity: { roomId: { name: string } }) => activity.roomId.name)
 			expect(roomNames).to.have.members(['Room 1', 'Room 2'])
-			const roomDescriptions = response.body.map((activity: { roomId: { description: string } }) => activity.roomId.description)
+			const roomDescriptions = response.body.map((activity: {
+				roomId: { description: string }
+			}) => activity.roomId.description)
 			expect(roomDescriptions).to.have.members(['Description for Room 1', 'Description for Room 2'])
 		})
 	})

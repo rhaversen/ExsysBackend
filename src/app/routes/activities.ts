@@ -8,7 +8,13 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
 // Controller functions
-import { createActivity, deleteActivity, getActivity, getActivities, patchActivity } from '../controllers/activityController.js'
+import {
+	createActivity,
+	deleteActivity,
+	getActivities,
+	getActivity,
+	patchActivity
+} from '../controllers/activityController.js'
 
 // Destructuring and global variables
 const router = Router()

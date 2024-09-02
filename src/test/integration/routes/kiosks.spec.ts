@@ -43,7 +43,10 @@ describe('Kiosks routes', function () {
 			}
 
 			beforeEach(async function () {
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
 				testKioskFields = {
 					name: 'Test Kiosk',
 					kioskTag: '12345',
@@ -135,7 +138,10 @@ describe('Kiosks routes', function () {
 					roomId: testRoom2.id
 				})
 
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
 
 				testKioskFields = {
 					name: 'Test Kiosk',
@@ -224,7 +230,10 @@ describe('Kiosks routes', function () {
 					roomId: testRoom2.id
 				})
 
-				const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+				const testReader = await ReaderModel.create({
+					apiReferenceId: 'test',
+					readerTag: '12345'
+				})
 
 				testKioskFields = {
 					name: 'Test Kiosk',
@@ -328,7 +337,10 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
-			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			const testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
 			testKioskFields = {
 				name: 'Test Kiosk',
@@ -425,8 +437,14 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
-			const testReader1 = await ReaderModel.create({ apiReferenceId: 'test1', readerTag: '12345' })
-			const testReader2 = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+			const testReader1 = await ReaderModel.create({
+				apiReferenceId: 'test1',
+				readerTag: '12345'
+			})
+			const testReader2 = await ReaderModel.create({
+				apiReferenceId: 'test2',
+				readerTag: '54321'
+			})
 
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
@@ -538,8 +556,14 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
-			const testReader1 = await ReaderModel.create({ apiReferenceId: 'test1', readerTag: '12345' })
-			const testReader2 = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+			const testReader1 = await ReaderModel.create({
+				apiReferenceId: 'test1',
+				readerTag: '12345'
+			})
+			const testReader2 = await ReaderModel.create({
+				apiReferenceId: 'test2',
+				readerTag: '54321'
+			})
 
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
@@ -753,7 +777,10 @@ describe('Kiosks routes', function () {
 				name: 'Activity 1',
 				roomId: testRoom1.id
 			})
-			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			const testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 			testKiosk1 = await KioskModel.create({
 				name: 'Kiosk 1',
 				kioskTag: '12345',
@@ -830,7 +857,10 @@ describe('Kiosks routes', function () {
 				roomId: testRoom2.id
 			})
 
-			const testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			const testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
 			testKioskFields1 = {
 				name: 'Test Kiosk',
@@ -865,7 +895,10 @@ describe('Kiosks routes', function () {
 		})
 
 		it('should not delete other kiosks', async function () {
-			const testReader = await ReaderModel.create({ apiReferenceId: 'test2', readerTag: '54321' })
+			const testReader = await ReaderModel.create({
+				apiReferenceId: 'test2',
+				readerTag: '54321'
+			})
 			const testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',

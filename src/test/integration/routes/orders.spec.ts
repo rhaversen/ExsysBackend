@@ -77,9 +77,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
-			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
-			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+			testKiosk = await KioskModel.create({
+				readerId: testReader.id,
+				name: 'Test Kiosk',
+				password: 'password'
+			})
 		})
 
 		it('should have status 201', async function () {
@@ -910,9 +917,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
-			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
-			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+			testKiosk = await KioskModel.create({
+				readerId: testReader.id,
+				name: 'Test Kiosk',
+				password: 'password'
+			})
 
 			testPayment1 = await PaymentModel.create({ paymentStatus: 'successful' })
 			testPayment2 = await PaymentModel.create({ paymentStatus: 'failed' })
@@ -1314,9 +1328,16 @@ describe('Orders routes', function () {
 				price: 50
 			})
 
-			testReader = await ReaderModel.create({ apiReferenceId: 'test', readerTag: '12345' })
+			testReader = await ReaderModel.create({
+				apiReferenceId: 'test',
+				readerTag: '12345'
+			})
 
-			testKiosk = await KioskModel.create({ readerId: testReader.id, name: 'Test Kiosk', password: 'password' })
+			testKiosk = await KioskModel.create({
+				readerId: testReader.id,
+				name: 'Test Kiosk',
+				password: 'password'
+			})
 
 			testPayment = await PaymentModel.create({})
 

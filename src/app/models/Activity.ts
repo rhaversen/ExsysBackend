@@ -37,7 +37,10 @@ const activitySchema = new Schema<IActivity>({
 
 // Validations
 activitySchema.path('name').validate(async function (v: string) {
-	const foundActivityWithName = await ActivityModel.findOne({ name: v, _id: { $ne: this._id } })
+	const foundActivityWithName = await ActivityModel.findOne({
+		name: v,
+		_id: { $ne: this._id }
+	})
 	return foundActivityWithName === null || foundActivityWithName === undefined
 }, 'Navnet er allerede i brug')
 

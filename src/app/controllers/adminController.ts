@@ -19,7 +19,10 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 
 	try {
 		// Creating a new admin with the password and name
-		const newAdmin = await AdminModel.create({ password, name })
+		const newAdmin = await AdminModel.create({
+			password,
+			name
+		})
 		res.status(201).json({
 			_id: newAdmin._id,
 			name: newAdmin.name,

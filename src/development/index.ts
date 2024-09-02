@@ -27,4 +27,4 @@ async function startServer (): Promise<void> {
 // Execute the server startup sequence
 await startServer()
 
-export { }
+export {}

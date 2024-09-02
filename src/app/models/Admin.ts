@@ -50,7 +50,10 @@ const adminSchema = new Schema<IAdmin>({
 
 // Validations
 adminSchema.path('name').validate(async function (v: string) {
-	const foundAdminWithName = await AdminModel.findOne({ name: v, _id: { $ne: this._id } })
+	const foundAdminWithName = await AdminModel.findOne({
+		name: v,
+		_id: { $ne: this._id }
+	})
 	return foundAdminWithName === null || foundAdminWithName === undefined
 }, 'Navnet er allerede i brug')
 
