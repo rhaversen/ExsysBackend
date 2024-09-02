@@ -17,6 +17,12 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 		return nanoid() // Return a random string
 	}
 
+	let returnUrl = 'https://kantine.nyskivehus.dk/api/v1/reader-callback'
+
+	if (process.env.NODE_ENV === 'staging') {
+		returnUrl = 'https://staging.kantine.nyskivehus.dk/api/v1/reader-callback'
+	}
+
 	try {
 		const response = await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/checkout`, {
 			total_amount: {
@@ -24,7 +30,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 				currency: 'DKK',
 				minor_unit: 2
 			},
-			return_url: 'https://kantine.nyskivehus.dk/api/v1/reader-callback'
+			return_url: returnUrl
 		}, {
 			headers: {
 				Authorization: `Bearer ${SUMUP_API_KEY}`,
