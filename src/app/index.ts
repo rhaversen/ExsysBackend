@@ -1,3 +1,6 @@
+// Use Sentry
+import './utils/instrument.js'
+
 // Node.js built-in modules
 
 // Third-party libraries
@@ -12,6 +15,7 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import MongoStore from 'connect-mongo'
+import * as Sentry from '@sentry/node'
 
 // Own Modules
 import databaseConnector from './utils/databaseConnector.js'
@@ -123,6 +127,9 @@ app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply medium sensitivity for all other routes
 app.use(mediumSensitivityApiLimiter)
+
+// Sentry error handler
+Sentry.setupExpressErrorHandler(app)
 
 // Global error handler middleware
 app.use(globalErrorHandler)

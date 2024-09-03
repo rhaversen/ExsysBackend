@@ -29,10 +29,14 @@
 		"lint:fix": "npx eslint \"**/*.ts\" --fix",
 		"//7": "———————————————————————————————————————————————————Dependencies—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————",
 		"depcheck": "npx depcheck",
-		"upgrade": "npm update && npx ncu -u && npm install"
+		"upgrade": "npm update && npx ncu -u && npm install",
+		"sentry:sourcemaps": "sentry-cli sourcemaps inject --org aarhus-universitet-c9cd1e514 --project exsys-backend ./dist && sentry-cli sourcemaps upload --org aarhus-universitet-c9cd1e514 --project exsys-backend ./dist"
 	},
 	"dependencies": {
 		"@logtail/node": "^0.5.0",
+		"@sentry/cli": "^2.34.1",
+		"@sentry/node": "^8.27.0",
+		"@sentry/profiling-node": "^8.27.0",
 		"axios": "^1.7.7",
 		"bcrypt": "^5.1.1",
 		"config": "^3.3.12",
