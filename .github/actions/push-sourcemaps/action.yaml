@@ -27,4 +27,4 @@ runs:
 
         -   name: Upload source maps
             shell: bash
-            run: npm sentry:sourcemaps
+            run: npm run sentry:sourcemaps
