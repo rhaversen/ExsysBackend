@@ -1,0 +1,30 @@
+name: "Push Source Maps"
+description: "Pushes source maps to Sentry"
+
+inputs:
+    auth_token:
+        description: "Sentry Auth Token"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Check out code
+            uses: actions/checkout@
+
+        -   name: Setup environment
+            uses: ./.github/actions/setup
+
+        -   name: Download build artifacts
+            uses: actions/download-artifact@v4
+            with:
+                name: dist
+                path: dist
+
+        -   name: Login to Sentry
+            shell: bash
+            run: sentry-cli login --auth-token ${{ inputs.auth_token }}
+
+        -   name: Upload source maps
+            shell: bash
+            run: npm sentry:sourcemaps
