@@ -23,7 +23,7 @@ runs:
 
         -   name: Login to Sentry
             shell: bash
-            run: sentry-cli login --auth-token ${{ inputs.auth_token }}
+            run: npx sentry-cli login --auth-token ${{ inputs.auth_token }}
 
         -   name: Upload source maps
             shell: bash
