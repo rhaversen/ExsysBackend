@@ -21,4 +21,8 @@ router.get('/readyz', (req, res) => {
 	}
 })
 
+router.get('/debug-sentry', (req, res) => {
+	throw new Error('Sentry error')
+})
+
 export default router
