@@ -92,7 +92,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		kioskId,
 		products,
 		options,
-		skipCheckout
+		checkoutMethod
 	} = req.body as Record<string, unknown>
 
 	// Check if the products
@@ -113,6 +113,12 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		return
 	}
 
+	// Check if checkoutMethod is a valid string
+	if (checkoutMethod !== ‘mobilePay’ || checkoutMetod !== ‘sumup’ || checkoutMethod !== ‘cash’) {
+		res.status(400).json({ error: ‘checkoutMethod er ikke en valid værdi' })
+		return
+	}
+
 	try {
 		// Remove items with zero quantity
 		const filteredProducts = removeItemsWithZeroQuantity(products)
@@ -126,17 +132,19 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
 
 		let paymentId: string | undefined
-		if (skipCheckout !== true) {
+		if (checkoutMethod === 'sumup') {
 			paymentId = await createCheckout(kioskId, subtotal)
 			if (paymentId === undefined) {
 				res.status(500).json({ error: 'Kunne ikke oprette checkout' })
 				return
 			}
-		} else {
+		} else if (checkoutMethod === 'cash') {
 			const newPayment = await PaymentModel.create({
 				paymentStatus: 'successful'
 			})
 			paymentId = newPayment.id
+		} else if (checkoutMethod === 'mobilePay' {
+			res.status(500).json({ error: 'not yet implemented' })
 		}
 
 		// Create the order
