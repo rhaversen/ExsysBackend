@@ -100,7 +100,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'cash'
 			}).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
@@ -117,7 +118,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'cash'
 			})
 
 			expect(response).to.have.status(403)
@@ -134,7 +136,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'cash'
 			}).set('Cookie', sessionCookie)
 
 			const order = await OrderModel.findOne({})
@@ -159,7 +162,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'cash'
 			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.activityId.toString()).to.equal(testActivity.id)
@@ -179,7 +183,8 @@ describe('Orders routes', function () {
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'cash'
 			}).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
@@ -192,20 +197,28 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'cash'
 			}).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order).to.not.exist
 		})
 
 		it('should not allow setting the _id', async function () {
-			const updatedFields = {
-				_id: new mongoose.Types.ObjectId().toString()
-			}
+			const updatedId = new mongoose.Types.ObjectId().toString()
 
-			await agent.post('/v1/orders').send(updatedFields).set('Cookie', sessionCookie)
+			await agent.post('/v1/orders').send({
+				activityId: testActivity.id,
+				kioskId: testKiosk.id,
+				options: [{
+					id: testOption1.id,
+					quantity: 1
+				}],
+				checkoutMethod: 'cash',
+				_id: updatedId
+			}).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
-			expect(order?.id.toString()).to.not.equal(updatedFields._id)
+			expect(order?.id.toString()).to.not.equal(updatedId)
 		})
 
 		describe('Quantity validation', function () {
@@ -240,7 +253,8 @@ describe('Orders routes', function () {
 						{
 							id: testProduct2.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
@@ -257,7 +271,8 @@ describe('Orders routes', function () {
 						{
 							id: testProduct2.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
@@ -274,7 +289,8 @@ describe('Orders routes', function () {
 						{
 							id: testProduct1.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products[0].quantity).to.equal(2)
@@ -295,7 +311,8 @@ describe('Orders routes', function () {
 						{
 							id: testProduct2.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
@@ -314,7 +331,8 @@ describe('Orders routes', function () {
 						{
 							id: testProduct2.id,
 							quantity: 2
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
@@ -333,7 +351,8 @@ describe('Orders routes', function () {
 						{
 							id: testProduct2.id,
 							quantity: 0
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
@@ -349,7 +368,8 @@ describe('Orders routes', function () {
 						},
 						{
 							id: testProduct2.id
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.not.exist
@@ -381,7 +401,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption2.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
@@ -398,7 +419,8 @@ describe('Orders routes', function () {
 						options: [{
 							id: testOption1.id,
 							quantity: 0
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
@@ -415,7 +437,8 @@ describe('Orders routes', function () {
 						options: [{
 							id: testOption1.id,
 							quantity: 0
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(0)
@@ -436,7 +459,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption2.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
@@ -457,7 +481,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption1.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(2)
@@ -478,7 +503,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption1.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(3)
@@ -503,7 +529,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption2.id,
 							quantity: 1
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
@@ -526,7 +553,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption2.id,
 							quantity: 2
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
@@ -549,7 +577,8 @@ describe('Orders routes', function () {
 						{
 							id: testOption2.id,
 							quantity: 0
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
@@ -569,7 +598,8 @@ describe('Orders routes', function () {
 						},
 						{
 							id: testOption2.id
-						}]
+						}],
+						checkoutMethod: 'cash'
 					}).set('Cookie', sessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.not.exist
@@ -577,7 +607,7 @@ describe('Orders routes', function () {
 			})
 		})
 
-		describe('Dont skip checkout', function () {
+		describe('Use sumUp checkout method', function () {
 			it('should create a paymentId on the order', async function () {
 				await agent.post('/v1/orders').send({
 					skipCheckout: false,
@@ -590,7 +620,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'sumUp'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(order?.paymentId).to.exist
@@ -608,7 +639,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'sumUp'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -627,7 +659,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'sumUp'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
@@ -645,7 +678,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'sumUp'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -664,7 +698,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'sumUp'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -683,7 +718,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'sumUp'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -691,7 +727,7 @@ describe('Orders routes', function () {
 			})
 		})
 
-		describe('Skip checkout', function () {
+		describe('Use cash checkout method', function () {
 			it('should create a paymentId on the order', async function () {
 				await agent.post('/v1/orders').send({
 					skipCheckout: true,
@@ -704,7 +740,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'cash'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(order?.paymentId).to.exist
@@ -722,7 +759,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'cash'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -741,7 +779,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'cash'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
@@ -759,7 +798,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'cash'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -778,7 +818,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'cash'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -797,7 +838,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption1.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'cash'
 				}).set('Cookie', sessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
@@ -805,6 +847,7 @@ describe('Orders routes', function () {
 			})
 		})
 	})
+
 	describe('GET /v1/orders', function () {
 		let testProduct1: IProduct
 		let testProduct2: IProduct
