@@ -20,13 +20,13 @@ const configurePassport = (passport: PassportStatic): void => {
 			try {
 				const admin = await AdminModel.findOne({ name }).exec()
 				if (admin === null || admin === undefined) {
-					done(null, false, { message: 'An admin with the name ' + name + ' was not found. Please check spelling or sign up' })
+					done(null, false, { message: 'Admin med navnet ' + name + ' findes ikke.' })
 					return
 				}
 
 				const isMatch = await admin.comparePassword(password)
 				if (!isMatch) {
-					done(null, false, { message: 'Invalid credentials' })
+					done(null, false, { message: 'Ugyldigt kodeord' })
 					return
 				}
 
@@ -46,13 +46,13 @@ const configurePassport = (passport: PassportStatic): void => {
 			try {
 				const kiosk = await KioskModel.findOne({ kioskTag }).exec()
 				if (kiosk === null || kiosk === undefined) {
-					done(null, false, { message: 'A kiosk with the tag ' + kioskTag + ' was not found. Please check spelling or create a new kiosk' })
+					done(null, false, { message: 'Kiosk med tag ' + kioskTag + ' findes ikke.' })
 					return
 				}
 
 				const isMatch = await kiosk.comparePassword(password)
 				if (!isMatch) {
-					done(null, false, { message: 'Invalid credentials' })
+					done(null, false, { message: 'Ugyldigt kodeord' })
 					return
 				}
 
@@ -80,7 +80,7 @@ const configurePassport = (passport: PassportStatic): void => {
 							if (kiosk !== null && kiosk !== undefined) {
 								done(null, kiosk) // Call done with kiosk if found
 							} else {
-								done(new Error('User not found'), false) // No user found
+								done(new Error('Bruger ikke fundet'), false) // No user found
 							}
 						})
 						.catch(err => {
