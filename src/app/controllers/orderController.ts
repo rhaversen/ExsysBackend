@@ -58,7 +58,7 @@ export function isOrderItemList (items: any[]): items is OrderItem[] {
 	})
 }
 
-async function createCheckout (kioskId: string, subtotal: number): Promise<string | undefined> {
+async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<string | undefined> {
 	// Find the reader associated with the kiosk
 	const kiosk = await KioskModel.findById(kioskId)
 	const reader = await ReaderModel.findById(kiosk?.readerId)
@@ -80,6 +80,13 @@ async function createCheckout (kioskId: string, subtotal: number): Promise<strin
 	const newPayment = await PaymentModel.create({
 		clientTransactionId,
 		status: 'pending'
+	})
+	return newPayment.id
+}
+
+async function createCashCheckout (): Promise<string> {
+	const newPayment = await PaymentModel.create({
+		paymentStatus: 'successful'
 	})
 	return newPayment.id
 }
@@ -114,8 +121,8 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 	}
 
 	// Check if checkoutMethod is a valid string
-	if (checkoutMethod !== 'mobilePay' && checkoutMethod !== 'sumUp' && checkoutMethod !== 'cash') {
-		res.status(400).json({ error: 'checkoutMethod er ikke en valid værdi' })
+	if (typeof checkoutMethod !== 'string') {
+		res.status(400).json({ error: 'Mangler checkoutMethod' })
 		return
 	}
 
@@ -132,19 +139,27 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
 
 		let paymentId: string | undefined
-		if (checkoutMethod === 'sumUp') {
-			paymentId = await createCheckout(kioskId, subtotal)
-			if (paymentId === undefined) {
-				res.status(500).json({ error: 'Kunne ikke oprette checkout' })
+
+		switch (checkoutMethod) {
+			case 'sumUp':
+				paymentId = await createSumUpCheckout(kioskId, subtotal)
+				if (paymentId === null || paymentId === undefined) {
+					res.status(500).json({ error: 'Kunne ikke oprette checkout' })
+					return
+				}
+				break
+
+			case 'cash':
+				paymentId = await createCashCheckout()
+				break
+
+			case 'mobilePay':
+				res.status(500).json({ error: 'Ikke implementeret' })
 				return
-			}
-		} else if (checkoutMethod === 'cash') {
-			const newPayment = await PaymentModel.create({
-				paymentStatus: 'successful'
-			})
-			paymentId = newPayment.id
-		} else if (checkoutMethod === 'mobilePay') {
-			res.status(500).json({ error: 'not yet implemented' })
+
+			default:
+				res.status(400).json({ error: 'Invalid checkout metode' })
+				return
 		}
 
 		// Create the order
