@@ -114,8 +114,8 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 	}
 
 	// Check if checkoutMethod is a valid string
-	if (checkoutMethod !== ‘mobilePay’ || checkoutMetod !== ‘sumup’ || checkoutMethod !== ‘cash’) {
-		res.status(400).json({ error: ‘checkoutMethod er ikke en valid værdi' })
+	if (checkoutMethod !== 'mobilePay' && checkoutMethod !== 'sumUp' && checkoutMethod !== 'cash') {
+		res.status(400).json({ error: 'checkoutMethod er ikke en valid værdi' })
 		return
 	}
 
@@ -132,7 +132,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
 
 		let paymentId: string | undefined
-		if (checkoutMethod === 'sumup') {
+		if (checkoutMethod === 'sumUp') {
 			paymentId = await createCheckout(kioskId, subtotal)
 			if (paymentId === undefined) {
 				res.status(500).json({ error: 'Kunne ikke oprette checkout' })
@@ -143,7 +143,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 				paymentStatus: 'successful'
 			})
 			paymentId = newPayment.id
-		} else if (checkoutMethod === 'mobilePay' {
+		} else if (checkoutMethod === 'mobilePay') {
 			res.status(500).json({ error: 'not yet implemented' })
 		}
 
