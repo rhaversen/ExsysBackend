@@ -24,7 +24,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should have status 200 when updating a payment status', async function () {
-			const response = await agent.post('/v1/reader-callback').send({
+			const response = await agent.post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -40,7 +40,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should update the payment status to successful', async function () {
-			await agent.post('/v1/reader-callback').send({
+			await agent.post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -59,7 +59,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should update the payment status to failed', async function () {
-			await agent.post('/v1/reader-callback').send({
+			await agent.post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -83,7 +83,7 @@ describe('Reader Callback routes', function () {
 				paymentStatus: 'pending'
 			})
 
-			await agent.post('/v1/reader-callback').send({
+			await agent.post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -107,7 +107,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should have status 404 when the payment does not exist', async function () {
-			const response = await agent.post('/v1/reader-callback').send({
+			const response = await agent.post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {

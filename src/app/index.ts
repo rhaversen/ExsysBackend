@@ -81,8 +81,8 @@ app.use(cookieParser()) // For parsing cookies
 app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
 
 // Apply webhook cors config to webhook routes
-app.use('/v1/reader-callback', cors(webhookCorsConfig))
-app.use('/v1/reader-callback', readerCallbackRoutes)
+app.use('/api/v1/reader-callback', cors(webhookCorsConfig))
+app.use('/api/v1/reader-callback', readerCallbackRoutes)
 
 // Apply cors config to all other routes
 app.use(cors(corsConfig))
@@ -109,23 +109,23 @@ const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfi
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Use all routes
-app.use('/v1/orders', orderRoutes)
-app.use('/v1/products', productRoutes)
-app.use('/v1/admins', adminRoutes)
-app.use('/v1/rooms', roomRoutes)
-app.use('/v1/options', optionRoutes)
+app.use('/api/v1/orders', orderRoutes)
+app.use('/api/v1/products', productRoutes)
+app.use('/api/v1/admins', adminRoutes)
+app.use('/api/v1/rooms', roomRoutes)
+app.use('/api/v1/options', optionRoutes)
 app.use('/service', serviceRoutes)
-app.use('/v1/auth', authRoutes)
-app.use('/v1/activities', activityRoutes)
-app.use('/v1/kiosks', kioskRoutes)
-app.use('/v1/readers', readerRoutes)
-app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
+app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/activities', activityRoutes)
+app.use('/api/v1/kiosks', kioskRoutes)
+app.use('/api/v1/readers', readerRoutes)
+app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
 
 // Apply medium sensitivity for callback routes
-app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
+app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply medium sensitivity for all other routes
 app.use(mediumSensitivityApiLimiter)

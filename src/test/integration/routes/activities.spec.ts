@@ -27,7 +27,7 @@ describe('Activities routes', function () {
 		}
 		await AdminModel.create(adminFields)
 
-		const response = await agent.post('/v1/auth/login-admin-local').send(adminFields)
+		const response = await agent.post('/api/v1/auth/login-admin-local').send(adminFields)
 		sessionCookie = response.headers['set-cookie']
 	})
 
@@ -51,19 +51,19 @@ describe('Activities routes', function () {
 		})
 
 		it('should have status 201', async function () {
-			const response = await agent.post('/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.post('/v1/activities').send(testActivityFields1)
+			const response = await agent.post('/api/v1/activities').send(testActivityFields1)
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should create a new activity', async function () {
-			await agent.post('/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
+			await agent.post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
 
 			const activity = await ActivityModel.findOne({})
 
@@ -76,7 +76,7 @@ describe('Activities routes', function () {
 		})
 
 		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testActivityFields1.name)
@@ -87,7 +87,7 @@ describe('Activities routes', function () {
 		})
 
 		it('should populate the roomId', async function () {
-			const response = await agent.post('/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('roomId')
 			expect(response.body.roomId).to.have.property('_id', testActivityFields1.roomId)
@@ -101,7 +101,7 @@ describe('Activities routes', function () {
 				_id: newId
 			}
 
-			await agent.post('/v1/activities').send(updatedFields).set('Cookie', sessionCookie)
+			await agent.post('/api/v1/activities').send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findOne({})
 			expect(activity?.id.toString()).to.not.equal(newId)
 		})
@@ -139,19 +139,19 @@ describe('Activities routes', function () {
 		})
 
 		it('should have status 200', async function () {
-			const response = await agent.get(`/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
+			const response = await agent.get(`/api/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
 
 		it('should return 403 if not logged in', async function () {
-			const response = await agent.get(`/v1/activities/${testActivity1.id}`)
+			const response = await agent.get(`/api/v1/activities/${testActivity1.id}`)
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should return an activity', async function () {
-			const response = await agent.get(`/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
+			const response = await agent.get(`/api/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', testActivityFields1.name)
 			expect(response.body).to.have.property('roomId')
@@ -161,7 +161,7 @@ describe('Activities routes', function () {
 		})
 
 		it('should populate the roomId', async function () {
-			const response = await agent.get(`/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
+			const response = await agent.get(`/api/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('roomId')
 			expect(response.body.roomId).to.have.property('_id', testActivityFields1.roomId.toString())
@@ -170,7 +170,7 @@ describe('Activities routes', function () {
 		})
 
 		it('should return 404 if the activity does not exist', async function () {
-			const response = await agent.get(`/v1/activities/${new mongoose.Types.ObjectId().toString()}`).set('Cookie', sessionCookie)
+			const response = await agent.get(`/api/v1/activities/${new mongoose.Types.ObjectId().toString()}`).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(404)
 		})
@@ -217,19 +217,19 @@ describe('Activities routes', function () {
 		})
 
 		it('should have status 200', async function () {
-			const response = await agent.get('/v1/activities').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/activities').set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
 
 		it('should return 403 if not logged in', async function () {
-			const response = await agent.get('/v1/activities')
+			const response = await agent.get('/api/v1/activities')
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should return all activities', async function () {
-			const response = await agent.get('/v1/activities').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/activities').set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
@@ -243,7 +243,7 @@ describe('Activities routes', function () {
 		})
 
 		it('should populate the roomId', async function () {
-			const response = await agent.get('/v1/activities').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/activities').set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.lengthOf(2)
@@ -287,7 +287,7 @@ describe('Activities routes', function () {
 				roomId: testActivityFields1.roomId
 			}
 
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
@@ -298,7 +298,7 @@ describe('Activities routes', function () {
 				roomId: testActivityFields1.roomId
 			}
 
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields)
 
 			expect(response).to.have.status(403)
 		})
@@ -313,7 +313,7 @@ describe('Activities routes', function () {
 				roomId: testRoom2.id
 			}
 
-			await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
 			expect(activity).to.have.property('name', updatedFields.name)
 			const populatedActivity = await activity?.populate('roomId')
@@ -330,7 +330,7 @@ describe('Activities routes', function () {
 				roomId: testRoom2.id
 			}
 
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', updatedFields.name)
 			expect(response.body).to.have.property('roomId')
@@ -345,7 +345,7 @@ describe('Activities routes', function () {
 				roomId: null
 			}
 
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('roomId', null)
 			const activity = await ActivityModel.findById(testActivity1.id)
@@ -362,7 +362,7 @@ describe('Activities routes', function () {
 				roomId: testRoom2.id
 			}
 
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('roomId')
 			expect(response.body.roomId).to.have.property('_id', updatedFields.roomId)
@@ -374,7 +374,7 @@ describe('Activities routes', function () {
 			const updatedFields = {
 				name: 'Activity 1'
 			}
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', updatedFields.name)
@@ -386,7 +386,7 @@ describe('Activities routes', function () {
 				name: 'Updated Activity 1',
 				roomId: testActivityFields1.roomId
 			}
-			const response = await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 			expect(response.body.roomId._id).to.equal(testActivityFields1.roomId)
@@ -397,7 +397,7 @@ describe('Activities routes', function () {
 				name: 'Updated Activity 1'
 			}
 
-			await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
 			expect(activity).to.have.property('name', updatedFields.name)
 		})
@@ -407,7 +407,7 @@ describe('Activities routes', function () {
 				name: 'Updated Activity 1'
 			}
 
-			await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
 			const populatedActivity = await activity?.populate('roomId')
 			expect(populatedActivity?.roomId).to.have.property('id', testActivityFields1.roomId)
@@ -428,7 +428,7 @@ describe('Activities routes', function () {
 				roomId: testRoom2.id
 			}
 
-			await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity2.id)
 			expect(activity).to.have.property('name', 'Activity 2')
 			const populatedActivity = await activity?.populate('roomId')
@@ -440,7 +440,7 @@ describe('Activities routes', function () {
 				_id: new mongoose.Types.ObjectId().toString()
 			}
 
-			await agent.patch(`/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findOne({})
 			expect(activity?.id.toString()).to.equal(testActivity1.id)
 		})
@@ -451,7 +451,7 @@ describe('Activities routes', function () {
 				description: 'Updated Description for Activity 1'
 			}
 
-			const response = await agent.patch(`/v1/activities/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/activities/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(404)
 		})
@@ -472,19 +472,19 @@ describe('Activities routes', function () {
 		})
 
 		it('should have status 204', async function () {
-			const response = await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(204)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true })
+			const response = await agent.delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: true })
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should delete an activity', async function () {
-			const response = await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.empty
 			const product = await ActivityModel.findById(testActivity1.id)
@@ -502,34 +502,34 @@ describe('Activities routes', function () {
 				roomId: testRoom2.id
 			})
 
-			await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			await agent.delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 			const product = await ActivityModel.findById(testActivity2.id)
 
 			expect(product).to.exist
 		})
 
 		it('should return 404 if the activity does not exist', async function () {
-			const response = await agent.delete(`/v1/activities/${new mongoose.Types.ObjectId().toString()}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/activities/${new mongoose.Types.ObjectId().toString()}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(404)
 		})
 
 		it('should return an error if confirm false', async function () {
-			const response = await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: false }).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: false }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error')
 		})
 
 		it('should return an error if confirm not sent', async function () {
-			const response = await agent.delete(`/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error')
 		})
 
 		it('should return an error if confirm not boolean', async function () {
-			const response = await agent.delete(`/v1/activities/${testActivity1.id}`).send({ confirm: 'true' }).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: 'true' }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error')

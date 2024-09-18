@@ -5,7 +5,6 @@ metadata:
     namespace: exsys-production
     annotations:
         cert-manager.io/cluster-issuer: letsencrypt-production
-        nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
     ingressClassName: nginx
     tls:
@@ -16,10 +15,11 @@ spec:
         -   host: kantine.nyskivehus.dk
             http:
                 paths:
-                    -   backend:
+                    # API Path
+                    -   path: /api/
+                        pathType: Prefix
+                        backend:
                             service:
                                 name: backend-service
                                 port:
                                     number: 80
-                        path: /api(/|$)(.*) # Strips the prefix
-                        pathType: Prefix
