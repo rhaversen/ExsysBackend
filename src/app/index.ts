@@ -2,6 +2,7 @@
 import './utils/instrument.js'
 
 // Node.js built-in modules
+import { createServer } from 'node:http'
 
 // Third-party libraries
 import express from 'express'
@@ -61,6 +62,7 @@ const {
 
 // Global variables and setup
 const app = express()
+const server = createServer(app)
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
@@ -135,7 +137,7 @@ Sentry.setupExpressErrorHandler(app)
 app.use(globalErrorHandler)
 
 // Listen
-export const server = app.listen(expressPort, () => {
+server.listen(expressPort, () => {
 	logger.info(`Express is listening at http://localhost:${expressPort}`)
 })
 
@@ -196,4 +198,5 @@ gracefulShutdown(server,
 	}
 )
 
+export { server }
 export default app
