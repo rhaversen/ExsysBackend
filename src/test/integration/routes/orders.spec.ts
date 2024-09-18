@@ -1017,14 +1017,18 @@ describe('Orders routes', function () {
 			const res = await agent.get('/v1/orders').set('Cookie', sessionCookie)
 			expect(res.body).to.exist
 			expect(res.body[0].activityId).to.equal(testActivity.id)
-			expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+			expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+			expect(res.body[0].products[0].name).to.equal(testProduct1.name)
 			expect(res.body[0].products[0].quantity).to.equal(1)
-			expect(res.body[0].options[0].id).to.equal(testOption.id)
+			expect(res.body[0].options[0]._id).to.equal(testOption.id)
+			expect(res.body[0].options[0].name).to.equal(testOption.name)
 			expect(res.body[0].options[0].quantity).to.equal(1)
 			expect(res.body[1].activityId).to.equal(testActivity.id)
-			expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+			expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
+			expect(res.body[1].products[0].name).to.equal(testProduct2.name)
 			expect(res.body[1].products[0].quantity).to.equal(1)
-			expect(res.body[1].options[0].id).to.equal(testOption.id)
+			expect(res.body[1].options[0]._id).to.equal(testOption.id)
+			expect(res.body[1].options[0].name).to.equal(testOption.name)
 			expect(res.body[1].options[0].quantity).to.equal(1)
 			expect(res.body.length).to.equal(2)
 			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
@@ -1083,8 +1087,8 @@ describe('Orders routes', function () {
 				const res = await agent.get('/v1/orders/?status=delivered').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
-				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
 			})
 
 			it('should return an empty array if there are no orders with status', async function () {
@@ -1105,9 +1109,9 @@ describe('Orders routes', function () {
 				const res = await agent.get('/v1/orders/?status=delivered,pending').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
-				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
-				expect(res.body[2].products[0].id).to.equal(testProduct3.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
+				expect(res.body[2].products[0]._id).to.equal(testProduct3.id)
 			})
 		})
 
@@ -1178,64 +1182,64 @@ describe('Orders routes', function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}&toDate=${date25.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
-				expect(res.body[0].products[0].id).to.equal(testProduct3.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct3.id)
 			})
 
 			it('should return two orders', async function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
-				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
 			})
 
 			it('should return orders over longer intervals', async function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should return the order inclusive of the date with same from and to date', async function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date2.toISOString()}&toDate=${date2.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
-				expect(res.body[0].products[0].id).to.equal(testProduct3.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct3.id)
 			})
 
 			it('should return multiple orders inclusive of the date with same from and to date', async function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should return orders inclusive of the to date', async function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date25.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
-				expect(res.body[0].products[0].id).to.equal(testProduct4.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct4.id)
 			})
 
 			it('should return all orders if no dates are provided', async function () {
 				const res = await agent.get('/v1/orders').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should return all following orders if only fromDate is provided', async function () {
 				const res = await agent.get(`/v1/orders/?fromDate=${date15.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0].id).to.equal(testProduct3.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct3.id)
 			})
 
 			it('should return all previous orders if only toDate is provided', async function () {
 				const res = await agent.get(`/v1/orders/?toDate=${date25.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should not return orders if fromDate is after toDate', async function () {
@@ -1250,7 +1254,7 @@ describe('Orders routes', function () {
 				const res = await agent.get('/v1/orders/?paymentStatus=successful').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should return an empty array if there are no orders with paymentStatus', async function () {
@@ -1268,8 +1272,8 @@ describe('Orders routes', function () {
 				const res = await agent.get('/v1/orders/?paymentStatus=successful,failed').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
-				expect(res.body[1].products[0].id).to.equal(testProduct2.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
 			})
 		})
 
@@ -1317,7 +1321,7 @@ describe('Orders routes', function () {
 				const res = await agent.get('/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
-				expect(res.body[0].products[0].id).to.equal(testProduct1.id)
+				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should return an empty array if there are no orders with status and paymentStatus', async function () {
