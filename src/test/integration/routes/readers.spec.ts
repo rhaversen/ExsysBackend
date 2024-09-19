@@ -25,13 +25,13 @@ describe('Readers routes', function () {
 		}
 		await AdminModel.create(adminFields)
 
-		const response = await agent.post('/v1/auth/login-admin-local').send(adminFields)
+		const response = await agent.post('/api/v1/auth/login-admin-local').send(adminFields)
 		sessionCookie = response.headers['set-cookie']
 	})
 
 	describe('POST /v1/readers', function () {
 		it('should have status 201 when creating a reader', async function () {
-			const response = await agent.post('/v1/readers').set('Cookie', sessionCookie).send({
+			const response = await agent.post('/api/v1/readers').set('Cookie', sessionCookie).send({
 				pairingCode: '12345',
 				readerTag: '54321'
 			})
@@ -40,7 +40,7 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 403 when not logged in', async function () {
-			const response = await agent.post('/v1/readers').send({
+			const response = await agent.post('/api/v1/readers').send({
 				pairingCode: '12345',
 				readerTag: '54321'
 			})
@@ -49,7 +49,7 @@ describe('Readers routes', function () {
 		})
 
 		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/readers').send({
+			const response = await agent.post('/api/v1/readers').send({
 				pairingCode: '12345',
 				readerTag: '54321'
 			}).set('Cookie', sessionCookie)
@@ -64,14 +64,14 @@ describe('Readers routes', function () {
 		})
 
 		it('should return a readerTag even if not provided', async function () {
-			const response = await agent.post('/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(201)
 			expect(response.body).to.have.property('readerTag')
 		})
 
 		it('should create a new reader', async function () {
-			await agent.post('/v1/readers').send({
+			await agent.post('/api/v1/readers').send({
 				pairingCode: '12345',
 				readerTag: '54321'
 			}).set('Cookie', sessionCookie)
@@ -86,13 +86,13 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 400 when missing pairingCode', async function () {
-			const response = await agent.post('/v1/readers').send({ readerTag: '54321' }).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/readers').send({ readerTag: '54321' }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(400)
 		})
 
 		it('should not create a new reader when missing pairingCode', async function () {
-			await agent.post('/v1/readers').send({ readerTag: '54321' }).set('Cookie', sessionCookie)
+			await agent.post('/api/v1/readers').send({ readerTag: '54321' }).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
 
@@ -100,13 +100,13 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 201 when missing readerTag', async function () {
-			const response = await agent.post('/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(201)
 		})
 
 		it('should create a new reader when missing readerTag', async function () {
-			await agent.post('/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
+			await agent.post('/api/v1/readers').send({ pairingCode: '12345' }).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
 
@@ -116,19 +116,19 @@ describe('Readers routes', function () {
 
 	describe('GET /v1/readers', function () {
 		it('should have status 200', async function () {
-			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(200)
 		})
 
 		it('should have status 403 when not logged in', async function () {
-			const response = await agent.get('/v1/readers')
+			const response = await agent.get('/api/v1/readers')
 
 			expect(response.status).to.equal(403)
 		})
 
 		it('should return an array', async function () {
-			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.an('array')
 		})
@@ -139,7 +139,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.lengthOf(1)
 			expect(response.body[0]).to.have.property('readerTag', '54321')
@@ -149,7 +149,7 @@ describe('Readers routes', function () {
 		})
 
 		it('should return an empty array when no readers exist', async function () {
-			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.lengthOf(0)
 		})
@@ -164,7 +164,7 @@ describe('Readers routes', function () {
 				readerTag: '45678'
 			})
 
-			const response = await agent.get('/v1/readers').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/readers').set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body.map((reader: any) => reader.readerTag)).to.have.members(['23456', '45678'])
@@ -181,7 +181,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(200)
 		})
@@ -192,7 +192,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' })
+			const response = await agent.patch(`/api/v1/readers/${reader.id}`).send({ readerTag: '65432' })
 
 			expect(response.status).to.equal(403)
 		})
@@ -203,7 +203,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('readerTag', '65432')
 			expect(response.body).to.have.property('createdAt')
@@ -217,7 +217,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			await agent.patch(`/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/readers/${reader.id}`).send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			const updatedReader = await ReaderModel.findById(reader._id)
 
@@ -225,7 +225,7 @@ describe('Readers routes', function () {
 		})
 
 		it('should have status 404 when the reader does not exist', async function () {
-			const response = await agent.patch('/v1/readers/123456789012345678901234').send({ readerTag: '65432' }).set('Cookie', sessionCookie)
+			const response = await agent.patch('/api/v1/readers/123456789012345678901234').send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(404)
 		})
@@ -235,7 +235,7 @@ describe('Readers routes', function () {
 				apiReferenceId: '12345',
 				readerTag: '54321'
 			})
-			await agent.patch('/v1/readers/123456789012345678901234').send({ readerTag: '65432' }).set('Cookie', sessionCookie)
+			await agent.patch('/api/v1/readers/123456789012345678901234').send({ readerTag: '65432' }).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
 
@@ -250,7 +250,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.delete(`/v1/readers/${reader.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/readers/${reader.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(204)
 		})
@@ -261,7 +261,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.delete(`/v1/readers/${reader.id}`).send({ confirm: true })
+			const response = await agent.delete(`/api/v1/readers/${reader.id}`).send({ confirm: true })
 
 			expect(response.status).to.equal(403)
 		})
@@ -272,7 +272,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			await agent.delete(`/v1/readers/${reader.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			await agent.delete(`/api/v1/readers/${reader.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			const deletedReader = await ReaderModel.findById(reader._id)
 
@@ -285,7 +285,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.delete('/v1/readers/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent.delete('/api/v1/readers/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(404)
 		})
@@ -296,7 +296,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			await agent.delete('/v1/readers/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
+			await agent.delete('/api/v1/readers/123456789012345678901234').send({ confirm: true }).set('Cookie', sessionCookie)
 
 			const reader = await ReaderModel.findOne({})
 
@@ -309,7 +309,7 @@ describe('Readers routes', function () {
 				readerTag: '54321'
 			})
 
-			const response = await agent.delete(`/v1/readers/${reader.id}`).set('Cookie', sessionCookie)
+			const response = await agent.delete(`/api/v1/readers/${reader.id}`).set('Cookie', sessionCookie)
 
 			expect(response.status).to.equal(400)
 		})

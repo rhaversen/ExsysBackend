@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import PaymentModel from '../models/Payment.js'
+import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
 
 interface ICreateReaderCallback extends Request {
 	body: {
@@ -49,6 +50,9 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 		payment.paymentStatus = status
 
 		await payment.save()
+
+		// Emit the payment status update event to clients watching the associated orders
+		await emitPaymentStatusUpdate(payment)
 
 		res.status(200).send()
 	} catch (error) {
