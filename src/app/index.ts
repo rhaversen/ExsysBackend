@@ -24,6 +24,7 @@ import logger from './utils/logger.js'
 import config from './utils/setupConfig.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
+import { initSocket } from './utils/socket.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'
@@ -63,6 +64,7 @@ const {
 // Global variables and setup
 const app = express()
 const server = createServer(app)
+initSocket(server)
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
