@@ -24,7 +24,8 @@ let io: Server | undefined
 export async function initSocket (server: HttpServer): Promise<Server> {
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
 		logger.debug('Initializing socket.io for testing/development')
-		return new Server(server)
+		io = new Server(server)
+		return io
 	}
 
 	logger.info('Initializing socket.io with Redis adapter')
