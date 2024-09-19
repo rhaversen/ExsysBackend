@@ -21,11 +21,11 @@ const redisPassword = process.env.REDIS_PASSWORD
 
 let io: Server | undefined
 
-export async function initSocket (server: HttpServer): Promise<Server> {
+export async function initSocket (server: HttpServer): Promise<void> {
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
 		logger.debug('Initializing socket.io for testing/development')
 		io = new Server(server)
-		return io
+		return
 	}
 
 	logger.info('Initializing socket.io with Redis adapter')
@@ -62,8 +62,6 @@ export async function initSocket (server: HttpServer): Promise<Server> {
 		logger.info(`Socket connected: ${socket.id}`)
 		// Additional connection logic if necessary
 	})
-
-	return io
 }
 
 export function getSocket (): Server {
