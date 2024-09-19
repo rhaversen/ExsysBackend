@@ -64,7 +64,7 @@ const {
 // Global variables and setup
 const app = express()
 const server = createServer(app)
-initSocket(server)
+await initSocket(server)
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
