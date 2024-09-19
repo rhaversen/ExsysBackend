@@ -18,7 +18,6 @@ import logger from '../app/utils/logger.js'
 // Test environment settings
 process.env.NODE_ENV = 'test'
 process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'
-process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 
 // Global variables
 const chaiHttpObject = chai.use(chaiHttp)

@@ -34,7 +34,8 @@ const AppConfig = {
 	corsConfig: config.get('cors') as CorsOptions,
 	cookieOptions: config.get('cookieOptions') as CookieOptions,
 	sessionExpiry: config.get('session.expiry') as number,
-	webhookCorsConfig: config.get('webhook.cors') as CorsOptions
+	webhookCorsConfig: config.get('webhook.cors') as CorsOptions,
+	redisPrefix: config.get('redis.prefix') as string
 }
 
 export default AppConfig

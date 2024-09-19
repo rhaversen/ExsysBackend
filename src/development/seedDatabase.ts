@@ -770,29 +770,41 @@ const reader3 = await ReaderModel.create({ apiReferenceId: '67890' })
 
 // Kiosks
 await KioskModel.create({
-	name: 'Kiosk with activities',
+	name: 'Kiosk without activities',
+	kioskTag: '00000',
+	password: 'password'
+})
+await KioskModel.create({
+	name: 'Kiosk wihtout activities and reader',
 	readerId: reader1.id,
-	kioskTag: '11111',
-	password: 'password',
-	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+	kioskTag: '00001',
+	password: 'password'
 })
 await KioskModel.create({
 	name: 'Kiosk with one activity',
-	readerId: reader2.id,
-	kioskTag: '22222',
+	kioskTag: '11111',
 	password: 'password',
 	activities: [activity1.id]
 })
 await KioskModel.create({
-	name: 'Kiosk without activities',
-	readerId: reader3.id,
-	kioskTag: '33333',
-	password: 'password'
+	name: 'Kiosk with one activity and reader',
+	readerId: reader2.id,
+	kioskTag: '11112',
+	password: 'password',
+	activities: [activity2.id]
 })
 await KioskModel.create({
-	name: 'Kiosk without reader',
-	kioskTag: '44444',
-	password: 'password'
+	name: 'Kiosk with activities',
+	kioskTag: '22222',
+	password: 'password',
+	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+})
+await KioskModel.create({
+	name: 'Kiosk with activities and reader',
+	readerId: reader3.id,
+	kioskTag: '22223',
+	password: 'password',
+	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 
 logger.info('Database seeded')
