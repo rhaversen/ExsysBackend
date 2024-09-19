@@ -5,8 +5,8 @@ import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import OptionModel from './Option.js'
-import ProductModel from './Product.js'
+import OptionModel, { type IOption } from './Option.js'
+import ProductModel, { type IProduct } from './Product.js'
 import ActivityModel from './Activity.js'
 import PaymentModel, { type IPayment } from './Payment.js'
 
@@ -35,6 +35,24 @@ export interface IOrder extends Document {
 
 export interface IOrderPopulatedPaymentId extends IOrder {
 	paymentId: IPayment
+}
+
+export interface IOrderWithNamesPopulatedPaymentId {
+	_id: Schema.Types.ObjectId
+	activityId: Schema.Types.ObjectId
+	products: Array<{
+		id: { _id: IProduct['_id'], name: string }
+		quantity: number
+	}>
+	options?: Array<{
+		id: { _id: IOption['_id'], name: string }
+		quantity: number
+	}>
+	status?: 'pending' | 'confirmed' | 'delivered'
+	paymentId: IPayment
+	createdAt: Date
+	updatedAt: Date
+	toObject: any
 }
 
 // Sub-schema for products
@@ -174,6 +192,7 @@ orderSchema.path('paymentId').validate(async function (v: Schema.Types.ObjectId)
 
 // Adding indexes
 orderSchema.index({ createdAt: 1 })
+orderSchema.index({ paymentId: 1 })
 
 // Pre-save middleware
 orderSchema.pre('save', function (next) {

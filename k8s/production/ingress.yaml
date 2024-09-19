@@ -5,7 +5,13 @@ metadata:
     namespace: exsys-production
     annotations:
         cert-manager.io/cluster-issuer: letsencrypt-production
-        nginx.ingress.kubernetes.io/rewrite-target: /$2
+        # WebSocket support
+        nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+        nginx.ingress.kubernetes.io/upgrade: "websocket"
+        nginx.ingress.kubernetes.io/connection: "upgrade"
+        # Timeout settings (ensure they exceed Socket.IO's defaults)
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
 spec:
     ingressClassName: nginx
     tls:
@@ -16,10 +22,19 @@ spec:
         -   host: kantine.nyskivehus.dk
             http:
                 paths:
-                    -   backend:
+                    # API Path
+                    -   path: /api/
+                        pathType: Prefix
+                        backend:
                             service:
                                 name: backend-service
                                 port:
                                     number: 80
-                        path: /api(/|$)(.*) # Strips the prefix
+                    # Websocket Path
+                    -   path: /socket.io/
                         pathType: Prefix
+                        backend:
+                            service:
+                                name: backend-service
+                                port:
+                                    number: 80

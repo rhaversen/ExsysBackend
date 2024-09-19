@@ -5,7 +5,7 @@ import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
 // Own modules
-import OrderModel, { type IOrderPopulatedPaymentId } from '../models/Order.js'
+import OrderModel, { type IOrderPopulatedPaymentId, type IOrderWithNamesPopulatedPaymentId } from '../models/Order.js'
 import logger from '../utils/logger.js'
 import KioskModel from '../models/Kiosk.js'
 import { createReaderCheckout } from '../services/apiServices.js'
@@ -252,20 +252,45 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 				path: 'paymentId',
 				select: 'paymentStatus'
 			})
-			.exec() as IOrderPopulatedPaymentId[] | null
+			.populate({
+				path: 'products.id',
+				select: 'name'
+			})
+			.populate({
+				path: 'options.id',
+				select: 'name'
+			})
+			.exec() as unknown as IOrderWithNamesPopulatedPaymentId[] | null
 
-		// Concisely filter orders based on paymentStatus
-		const filteredOrders = orders?.filter(order =>
-			paymentStatus === undefined ||
-			(order.paymentId?.paymentStatus !== null && paymentStatus.split(',').includes(order.paymentId.paymentStatus))
-		)
-
-		// Remove the paymentId from the response
-		filteredOrders?.forEach((order: any) => {
-			order.paymentId = undefined
+		const transformedOrders = orders?.filter(order =>
+			// Filter out orders with paymentStatus that is not in the query
+			paymentStatus === undefined || (order.paymentId?.paymentStatus !== null && paymentStatus.split(',').includes(order.paymentId.paymentStatus))
+		).map(order => {
+			// Transform the products and options to only include the id, name and quantity
+			const transformedProducts = order.products.map(product => {
+				return {
+					_id: product.id._id,
+					name: product.id.name,
+					quantity: product.quantity
+				}
+			})
+			const transformedOptions = order.options?.map((option: any) => {
+				return {
+					_id: option.id._id,
+					name: option.id.name,
+					quantity: option.quantity
+				}
+			})
+			// Return the order with the transformed products and options, and without the paymentId
+			return {
+				...order.toObject(),
+				products: transformedProducts,
+				options: transformedOptions,
+				paymentId: undefined
+			}
 		})
 
-		res.status(200).json(filteredOrders)
+		res.status(200).json(transformedOrders)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

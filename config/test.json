@@ -60,5 +60,8 @@
 			"origin": "*",
 			"credentials": true
 		}
+	},
+	"redis": {
+		"prefix": "exsys-backend-test:"
 	}
 }

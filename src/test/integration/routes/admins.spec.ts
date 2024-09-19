@@ -25,7 +25,7 @@ describe('Admins routes', function () {
 		}
 		await AdminModel.create(adminFields)
 
-		const response = await agent.post('/v1/auth/login-admin-local').send(adminFields)
+		const response = await agent.post('/api/v1/auth/login-admin-local').send(adminFields)
 		sessionCookie = response.headers['set-cookie']
 	})
 
@@ -36,19 +36,19 @@ describe('Admins routes', function () {
 		}
 
 		it('should have status 201', async function () {
-			const response = await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.post('/v1/admins').send(testAdminFields1)
+			const response = await agent.post('/api/v1/admins').send(testAdminFields1)
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should create a new admin', async function () {
-			await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
+			await agent.post('/api/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
 
 			const admin = await AdminModel.findOne({ name: testAdminFields1.name })
 			expect(admin).to.exist
@@ -60,7 +60,7 @@ describe('Admins routes', function () {
 		})
 
 		it('should return the newly created object', async function () {
-			const response = await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testAdminFields1.name)
@@ -70,13 +70,13 @@ describe('Admins routes', function () {
 		})
 
 		it('should not return the password', async function () {
-			const response = await agent.post('/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
+			const response = await agent.post('/api/v1/admins').send(testAdminFields1).set('Cookie', sessionCookie)
 
 			expect(response.body).to.not.have.property('password')
 		})
 
 		it('should require a name', async function () {
-			const response = await agent.post('/v1/admins').send({
+			const response = await agent.post('/api/v1/admins').send({
 				...testAdminFields1,
 				name: undefined
 			}).set('Cookie', sessionCookie)
@@ -90,7 +90,7 @@ describe('Admins routes', function () {
 				_id: newId
 			}
 
-			await agent.post('/v1/admins').send(updatedFields).set('Cookie', sessionCookie)
+			await agent.post('/api/v1/admins').send(updatedFields).set('Cookie', sessionCookie)
 			const admin = await AdminModel.findOne({})
 			expect(admin?.id.toString()).to.not.equal(newId)
 		})
@@ -113,19 +113,19 @@ describe('Admins routes', function () {
 		})
 
 		it('should have status 200', async function () {
-			const response = await agent.get('/v1/admins').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/admins').set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.get('/v1/admins')
+			const response = await agent.get('/api/v1/admins')
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should return all admins', async function () {
-			const response = await agent.get('/v1/admins').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/admins').set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.an('array')
 			expect(response.body.map((admin: IAdmin) => admin.name)).to.include.members([testAdminFields1.name, testAdminFields2.name])
@@ -135,7 +135,7 @@ describe('Admins routes', function () {
 		})
 
 		it('should not send the password', async function () {
-			const response = await agent.get('/v1/admins').set('Cookie', sessionCookie)
+			const response = await agent.get('/api/v1/admins').set('Cookie', sessionCookie)
 
 			expect(response.body[0]).to.not.have.property('password')
 		})
@@ -159,7 +159,7 @@ describe('Admins routes', function () {
 		})
 
 		it('should patch an admin', async function () {
-			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const admin = await AdminModel.findOne({ name: updatedFields.name })
 
 			expect(admin?.name).to.equal(updatedFields.name)
@@ -168,19 +168,19 @@ describe('Admins routes', function () {
 		})
 
 		it('should have status 200', async function () {
-			const response = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent.patch(`/api/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields)
+			const response = await agent.patch(`/api/v1/admins/${originalAdmin?.id}`).send(updatedFields)
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should return the patched admin', async function () {
-			const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const res = await agent.patch(`/api/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(res.body.name).to.equal(updatedFields.name)
 			expect(res.body).to.have.property('createdAt')
@@ -189,13 +189,13 @@ describe('Admins routes', function () {
 		})
 
 		it('should not return the password', async function () {
-			const res = await agent.patch(`/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const res = await agent.patch(`/api/v1/admins/${originalAdmin?.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(res.body.password).to.be.undefined
 		})
 
 		it('should allow a partial update', async function () {
-			await agent.patch(`/v1/admins/${originalAdmin?.id}`).send({ name: updatedFields.name }).set('Cookie', sessionCookie)
+			await agent.patch(`/api/v1/admins/${originalAdmin?.id}`).send({ name: updatedFields.name }).set('Cookie', sessionCookie)
 			const admin = await AdminModel.findOne({ name: updatedFields.name })
 
 			expect(admin?.name).to.equal(updatedFields.name)

@@ -2,6 +2,7 @@
 import './utils/instrument.js'
 
 // Node.js built-in modules
+import { createServer } from 'node:http'
 
 // Third-party libraries
 import express from 'express'
@@ -23,6 +24,7 @@ import logger from './utils/logger.js'
 import config from './utils/setupConfig.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
+import { initSocket } from './utils/socket.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'
@@ -61,6 +63,8 @@ const {
 
 // Global variables and setup
 const app = express()
+const server = createServer(app)
+await initSocket(server)
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
@@ -79,8 +83,8 @@ app.use(cookieParser()) // For parsing cookies
 app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
 
 // Apply webhook cors config to webhook routes
-app.use('/v1/reader-callback', cors(webhookCorsConfig))
-app.use('/v1/reader-callback', readerCallbackRoutes)
+app.use('/api/v1/reader-callback', cors(webhookCorsConfig))
+app.use('/api/v1/reader-callback', readerCallbackRoutes)
 
 // Apply cors config to all other routes
 app.use(cors(corsConfig))
@@ -107,23 +111,23 @@ const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfi
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Use all routes
-app.use('/v1/orders', orderRoutes)
-app.use('/v1/products', productRoutes)
-app.use('/v1/admins', adminRoutes)
-app.use('/v1/rooms', roomRoutes)
-app.use('/v1/options', optionRoutes)
+app.use('/api/v1/orders', orderRoutes)
+app.use('/api/v1/products', productRoutes)
+app.use('/api/v1/admins', adminRoutes)
+app.use('/api/v1/rooms', roomRoutes)
+app.use('/api/v1/options', optionRoutes)
 app.use('/service', serviceRoutes)
-app.use('/v1/auth', authRoutes)
-app.use('/v1/activities', activityRoutes)
-app.use('/v1/kiosks', kioskRoutes)
-app.use('/v1/readers', readerRoutes)
-app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
+app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/activities', activityRoutes)
+app.use('/api/v1/kiosks', kioskRoutes)
+app.use('/api/v1/readers', readerRoutes)
+app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes
 app.use('/service', veryLowSensitivityApiLimiter)
 
 // Apply medium sensitivity for callback routes
-app.use('/v1/reader-callback', mediumSensitivityApiLimiter)
+app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply medium sensitivity for all other routes
 app.use(mediumSensitivityApiLimiter)
@@ -135,7 +139,7 @@ Sentry.setupExpressErrorHandler(app)
 app.use(globalErrorHandler)
 
 // Listen
-export const server = app.listen(expressPort, () => {
+server.listen(expressPort, () => {
 	logger.info(`Express is listening at http://localhost:${expressPort}`)
 })
 
@@ -196,4 +200,5 @@ gracefulShutdown(server,
 	}
 )
 
+export { server }
 export default app
