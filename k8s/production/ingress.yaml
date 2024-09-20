@@ -12,6 +12,9 @@ metadata:
         # Timeout settings (ensure they exceed Socket.IO's defaults)
         nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
         nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+        # Sticky sessions based on cookies
+        nginx.ingress.kubernetes.io/affinity: "cookie"
+        nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
 spec:
     ingressClassName: nginx
     tls:
