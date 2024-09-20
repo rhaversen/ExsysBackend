@@ -12,6 +12,17 @@ metadata:
         # Timeout settings (ensure they exceed Socket.IO's defaults)
         nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
         nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+        # Sticky sessions based on client IP
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+            set $forwarded_client_ip "";
+            if ($http_x_forwarded_for ~ "^([^,]+)") {
+            set $forwarded_client_ip $1;
+            }
+            set $client_ip $remote_addr;
+            if ($forwarded_client_ip != "") {
+            set $client_ip $forwarded_client_ip;
+            }
+        nginx.ingress.kubernetes.io/upstream-hash-by: "$client_ip"
 spec:
     ingressClassName: nginx
     tls:
