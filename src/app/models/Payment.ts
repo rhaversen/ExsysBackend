@@ -38,7 +38,7 @@ const paymentSchema = new Schema<IPayment>({
 
 // Pre-save middleware
 paymentSchema.pre('save', async function (next) {
-	logger.silly('Saving kiosk')
+	logger.silly('Saving Payment')
 	next()
 })
 
