@@ -1,5 +1,3 @@
-// paymentHandlers.ts
-
 // Node.js built-in modules
 
 // Own modules
@@ -20,12 +18,11 @@ export async function emitPaymentStatusUpdate (payment: IPayment): Promise<void>
 		const order = await OrderModel.findOne({ paymentId }).exec()
 
 		if (order === null) {
-			logger.warn('No orders found for paymentId')
+			logger.warn(`No orders found for paymentId ${paymentId}`)
 			return
 		}
 
 		const orderId = order.id as string
-		console.log('orderId:', orderId)
 
 		// Emit the update to all connected clients
 		io.emit('paymentStatusUpdated', {
@@ -33,7 +30,7 @@ export async function emitPaymentStatusUpdate (payment: IPayment): Promise<void>
 			paymentStatus: payment.paymentStatus
 		})
 
-		logger.info(`Broadcasted payment status update for order ${orderId}`)
+		logger.silly(`Broadcasted payment status update for order ${orderId}`)
 	} catch (error) {
 		logger.error(error)
 	}
