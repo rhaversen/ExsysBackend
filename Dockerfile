@@ -25,8 +25,8 @@ RUN chown -R exsys_backend_user:exsys_backend_user /app
 # Switch to user for subsequent commands
 USER exsys_backend_user
 
-# Install production dependencies
-RUN npm install --omit=dev
+# Clean install production dependencies
+RUN npm ci --omit=dev
 
 # Expose the port Express.js runs on
 EXPOSE 5000
