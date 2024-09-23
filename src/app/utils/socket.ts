@@ -23,9 +23,12 @@ let io: Server | undefined
 
 export async function initSocket (server: HttpServer): Promise<void> {
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
-		logger.debug('Initializing socket.io for testing/development')
+		logger.info('Initializing socket.io for testing/development')
 		io = new Server(server, {
 			cors: corsConfig
+		})
+		io.on('connection', (socket) => {
+			logger.silly(`Socket connected: ${socket.id}`)
 		})
 		return
 	}
@@ -61,13 +64,12 @@ export async function initSocket (server: HttpServer): Promise<void> {
 	}))
 
 	io.on('connection', (socket) => {
-		logger.info(`Socket connected: ${socket.id}`)
-		// Additional connection logic if necessary
+		logger.silly(`Socket connected: ${socket.id}`)
 	})
 }
 
 export function getSocket (): Server {
-	logger.debug('Getting socket.io instance')
+	logger.silly('Getting socket.io instance')
 	if (io === null || io === undefined) {
 		throw new Error('Socket.io is not initialized!')
 	}
