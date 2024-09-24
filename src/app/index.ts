@@ -65,6 +65,7 @@ const {
 const app = express()
 const server = createServer(app)
 await initSocket(server)
+app.set('trust proxy', true) // Trust the NGINX proxy for secure cookies
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
