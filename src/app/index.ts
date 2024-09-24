@@ -36,6 +36,7 @@ import authRoutes from './routes/auth.js'
 import activityRoutes from './routes/activities.js'
 import kioskRoutes from './routes/kiosks.js'
 import readerRoutes from './routes/readers.js'
+import sessionRoutes from './routes/sessions.js'
 
 // Callback routes
 import readerCallbackRoutes from './routes/readerCallback.js'
@@ -130,6 +131,7 @@ app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/activities', activityRoutes)
 app.use('/api/v1/kiosks', kioskRoutes)
 app.use('/api/v1/readers', readerRoutes)
+app.use('/api/v1/sessions', sessionRoutes)
 app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes
