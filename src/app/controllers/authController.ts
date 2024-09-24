@@ -10,10 +10,32 @@ import logger from '../utils/logger.js'
 import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
 
+// Extend the Session interface to include ipAddress
+declare module 'express-session' {
+	interface Session {
+		ipAddress?: string
+		loginTime?: Date
+		lastActivity?: Date
+		userAgent?: string
+	}
+}
+
 // Config
 const {
 	sessionExpiry
 } = config
+
+function normalizeIp (ipAddress: string | undefined): string {
+	if (ipAddress === undefined) return ''
+	// IPv6 localhost
+	if (ipAddress === '::1') return '127.0.0.1'
+	// IPv4-mapped IPv6 address
+	if (ipAddress.startsWith('::ffff:')) {
+		return ipAddress.replace('::ffff:', '')
+	}
+	// Regular IPv4 or IPv6 address
+	return ipAddress
+}
 
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in admin')
@@ -49,6 +71,15 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 					error: loginErr.message
 				})
 			}
+
+			// Normalize the IP address
+			const rawIp = req.ip ?? req.socket.remoteAddress
+			const ip = normalizeIp(rawIp)
+
+			// Store session data
+			req.session.ipAddress = ip
+			req.session.loginTime = new Date()
+			req.session.userAgent = req.headers['user-agent']
 
 			// Set maxAge for persistent sessions if requested
 			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
@@ -98,6 +129,15 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 					error: loginErr.message
 				})
 			}
+
+			// Normalize the IP address
+			const rawIp = req.ip ?? req.socket.remoteAddress
+			const ip = normalizeIp(rawIp)
+
+			// Store session data
+			req.session.ipAddress = ip
+			req.session.loginTime = new Date()
+			req.session.userAgent = req.headers['user-agent']
 
 			// Set maxAge for persistent sessions always
 			req.session.cookie.maxAge = sessionExpiry

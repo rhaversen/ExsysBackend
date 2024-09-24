@@ -111,6 +111,14 @@ configurePassport(passport) // Use passportConfig
 const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfig)
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
+// Middleware to update last activity on each request
+app.use((req, res, next) => {
+	if (req.session !== undefined) {
+		req.session.lastActivity = new Date()
+	}
+	next()
+})
+
 // Use all routes
 app.use('/api/v1/orders', orderRoutes)
 app.use('/api/v1/products', productRoutes)
