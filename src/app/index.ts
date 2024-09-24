@@ -62,9 +62,9 @@ const {
 } = config
 
 // Global variables and setup
-const app = express()
-const server = createServer(app)
-await initSocket(server)
+const app = express() // Create an Express application
+const server = createServer(app) // Create an HTTP server
+await initSocket(server) // Initialize socket.io
 app.set('trust proxy', true) // Trust the NGINX proxy for secure cookies
 
 // Connect to MongoDB in production and staging environment
