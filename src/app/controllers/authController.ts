@@ -9,11 +9,37 @@ import config from '../utils/setupConfig.js'
 import logger from '../utils/logger.js'
 import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
+import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
+import { type ISession } from '../models/Session.js'
+import { transformSession } from '../utils/sessionUtils.js'
+
+// Extend the Session interface to include ipAddress
+declare module 'express-session' {
+	interface Session {
+		ipAddress?: string
+		loginTime?: Date
+		lastActivity?: Date
+		userAgent?: string
+		type?: string
+	}
+}
 
 // Config
 const {
 	sessionExpiry
 } = config
+
+function normalizeIp (ipAddress: string | undefined): string {
+	if (ipAddress === undefined) return ''
+	// IPv6 localhost
+	if (ipAddress === '::1') return '127.0.0.1'
+	// IPv4-mapped IPv6 address
+	if (ipAddress.startsWith('::ffff:')) {
+		return ipAddress.replace('::ffff:', '')
+	}
+	// Regular IPv4 or IPv6 address
+	return ipAddress
+}
 
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in admin')
@@ -50,16 +76,35 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 				})
 			}
 
+			// Normalize the IP address
+			const rawIp = req.ip ?? req.socket.remoteAddress
+			const ip = normalizeIp(rawIp)
+
+			// Store session data
+			req.session.ipAddress = ip
+			req.session.loginTime = new Date()
+			req.session.userAgent = req.headers['user-agent']
+			req.session.type = 'admin'
+
 			// Set maxAge for persistent sessions if requested
 			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
 				req.session.cookie.maxAge = sessionExpiry
 			}
 
+			const sessionDoc: ISession = {
+				_id: req.sessionID,
+				session: JSON.stringify(req.session),
+				expires: req.session.cookie.expires ?? null
+			}
+			const transformedSession = transformSession(sessionDoc, req.sessionID)
+
 			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
-			return res.status(200).json({
+			res.status(200).json({
 				auth: true,
 				user
 			})
+
+			emitSessionCreated(transformedSession)
 		})
 	})(req, res, next)
 }
@@ -99,14 +144,33 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				})
 			}
 
+			// Normalize the IP address
+			const rawIp = req.ip ?? req.socket.remoteAddress
+			const ip = normalizeIp(rawIp)
+
+			// Store session data
+			req.session.ipAddress = ip
+			req.session.loginTime = new Date()
+			req.session.userAgent = req.headers['user-agent']
+			req.session.type = 'kiosk'
+
 			// Set maxAge for persistent sessions always
 			req.session.cookie.maxAge = sessionExpiry
 
+			const sessionDoc: ISession = {
+				_id: req.sessionID,
+				session: JSON.stringify(req.session),
+				expires: req.session.cookie.expires ?? null
+			}
+			const transformedSession = transformSession(sessionDoc, req.sessionID)
+
 			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
-			return res.status(200).json({
+			res.status(200).json({
 				auth: true,
 				user
 			})
+
+			emitSessionCreated(transformedSession)
 		})
 	})(req, res, next)
 }
@@ -127,6 +191,8 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 			}
 			res.clearCookie('connect.sid')
 			res.status(200).json({ message: 'Succesfuldt logget ud' })
+
+			emitSessionDeleted(req.sessionID)
 		})
 	})
 }

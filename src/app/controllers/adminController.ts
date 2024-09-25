@@ -6,7 +6,8 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import AdminModel from '../models/Admin.js'
+import AdminModel, { type IAdmin } from '../models/Admin.js'
+import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSockets/adminHandlers.js'
 
 export async function createAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating admin')
@@ -23,12 +24,15 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 			password,
 			name
 		})
-		res.status(201).json({
-			_id: newAdmin._id,
+		const transformedAdmin = {
+			_id: newAdmin.id,
 			name: newAdmin.name,
 			createdAt: newAdmin.createdAt,
 			updatedAt: newAdmin.updatedAt
-		})
+		}
+		res.status(201).json(transformedAdmin)
+
+		emitAdminCreated(transformedAdmin)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -45,7 +49,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 		const admins = await AdminModel.find({})
 		res.status(200).json(
 			admins.map(admin => ({
-				_id: admin._id,
+				_id: admin.id,
 				name: admin.name,
 				createdAt: admin.createdAt,
 				updatedAt: admin.updatedAt
@@ -85,12 +89,15 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		await session.commitTransaction()
 
-		res.status(200).json({
-			_id: admin._id,
+		const transformedAdmin = {
+			_id: admin.id,
 			name: admin.name,
 			createdAt: admin.createdAt,
 			updatedAt: admin.updatedAt
-		})
+		}
+		res.status(200).json(transformedAdmin)
+
+		emitAdminUpdated(transformedAdmin)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -106,8 +113,21 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 export async function deleteAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Deleting admin')
 
+	const user = req.user as IAdmin
+
 	if (typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
 		res.status(400).json({ error: 'Kræver konfirmering' })
+		return
+	}
+
+	const adminCount = await AdminModel.countDocuments()
+	if (adminCount === 1) {
+		res.status(400).json({ error: 'Kan ikke slette den sidste admin' })
+		return
+	}
+
+	if (user.id === req.params.id) {
+		res.status(400).json({ error: 'Kan ikke slette sig selv' })
 		return
 	}
 
@@ -120,6 +140,8 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 		}
 
 		res.status(204).send()
+
+		emitAdminDeleted(admin.id as string)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

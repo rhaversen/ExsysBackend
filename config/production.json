@@ -49,7 +49,7 @@
 	},
 	"cookieOptions": {
 		"httpOnly": true,
-		"secure": false,
+		"secure": true,
 		"SameSite": "strict"
 	},
 	"session": {
