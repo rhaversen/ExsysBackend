@@ -28,6 +28,13 @@ export interface IAdmin extends Document {
 	comparePassword: (password: string) => Promise<boolean>
 }
 
+export interface IAdminFrontend {
+	_id: string
+	name: string
+	createdAt: Date
+	updatedAt: Date
+}
+
 // Schema
 const adminSchema = new Schema<IAdmin>({
 	name: {

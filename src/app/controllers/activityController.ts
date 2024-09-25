@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import ActivityModel from '../models/Activity.js'
+import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
 
 export async function createActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating activity')
@@ -20,6 +21,8 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	try {
 		const newActivity = await (await ActivityModel.create(allowedFields)).populate('roomId')
 		res.status(201).json(newActivity)
+
+		emitActivityPosted(newActivity)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -91,6 +94,8 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 
 		await session.commitTransaction()
 		res.status(200).json(activity)
+
+		emitActivityUpdated(activity)
 	} catch (error) {
 		await session.abortTransaction()
 
@@ -121,6 +126,8 @@ export async function deleteActivity (req: Request, res: Response, next: NextFun
 		}
 
 		res.status(204).send()
+
+		emitActivityDeleted(req.params.id)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

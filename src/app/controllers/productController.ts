@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import ProductModel from '../models/Product.js'
 import logger from '../utils/logger.js'
+import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
 
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating product')
@@ -23,6 +24,7 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 	try {
 		const newProduct = await (await ProductModel.create(allowedFields)).populate('options')
 		res.status(201).json(newProduct)
+		emitProductCreated(newProduct)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -77,7 +79,9 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 
 		await session.commitTransaction()
 
-		res.json(product) // Ensure response only includes appropriate data
+		res.json(product)
+
+		emitProductUpdated(product)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -107,6 +111,8 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 		}
 
 		res.status(204).send()
+
+		emitProductDeleted(product.id as string)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

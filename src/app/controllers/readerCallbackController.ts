@@ -51,10 +51,9 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 
 		await payment.save()
 
-		// Emit the payment status update event to clients watching the associated orders
-		await emitPaymentStatusUpdate(payment)
-
 		res.status(200).send()
+
+		await emitPaymentStatusUpdate(payment)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

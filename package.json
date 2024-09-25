@@ -8,6 +8,7 @@
 		"//2": "———————————————————————————————————————————————————Start————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————",
 		"start": "node \"index.js\"",
 		"start:dev": "node --env-file .env \"dist/development/index.js\"",
+		"build-start:dev": "npm run build && npm run start:dev",
 		"ts:start:dev": "node --env-file .env --loader ts-node/esm \"src/development/index.ts\"",
 		"//3": "———————————————————————————————————————————————————TS—Test——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————",
 		"ts:test": "npm run ts:test:integration && npm run ts:test:unit && npm run ts:test:fuzz",

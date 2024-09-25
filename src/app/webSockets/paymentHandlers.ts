@@ -24,7 +24,6 @@ export async function emitPaymentStatusUpdate (payment: IPayment): Promise<void>
 
 		const orderId = order.id as string
 
-		// Emit the update to all connected clients
 		io.emit('paymentStatusUpdated', {
 			orderId,
 			paymentStatus: payment.paymentStatus
