@@ -9,6 +9,9 @@ import config from '../utils/setupConfig.js'
 import logger from '../utils/logger.js'
 import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
+import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
+import { type ISession } from '../models/Session.js'
+import { transformSession } from '../utils/sessionUtils.js'
 
 // Extend the Session interface to include ipAddress
 declare module 'express-session' {
@@ -17,6 +20,7 @@ declare module 'express-session' {
 		loginTime?: Date
 		lastActivity?: Date
 		userAgent?: string
+		type?: string
 	}
 }
 
@@ -80,14 +84,22 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			req.session.ipAddress = ip
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
+			req.session.type = 'admin'
 
 			// Set maxAge for persistent sessions if requested
 			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
 				req.session.cookie.maxAge = sessionExpiry
 			}
 
+			const sessionDoc: ISession = {
+				_id: req.sessionID,
+				session: JSON.stringify(req.session),
+				expires: req.session.cookie.expires ?? null
+			}
+			const transformedSession = transformSession(sessionDoc, req.sessionID)
+
 			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
-			return res.status(200).json({
+			res.status(200).json({
 				auth: true,
 				user
 			})
@@ -138,12 +150,20 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			req.session.ipAddress = ip
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
+			req.session.type = 'kiosk'
 
 			// Set maxAge for persistent sessions always
 			req.session.cookie.maxAge = sessionExpiry
 
+			const sessionDoc: ISession = {
+				_id: req.sessionID,
+				session: JSON.stringify(req.session),
+				expires: req.session.cookie.expires ?? null
+			}
+			const transformedSession = transformSession(sessionDoc, req.sessionID)
+
 			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
-			return res.status(200).json({
+			res.status(200).json({
 				auth: true,
 				user
 			})

@@ -25,6 +25,8 @@ import config from './utils/setupConfig.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
+import { type ISession } from './models/Session.js'
+import { transformSession } from './utils/sessionUtils.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'
@@ -43,6 +45,7 @@ import readerCallbackRoutes from './routes/readerCallback.js'
 
 // Service routes
 import serviceRoutes from './routes/service.js'
+import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Logging environment
 if (typeof process.env.NODE_ENV !== 'undefined') {
@@ -117,6 +120,16 @@ app.use((req, res, next) => {
 	if (req.session !== undefined) {
 		req.session.lastActivity = new Date()
 	}
+
+	const sessionDoc: ISession = {
+		_id: req.sessionID,
+		session: JSON.stringify(req.session),
+		expires: req.session.cookie.expires ?? null
+	}
+
+	const transformedSession = transformSession(sessionDoc, req.sessionID)
+
+	emitSessionUpdated(transformedSession)
 	next()
 })
 
