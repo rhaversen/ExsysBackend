@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import RoomModel from '../models/Room.js'
+import { emitRoomCreated, emitRoomDeleted, emitRoomUpdated } from '../webSockets/roomHandlers.js'
 
 export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating room')
@@ -20,6 +21,7 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 	try {
 		const newRoom = await RoomModel.create(allowedFields)
 		res.status(201).json(newRoom)
+		emitRoomCreated(newRoom)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -90,7 +92,9 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 
 		await session.commitTransaction()
 
-		res.status(200).json(room) // Ensure response only includes appropriate data
+		res.status(200).json(room)
+
+		emitRoomUpdated(room)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -120,6 +124,8 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 		}
 
 		res.status(204).send()
+
+		emitRoomDeleted(room.id as string)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

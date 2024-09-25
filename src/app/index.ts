@@ -25,6 +25,8 @@ import config from './utils/setupConfig.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
+import { type ISession } from './models/Session.js'
+import { transformSession } from './utils/sessionUtils.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'
@@ -36,12 +38,14 @@ import authRoutes from './routes/auth.js'
 import activityRoutes from './routes/activities.js'
 import kioskRoutes from './routes/kiosks.js'
 import readerRoutes from './routes/readers.js'
+import sessionRoutes from './routes/sessions.js'
 
 // Callback routes
 import readerCallbackRoutes from './routes/readerCallback.js'
 
 // Service routes
 import serviceRoutes from './routes/service.js'
+import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Logging environment
 if (typeof process.env.NODE_ENV !== 'undefined') {
@@ -62,9 +66,10 @@ const {
 } = config
 
 // Global variables and setup
-const app = express()
-const server = createServer(app)
-await initSocket(server)
+const app = express() // Create an Express application
+const server = createServer(app) // Create an HTTP server
+await initSocket(server) // Initialize socket.io
+app.set('trust proxy', true) // Trust the NGINX proxy for secure cookies
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
@@ -110,6 +115,24 @@ configurePassport(passport) // Use passportConfig
 const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfig)
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
+// Middleware to update last activity on each request
+app.use((req, res, next) => {
+	if (req.session !== undefined) {
+		req.session.lastActivity = new Date()
+	}
+
+	const sessionDoc: ISession = {
+		_id: req.sessionID,
+		session: JSON.stringify(req.session),
+		expires: req.session.cookie.expires ?? null
+	}
+
+	const transformedSession = transformSession(sessionDoc, req.sessionID)
+
+	emitSessionUpdated(transformedSession)
+	next()
+})
+
 // Use all routes
 app.use('/api/v1/orders', orderRoutes)
 app.use('/api/v1/products', productRoutes)
@@ -121,6 +144,7 @@ app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/activities', activityRoutes)
 app.use('/api/v1/kiosks', kioskRoutes)
 app.use('/api/v1/readers', readerRoutes)
+app.use('/api/v1/sessions', sessionRoutes)
 app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes

@@ -29,6 +29,13 @@ export interface IReader extends Document {
 	generateNewReaderTag: () => Promise<string>
 }
 
+export interface IReaderFrontend {
+	_id: string
+	readerTag: string
+	createdAt: Date
+	updatedAt: Date
+}
+
 // Schema
 const readerSchema = new Schema<IReader>({
 	apiReferenceId: {

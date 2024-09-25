@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import OptionModel from '../models/Option.js'
 import logger from '../utils/logger.js'
+import { emitOptionCreated, emitOptionDeleted, emitOptionUpdated } from '../webSockets/optionHandlers.js'
 
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating option')
@@ -21,6 +22,8 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 	try {
 		const newOption = await OptionModel.create(allowedFields)
 		res.status(201).json(newOption)
+
+		emitOptionCreated(newOption)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -71,7 +74,9 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 
-		res.json(option) // Ensure response only includes appropriate data
+		res.json(option)
+
+		emitOptionUpdated(option)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -101,6 +106,8 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 		}
 
 		res.status(204).send()
+
+		emitOptionDeleted(option.id as string)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

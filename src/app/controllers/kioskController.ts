@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
+import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
@@ -22,15 +23,18 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 
 	try {
 		const newKiosk = await (await (await KioskModel.create(allowedFields)).populate('activities')).populate('readerId')
-		res.status(201).json({
-			_id: newKiosk._id,
+		const transformedKiosk = {
+			_id: newKiosk.id,
 			name: newKiosk.name,
 			readerId: newKiosk.readerId,
 			kioskTag: newKiosk.kioskTag,
 			activities: newKiosk.activities,
 			createdAt: newKiosk.createdAt,
 			updatedAt: newKiosk.updatedAt
-		})
+		}
+		res.status(201).json(transformedKiosk)
+
+		emitKioskCreated(transformedKiosk)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -153,15 +157,19 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		await (await kiosk.populate('activities')).populate('readerId')
 
 		await session.commitTransaction()
-		res.status(200).json({
-			_id: kiosk._id,
+
+		const transformedKiosk = {
+			_id: kiosk.id,
 			name: kiosk.name,
 			readerId: kiosk.readerId,
 			kioskTag: kiosk.kioskTag,
 			activities: kiosk.activities,
 			createdAt: kiosk.createdAt,
 			updatedAt: kiosk.updatedAt
-		})
+		}
+		res.status(200).json(transformedKiosk)
+
+		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
 		await session.abortTransaction()
 
@@ -215,6 +223,8 @@ export async function deleteKiosk (req: Request, res: Response, next: NextFuncti
 		}
 
 		res.status(204).send()
+
+		emitKioskDeleted(kiosk.id as string)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
