@@ -49,8 +49,7 @@ export async function emitOrderPosted (order: IOrder): Promise<void> {
 			paymentId: undefined
 		}
 
-		// Emit the transformed order to all connected clients
-		io.emit('orderPosted', transformedOrder)
+		io.emit('orderCreated', transformedOrder)
 
 		logger.silly(`Broadcasted order posted for order ${order.id}`)
 	} catch (error) {
