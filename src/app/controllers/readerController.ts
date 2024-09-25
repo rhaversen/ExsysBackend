@@ -8,6 +8,7 @@ import mongoose from 'mongoose'
 import ReaderModel from '../models/Reader.js'
 import logger from '../utils/logger.js'
 import { pairReader, unpairReader } from '../services/apiServices.js'
+import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webSockets/readerHandlers.js'
 
 export async function createReader (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating reader')
@@ -35,12 +36,17 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 			apiReferenceId,
 			readerTag
 		})
-		res.status(201).json({
-			_id: newReader._id,
+
+		const transformedReader = {
+			_id: newReader.id,
 			readerTag: newReader.readerTag,
 			createdAt: newReader.createdAt,
 			updatedAt: newReader.updatedAt
-		})
+		}
+
+		res.status(201).json(transformedReader)
+
+		emitReaderCreated(transformedReader)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -89,7 +95,16 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 
-		res.status(200).json(reader)
+		const transformedReader = {
+			_id: reader.id,
+			readerTag: reader.readerTag,
+			createdAt: reader.createdAt,
+			updatedAt: reader.updatedAt
+		}
+
+		res.status(200).json(transformedReader)
+
+		emitReaderUpdated(transformedReader)
 	} catch (error) {
 		await session.abortTransaction()
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -128,6 +143,8 @@ export async function deleteReader (req: Request, res: Response, next: NextFunct
 		await ReaderModel.findByIdAndDelete(req.params.id)
 
 		res.status(204).send()
+
+		emitReaderDeleted(reader.id as string)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

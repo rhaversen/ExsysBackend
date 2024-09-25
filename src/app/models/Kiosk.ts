@@ -40,6 +40,16 @@ export interface IKiosk extends Document {
 	generateNewKioskTag: () => Promise<string>
 }
 
+export interface IKioskFrontend {
+	_id: string
+	name: string
+	kioskTag: string
+	activities: Schema.Types.ObjectId[] | string[]
+	readerId: Schema.Types.ObjectId | string[] | undefined
+	createdAt: Date
+	updatedAt: Date
+}
+
 // Schema
 const kioskSchema = new Schema<IKiosk>({
 	name: {

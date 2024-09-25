@@ -174,7 +174,6 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		// Respond with the new order
 		res.status(201).json(newOrder)
 
-		// Emit the orderPosted event to connected clients
 		await emitOrderPosted(newOrder)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

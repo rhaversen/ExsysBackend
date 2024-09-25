@@ -103,6 +103,8 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 				auth: true,
 				user
 			})
+
+			emitSessionCreated(transformedSession)
 		})
 	})(req, res, next)
 }
@@ -167,6 +169,8 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				auth: true,
 				user
 			})
+
+			emitSessionCreated(transformedSession)
 		})
 	})(req, res, next)
 }
@@ -187,6 +191,8 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 			}
 			res.clearCookie('connect.sid')
 			res.status(200).json({ message: 'Succesfuldt logget ud' })
+
+			emitSessionDeleted(req.sessionID)
 		})
 	})
 }
