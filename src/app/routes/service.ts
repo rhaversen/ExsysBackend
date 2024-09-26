@@ -46,4 +46,8 @@ router.get('/debug-sentry', (req, res) => {
 	throw new Error('Sentry error')
 })
 
+router.get('/ip', (request, response) => response.send(request.ip))
+
+router.get('/x-forwarded-for', (request, response) => response.send(request.headers['x-forwarded-for']))
+
 export default router
