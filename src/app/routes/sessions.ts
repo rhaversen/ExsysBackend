@@ -8,7 +8,7 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin } from '../middleware/authorization.js'
 
 // Controller functions
-import { deleteSession, getSessions } from '../controllers/sessionController.js'
+import { deleteSession, getCurrentSession, getSessions } from '../controllers/sessionController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -23,6 +23,18 @@ const router = Router()
 router.get('/',
 	isAdmin,
 	asyncErrorHandler(getSessions)
+)
+
+/**
+ * @route GET api/v1/sessions/current
+ * @desc Get the current session
+ * @access Private
+ * @return {number} res.status - The status code of the HTTP response.
+ * @return {object} res.body - The current session object.
+ */
+router.get('/current',
+	isAdmin,
+	asyncErrorHandler(getCurrentSession)
 )
 
 /**
