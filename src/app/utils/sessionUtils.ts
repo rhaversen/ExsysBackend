@@ -11,12 +11,10 @@ export interface TransformedSession {
 	loginTime?: Date
 	lastActivity?: Date
 	userAgent?: string
-	isCurrentSession: boolean
 }
 
 export function transformSession (
-	sessionDoc: ISession,
-	currentSessionID?: string
+	sessionDoc: ISession
 ): TransformedSession {
 	const sessionData = JSON.parse(sessionDoc.session) as ParsedSessionData
 	const userId = sessionData?.passport?.user?.toString() ?? null
@@ -32,7 +30,6 @@ export function transformSession (
 		ipAddress: sessionData.ipAddress,
 		loginTime: sessionData.loginTime,
 		lastActivity: sessionData.lastActivity,
-		userAgent: sessionData.userAgent,
-		isCurrentSession: sessionDoc._id === currentSessionID
+		userAgent: sessionData.userAgent
 	}
 }

@@ -30,7 +30,7 @@ const {
 } = config
 
 function normalizeIp (ipAddress: string | undefined): string {
-	if (ipAddress === undefined) return ''
+	if (ipAddress === undefined) return 'Ukendt IP'
 	// IPv6 localhost
 	if (ipAddress === '::1') return '127.0.0.1'
 	// IPv4-mapped IPv6 address
@@ -39,6 +39,29 @@ function normalizeIp (ipAddress: string | undefined): string {
 	}
 	// Regular IPv4 or IPv6 address
 	return ipAddress
+}
+
+const getClientIpFromForwardedHeader = (req: Request): string => {
+	const forwardedHeader = req.headers.forwarded
+
+	if (forwardedHeader !== undefined) {
+		// Split the Forwarded header into parts by semicolon or comma
+		const parts = forwardedHeader.split(';').map(part => part.trim())
+
+		for (const part of parts) {
+			if (part.startsWith('for=')) {
+				// Extract the value after 'for=' and remove surrounding quotes if present
+				let clientIp = part.slice(4).trim()
+				if (clientIp.startsWith('"') && clientIp.endsWith('"')) {
+					clientIp = clientIp.slice(1, -1)
+				}
+				return normalizeIp(clientIp)
+			}
+		}
+	}
+
+	// Fallback to undefined if no valid Forwarded header is found
+	return normalizeIp(req.socket.remoteAddress)
 }
 
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -76,12 +99,8 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 				})
 			}
 
-			// Normalize the IP address
-			const rawIp = req.ip ?? req.socket.remoteAddress
-			const ip = normalizeIp(rawIp)
-
 			// Store session data
-			req.session.ipAddress = ip
+			req.session.ipAddress = getClientIpFromForwardedHeader(req)
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'admin'
@@ -96,7 +115,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 				session: JSON.stringify(req.session),
 				expires: req.session.cookie.expires ?? null
 			}
-			const transformedSession = transformSession(sessionDoc, req.sessionID)
+			const transformedSession = transformSession(sessionDoc)
 
 			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
 			res.status(200).json({
@@ -144,12 +163,8 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				})
 			}
 
-			// Normalize the IP address
-			const rawIp = req.ip ?? req.socket.remoteAddress
-			const ip = normalizeIp(rawIp)
-
 			// Store session data
-			req.session.ipAddress = ip
+			req.session.ipAddress = getClientIpFromForwardedHeader(req)
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'kiosk'
@@ -162,7 +177,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				session: JSON.stringify(req.session),
 				expires: req.session.cookie.expires ?? null
 			}
-			const transformedSession = transformSession(sessionDoc, req.sessionID)
+			const transformedSession = transformSession(sessionDoc)
 
 			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
 			res.status(200).json({
@@ -178,6 +193,8 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 export async function logoutLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging out')
 
+	emitSessionDeleted(req.sessionID)
+
 	req.logout(function (err) {
 		if (err !== null && err !== undefined) {
 			next(err)
@@ -191,8 +208,6 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 			}
 			res.clearCookie('connect.sid')
 			res.status(200).json({ message: 'Succesfuldt logget ud' })
-
-			emitSessionDeleted(req.sessionID)
 		})
 	})
 }

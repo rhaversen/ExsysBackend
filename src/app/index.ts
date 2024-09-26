@@ -69,7 +69,6 @@ const {
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
 await initSocket(server) // Initialize socket.io
-app.set('trust proxy', true) // Trust the NGINX proxy for secure cookies
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
@@ -117,19 +116,19 @@ const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Middleware to update last activity on each request
 app.use((req, res, next) => {
-	if (req.session !== undefined) {
+	if (req.isAuthenticated() && req.session !== undefined) {
 		req.session.lastActivity = new Date()
+
+		const sessionDoc: ISession = {
+			_id: req.sessionID,
+			session: JSON.stringify(req.session),
+			expires: req.session.cookie.expires ?? null
+		}
+
+		const transformedSession = transformSession(sessionDoc)
+
+		emitSessionUpdated(transformedSession)
 	}
-
-	const sessionDoc: ISession = {
-		_id: req.sessionID,
-		session: JSON.stringify(req.session),
-		expires: req.session.cookie.expires ?? null
-	}
-
-	const transformedSession = transformSession(sessionDoc, req.sessionID)
-
-	emitSessionUpdated(transformedSession)
 	next()
 })
 
