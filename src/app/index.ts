@@ -127,7 +127,7 @@ app.use((req, res, next) => {
 		expires: req.session.cookie.expires ?? null
 	}
 
-	const transformedSession = transformSession(sessionDoc, req.sessionID)
+		const transformedSession = transformSession(sessionDoc)
 
 	emitSessionUpdated(transformedSession)
 	next()

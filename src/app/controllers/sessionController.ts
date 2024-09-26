@@ -31,7 +31,7 @@ export async function getSessions (req: Request, res: Response, next: NextFuncti
 		const sessions = await Session.find({}).exec()
 
 		const transformedSessions = sessions.map((sessionDoc) =>
-			transformSession(sessionDoc, req.sessionID)
+			transformSession(sessionDoc)
 		)
 
 		res.status(200).json(transformedSessions)

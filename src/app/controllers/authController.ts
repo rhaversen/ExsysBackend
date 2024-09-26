@@ -115,7 +115,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 				session: JSON.stringify(req.session),
 				expires: req.session.cookie.expires ?? null
 			}
-			const transformedSession = transformSession(sessionDoc, req.sessionID)
+			const transformedSession = transformSession(sessionDoc)
 
 			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
 			res.status(200).json({
@@ -177,7 +177,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				session: JSON.stringify(req.session),
 				expires: req.session.cookie.expires ?? null
 			}
-			const transformedSession = transformSession(sessionDoc, req.sessionID)
+			const transformedSession = transformSession(sessionDoc)
 
 			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
 			res.status(200).json({
