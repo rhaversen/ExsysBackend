@@ -29,41 +29,6 @@ const {
 	sessionExpiry
 } = config
 
-function normalizeIp (ipAddress: string | undefined): string {
-	if (ipAddress === undefined) return 'Ukendt IP'
-	// IPv6 localhost
-	if (ipAddress === '::1') return '127.0.0.1'
-	// IPv4-mapped IPv6 address
-	if (ipAddress.startsWith('::ffff:')) {
-		return ipAddress.replace('::ffff:', '')
-	}
-	// Regular IPv4 or IPv6 address
-	return ipAddress
-}
-
-const getClientIpFromForwardedHeader = (req: Request): string => {
-	const forwardedHeader = req.headers.forwarded
-
-	if (forwardedHeader !== undefined) {
-		// Split the Forwarded header into parts by semicolon or comma
-		const parts = forwardedHeader.split(';').map(part => part.trim())
-
-		for (const part of parts) {
-			if (part.startsWith('for=')) {
-				// Extract the value after 'for=' and remove surrounding quotes if present
-				let clientIp = part.slice(4).trim()
-				if (clientIp.startsWith('"') && clientIp.endsWith('"')) {
-					clientIp = clientIp.slice(1, -1)
-				}
-				return normalizeIp(clientIp)
-			}
-		}
-	}
-
-	// Fallback to undefined if no valid Forwarded header is found
-	return normalizeIp(req.socket.remoteAddress)
-}
-
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in admin')
 
@@ -100,7 +65,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = getClientIpFromForwardedHeader(req)
+			req.session.ipAddress = req.ip ?? 'Ukendt IP'
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'admin'
@@ -164,7 +129,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = getClientIpFromForwardedHeader(req)
+			req.session.ipAddress = req.ip ?? 'Ukendt IP'
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'kiosk'
