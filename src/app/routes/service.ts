@@ -5,22 +5,43 @@ import { Router } from 'express'
 import mongoose from 'mongoose'
 
 // Own modules
+import { getSocketStatus } from '../utils/socket.js'
 
 // Destructuring and global variables
 const router = Router()
 
+/**
+ * @route GET api/service/livez
+ * @desc Check if the server is live
+ * @access Public
+ * @return {number} res.status - The status code of the HTTP response.
+ */
 router.get('/livez', (req, res) => {
 	res.status(200).send('OK')
 })
 
+/**
+ * @route GET api/service/readyz
+ * @desc Check if the database and Socket.io are ready
+ * @access Public
+ * @return {number} res.status - The status code of the HTTP response.
+ */
 router.get('/readyz', (req, res) => {
-	if (mongoose.connection.readyState === 1) {
+	const mongooseReady = mongoose.connection.readyState === 1
+	const socketReady = getSocketStatus()
+	if (mongooseReady && socketReady) {
 		return res.status(200).send('OK')
 	} else {
-		return res.status(503).send('Database unavailable')
+		return res.status(503).send('Database or Socket.io unavailable')
 	}
 })
 
+/**
+ * @route GET api/service/debug-sentry
+ * @desc Throw an error to test Sentry
+ * @access Public
+ * @return {number} res.status - The status code of the HTTP response.
+ */
 router.get('/debug-sentry', (req, res) => {
 	throw new Error('Sentry error')
 })

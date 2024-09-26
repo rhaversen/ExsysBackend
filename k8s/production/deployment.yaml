@@ -32,14 +32,14 @@ spec:
                     imagePullPolicy: Always
                     livenessProbe:
                         httpGet:
-                            path: service/livez
+                            path: api/service/livez
                             port: 5000
                         periodSeconds: 10
                         initialDelaySeconds: 15
                         failureThreshold: 5
                     readinessProbe:
                         httpGet:
-                            path: service/readyz
+                            path: api/service/readyz
                             port: 5000
                         periodSeconds: 10
                         initialDelaySeconds: 15

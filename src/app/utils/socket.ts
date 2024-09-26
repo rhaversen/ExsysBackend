@@ -75,3 +75,7 @@ export function getSocket (): Server {
 	}
 	return io
 }
+
+export function getSocketStatus (): boolean {
+	return io !== null && io !== undefined
+}
