@@ -47,7 +47,18 @@ router.get('/debug-sentry', (req, res) => {
 })
 
 router.get('/ip', (request, response) => response.send(request.ip))
-
+router.get('/ips', (request, response) => response.send(request.ips))
+router.get('/hostname', (request, response) => response.send(request.hostname))
+router.get('/protocol', (request, response) => response.send(request.protocol))
+router.get('/secure', (request, response) => response.send(request.secure))
+router.get('/subdomains', (request, response) => response.send(request.subdomains))
 router.get('/x-forwarded-for', (request, response) => response.send(request.headers['x-forwarded-for']))
+router.get('/x-forwarded-host', (request, response) => response.send(request.headers['x-forwarded-host']))
+router.get('forwarded', (request, response) => response.send(request.headers.forwarded))
+router.get('/x-real-ip', (request, response) => response.send(request.headers['x-real-ip']))
+router.get('/connection-remote-address', (request, response) => response.send(request.socket.remoteAddress))
+router.get('/connection-remote-port', (request, response) => response.send(request.socket.remotePort))
+router.get('/connection-local-address', (request, response) => response.send(request.socket.localAddress))
+router.get('/connection-local-port', (request, response) => response.send(request.socket.localPort))
 
 export default router
