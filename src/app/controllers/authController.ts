@@ -178,6 +178,8 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 export async function logoutLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging out')
 
+	emitSessionDeleted(req.sessionID)
+
 	req.logout(function (err) {
 		if (err !== null && err !== undefined) {
 			next(err)
@@ -191,8 +193,6 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 			}
 			res.clearCookie('connect.sid')
 			res.status(200).json({ message: 'Succesfuldt logget ud' })
-
-			emitSessionDeleted(req.sessionID)
 		})
 	})
 }
