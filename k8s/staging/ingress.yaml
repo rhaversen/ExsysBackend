@@ -15,8 +15,6 @@ metadata:
         # Sticky sessions based on cookies
         nginx.ingress.kubernetes.io/affinity: "cookie"
         nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
-        # Forwarded headers support
-        nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
 spec:
     ingressClassName: nginx
     tls:
