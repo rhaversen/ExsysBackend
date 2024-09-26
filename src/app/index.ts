@@ -69,7 +69,7 @@ const {
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
 await initSocket(server) // Initialize socket.io
-app.set('trust proxy', 1) // Trust first proxy
+app.set('trust proxy', 2) // Trust the first two proxies
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
