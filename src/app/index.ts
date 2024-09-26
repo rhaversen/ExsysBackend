@@ -27,6 +27,7 @@ import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
 import { type ISession } from './models/Session.js'
 import { transformSession } from './utils/sessionUtils.js'
+import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'
@@ -45,7 +46,6 @@ import readerCallbackRoutes from './routes/readerCallback.js'
 
 // Service routes
 import serviceRoutes from './routes/service.js'
-import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Logging environment
 if (typeof process.env.NODE_ENV !== 'undefined') {
@@ -69,6 +69,7 @@ const {
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
 await initSocket(server) // Initialize socket.io
+app.set('trust proxy', 1) // Trust first proxy
 
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
