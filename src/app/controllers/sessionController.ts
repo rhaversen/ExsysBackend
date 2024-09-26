@@ -31,10 +31,27 @@ export async function getSessions (req: Request, res: Response, next: NextFuncti
 		const sessions = await Session.find({}).exec()
 
 		const transformedSessions = sessions.map((sessionDoc) =>
-			transformSession(sessionDoc, req.sessionID)
+			transformSession(sessionDoc)
 		)
 
 		res.status(200).json(transformedSessions)
+	} catch (error) {
+		next(error)
+	}
+}
+
+export async function getCurrentSession (req: Request, res: Response, next: NextFunction): Promise<void> {
+	try {
+		const currentSession = await Session.findById(req.sessionID).exec()
+
+		if (currentSession === null) {
+			res.status(404).json({ error: 'Session ikke fundet' })
+			return
+		}
+
+		const transformedSession = transformSession(currentSession)
+
+		res.status(200).json(transformedSession)
 	} catch (error) {
 		next(error)
 	}
