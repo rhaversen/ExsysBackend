@@ -27,6 +27,7 @@ import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
 import { type ISession } from './models/Session.js'
 import { transformSession } from './utils/sessionUtils.js'
+import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'
@@ -45,7 +46,6 @@ import readerCallbackRoutes from './routes/readerCallback.js'
 
 // Service routes
 import serviceRoutes from './routes/service.js'
-import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Logging environment
 if (typeof process.env.NODE_ENV !== 'undefined') {
