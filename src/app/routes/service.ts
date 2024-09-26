@@ -3,9 +3,9 @@
 // Third-party libraries
 import { Router } from 'express'
 import mongoose from 'mongoose'
-import { getSocketStatus } from '../utils/socket'
 
 // Own modules
+import { getSocketStatus } from '../utils/socket.js'
 
 // Destructuring and global variables
 const router = Router()
