@@ -250,7 +250,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 
 	try {
 		// Fetch and populate orders
-		const orders = await OrderModel.find({ ...query })
+		const orders = (await OrderModel.find({ ...query })
 			.populate({
 				path: 'paymentId',
 				select: 'paymentStatus'
@@ -263,27 +263,26 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 				path: 'options.id',
 				select: 'name'
 			})
-			.exec() as unknown as IOrderWithNamesPopulatedPaymentId[] | null
+			.exec()) as unknown as IOrderWithNamesPopulatedPaymentId[] | null
 
 		const transformedOrders = orders?.filter(order =>
 			// Filter out orders with paymentStatus that is not in the query
 			paymentStatus === undefined || (order.paymentId?.paymentStatus !== null && paymentStatus.split(',').includes(order.paymentId.paymentStatus))
 		).map(order => {
-			// Transform the products and options to only include the id, name and quantity
-			const transformedProducts = order.products.map(product => {
-				return {
-					_id: product.id._id,
-					name: product.id.name,
-					quantity: product.quantity
-				}
-			})
-			const transformedOptions = order.options?.map((option: any) => {
-				return {
-					_id: option.id._id,
-					name: option.id.name,
-					quantity: option.quantity
-				}
-			})
+			// Transform the products to only include the id, name, and quantity, and filter out products without an id
+			const transformedProducts = order.products.filter(product => product.id != null).map(product => ({
+				_id: product.id._id,
+				name: product.id.name,
+				quantity: product.quantity
+			}))
+
+			// Optionally transform the options to only include the id, name, and quantity, and filter out options without an id
+			const transformedOptions = order.options?.filter(option => option.id != null).map(option => ({
+				_id: option.id._id,
+				name: option.id.name,
+				quantity: option.quantity
+			}))
+
 			// Return the order with the transformed products and options, and without the paymentId
 			return {
 				...order.toObject(),
