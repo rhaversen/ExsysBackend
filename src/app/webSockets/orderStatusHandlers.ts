@@ -12,7 +12,7 @@ export async function emitOrderPosted (order: IOrder): Promise<void> {
 
 	try {
 		// Populate the necessary fields
-		const populatedOrders = await order.populate([
+		const populatedOrder = (await order.populate([
 			{
 				path: 'paymentId',
 				select: 'paymentStatus'
@@ -25,23 +25,23 @@ export async function emitOrderPosted (order: IOrder): Promise<void> {
 				path: 'options.id',
 				select: 'name'
 			}
-		]) as unknown as IOrderWithNamesPopulatedPaymentId | null
+		])) as unknown as IOrderWithNamesPopulatedPaymentId | null
 
-		const transformedProducts = populatedOrders?.products.map(product => {
-			return {
-				_id: product.id._id,
-				name: product.id.name,
-				quantity: product.quantity
-			}
-		})
-		const transformedOptions = populatedOrders?.options?.map((option: any) => {
-			return {
-				_id: option.id._id,
-				name: option.id.name,
-				quantity: option.quantity
-			}
-		})
+		// Transform the products to only include the id, name, and quantity, and filter out products without an id
+		const transformedProducts = populatedOrder?.products.filter(product => product.id != null).map(product => ({
+			_id: product.id._id,
+			name: product.id.name,
+			quantity: product.quantity
+		}))
 
+		// Optionally transform the options to only include the id, name, and quantity, and filter out options without an id
+		const transformedOptions = populatedOrder?.options?.filter(option => option.id != null).map(option => ({
+			_id: option.id._id,
+			name: option.id.name,
+			quantity: option.quantity
+		}))
+
+		// Construct the transformed order
 		const transformedOrder = {
 			...order.toObject(),
 			products: transformedProducts,
