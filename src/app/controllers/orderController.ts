@@ -85,7 +85,7 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 	return newPayment.id
 }
 
-async function createCashCheckout (): Promise<string> {
+async function createLaterCheckout (): Promise<string> {
 	const newPayment = await PaymentModel.create({
 		paymentStatus: 'successful'
 	})
@@ -150,8 +150,8 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 				}
 				break
 
-			case 'cash':
-				paymentId = await createCashCheckout()
+			case 'later':
+				paymentId = await createLaterCheckout()
 				break
 
 			case 'mobilePay':
