@@ -102,7 +102,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		checkoutMethod
 	} = req.body as Record<string, unknown>
 
-	// Check if the products
+	// Check if the products are valid
 	if (!Array.isArray(products) || !isOrderItemList(products)) {
 		res.status(400).json({ error: 'Invalid produkt data' })
 		return
