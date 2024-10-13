@@ -2,14 +2,13 @@
 
 // Own modules
 import logger from '../utils/logger.js'
-import { getSocket } from '../utils/socket.js'
+import { emitSocketEvent } from '../utils/socket.js'
 import { type IOrder, type IOrderWithNamesPopulatedPaymentId } from '../models/Order.js'
+import { type IProduct } from '../models/Product.js'
 
 // Third-party libraries
 
 export async function emitPaidOrderPosted (order: IOrder): Promise<void> {
-	const io = getSocket()
-
 	try {
 		// Populate the necessary fields
 		const populatedOrder = (await order.populate([
@@ -42,16 +41,19 @@ export async function emitPaidOrderPosted (order: IOrder): Promise<void> {
 		}))
 
 		// Construct the transformed order
-		const transformedOrder = {
+		const transformedOrder: { order: IOrderWithNamesPopulatedPaymentId, products: IProduct[], options: IProduct[] } = {
 			...order.toObject(),
 			products: transformedProducts,
 			options: transformedOptions,
 			paymentId: undefined
 		}
 
-		io.emit('orderCreated', transformedOrder)
-
-		logger.silly(`Broadcasted paid order posted for order ${order.id}`)
+		// Emit the event using the generic emit function
+		emitSocketEvent<{ order: IOrderWithNamesPopulatedPaymentId, products: IProduct[], options: IProduct[] }>(
+			'orderCreated',
+			transformedOrder,
+			`Broadcasted paid order posted for order ${order.id}`
+		)
 	} catch (error) {
 		logger.error(error)
 	}
