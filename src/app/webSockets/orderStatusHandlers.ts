@@ -7,7 +7,7 @@ import { type IOrder, type IOrderWithNamesPopulatedPaymentId } from '../models/O
 
 // Third-party libraries
 
-export async function emitOrderPosted (order: IOrder): Promise<void> {
+export async function emitPaidOrderPosted (order: IOrder): Promise<void> {
 	const io = getSocket()
 
 	try {
@@ -51,7 +51,7 @@ export async function emitOrderPosted (order: IOrder): Promise<void> {
 
 		io.emit('orderCreated', transformedOrder)
 
-		logger.silly(`Broadcasted order posted for order ${order.id}`)
+		logger.silly(`Broadcasted paid order posted for order ${order.id}`)
 	} catch (error) {
 		logger.error(error)
 	}
