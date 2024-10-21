@@ -79,3 +79,18 @@ export function getSocket (): Server {
 export function getSocketStatus (): boolean {
 	return io !== null && io !== undefined
 }
+
+export function emitSocketEvent<T> (
+	eventName: string,
+	data: T,
+	successLog: string
+): void {
+	const io = getSocket()
+
+	try {
+		io.emit(eventName, data)
+		logger.silly(successLog)
+	} catch (error) {
+		logger.error(`Failed to emit ${eventName}:`, error)
+	}
+}

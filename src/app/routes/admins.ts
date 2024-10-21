@@ -8,19 +8,25 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin } from '../middleware/authorization.js'
 
 // Controller functions
-import { createAdmin, deleteAdmin, getAdmins, patchAdmin } from '../controllers/adminController.js'
+import {
+	createAdmin,
+	deleteAdmin,
+	getAdmins,
+	patchAdmin
+} from '../controllers/adminController.js'
 
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route POST api/v1/admins
- * @desc Create a new admin
+ * @route POST /api/v1/admins
+ * @description Create a new admin.
  * @access Private
- * @param {string} req.body.name - The name of the admin optional.
+ * @middleware isAdmin
+ * @param {string} req.body.name - The name of the admin.
  * @param {string} req.body.password - The password of the admin.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The newly created admin.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The newly created admin.
  */
 router.post('/',
 	isAdmin,
@@ -28,11 +34,12 @@ router.post('/',
 )
 
 /**
- * @route GET api/v1/admins
- * @desc Get all admins
+ * @route GET /api/v1/admins
+ * @description Get all admins.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {Array<object>} res.body - The admins.
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Array<Object>} res.body - The list of admins.
  */
 router.get('/',
 	isAdmin,
@@ -40,14 +47,15 @@ router.get('/',
 )
 
 /**
- * @route PATCH api/v1/admins/:id
- * @desc Update an admin
+ * @route PATCH /api/v1/admins/:id
+ * @description Update an admin by ID.
  * @access Private
- * @param {string} req.params.id - The id of the admin to be patched.
- * @param {string} [req.body.name] - The name of the admin (optional).
- * @param {string} [req.body.password] - The password of the admin (optional).
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The updated admin.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the admin to be updated.
+ * @param {string} [req.body.name] - The new name of the admin (optional).
+ * @param {string} [req.body.password] - The new password of the admin (optional).
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The updated admin.
  */
 router.patch('/:id',
 	isAdmin,
@@ -55,12 +63,13 @@ router.patch('/:id',
 )
 
 /**
- * @route DELETE api/v1/admins/:id
- * @desc Delete an admin
+ * @route DELETE /api/v1/admins/:id
+ * @description Delete an admin by ID.
  * @access Private
- * @param {string} req.params.id - The id of the admin to be deleted.
- * @param {boolean} req.body.confirm - Confirm the deletion.
- * @return {number} res.status - The status code of the HTTP response.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the admin to be deleted.
+ * @param {boolean} req.body.confirm - Confirmation of the deletion.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
 	isAdmin,
