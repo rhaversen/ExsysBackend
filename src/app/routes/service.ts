@@ -11,20 +11,20 @@ import { getSocketStatus } from '../utils/socket.js'
 const router = Router()
 
 /**
- * @route GET api/service/livez
- * @desc Check if the server is live
+ * @route GET /api/service/livez
+ * @description Check if the server is live.
  * @access Public
- * @return {number} res.status - The status code of the HTTP response.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.get('/livez', (req, res) => {
 	res.status(200).send('OK')
 })
 
 /**
- * @route GET api/service/readyz
- * @desc Check if the database and Socket.io are ready
+ * @route GET /api/service/readyz
+ * @description Check if the database and Socket.io are ready.
  * @access Public
- * @return {number} res.status - The status code of the HTTP response.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.get('/readyz', (req, res) => {
 	const mongooseReady = mongoose.connection.readyState === 1
@@ -37,10 +37,10 @@ router.get('/readyz', (req, res) => {
 })
 
 /**
- * @route GET api/service/debug-sentry
- * @desc Throw an error to test Sentry
+ * @route GET /api/service/debug-sentry
+ * @description Throw an error to test Sentry.
  * @access Public
- * @return {number} res.status - The status code of the HTTP response.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.get('/debug-sentry', (req, res) => {
 	throw new Error('Sentry error')

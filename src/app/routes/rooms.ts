@@ -8,19 +8,26 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
 // Controller functions
-import { createRoom, deleteRoom, getRoom, getRooms, patchRoom } from '../controllers/roomController.js'
+import {
+	createRoom,
+	deleteRoom,
+	getRoom,
+	getRooms,
+	patchRoom
+} from '../controllers/roomController.js'
 
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route POST api/v1/rooms
- * @desc Create a new room
+ * @route POST /api/v1/rooms
+ * @description Create a new room.
  * @access Private
+ * @middleware isAdmin
  * @param {string} req.body.name - The name of the room.
  * @param {string} req.body.description - The description of the room.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The newly created room.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The newly created room.
  */
 router.post('/',
 	isAdmin,
@@ -28,12 +35,13 @@ router.post('/',
 )
 
 /**
- * @route GET api/v1/rooms/:id
- * @desc Get a room
+ * @route GET /api/v1/rooms/:id
+ * @description Get a room by ID.
  * @access Private
- * @param {string} req.params.id - The id of the room to be fetched.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The room.
+ * @middleware isAdminOrKiosk
+ * @param {string} req.params.id - The ID of the room to be fetched.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The room details.
  */
 router.get('/:id',
 	isAdminOrKiosk,
@@ -41,11 +49,12 @@ router.get('/:id',
 )
 
 /**
- * @route GET api/v1/rooms
- * @desc Get all rooms
+ * @route GET /api/v1/rooms
+ * @description Get all rooms.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {Array<object>} res.body - The rooms.
+ * @middleware isAdminOrKiosk
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Array<Object>} res.body - The list of rooms.
  */
 router.get('/',
 	isAdminOrKiosk,
@@ -53,14 +62,15 @@ router.get('/',
 )
 
 /**
- * @route PATCH api/v1/rooms/:id
- * @desc Update a room
+ * @route PATCH /api/v1/rooms/:id
+ * @description Update a room by ID.
  * @access Private
- * @param {string} req.params.id - The id of the room to be patched.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the room to be updated.
  * @param {string} [req.body.name] - The name of the room (optional).
  * @param {string} [req.body.description] - The description of the room (optional).
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The updated room.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The updated room.
  */
 router.patch('/:id',
 	isAdmin,
@@ -68,12 +78,13 @@ router.patch('/:id',
 )
 
 /**
- * @route DELETE api/v1/rooms/:id
- * @desc Delete a room
+ * @route DELETE /api/v1/rooms/:id
+ * @description Delete a room by ID.
  * @access Private
- * @param {string} req.params.id - The id of the room to be deleted.
- * @param {boolean} req.body.confirm - Confirm the deletion.
- * @return {number} res.status - The status code of the HTTP response.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the room to be deleted.
+ * @param {boolean} req.body.confirm - Confirmation of the deletion.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
 	isAdmin,

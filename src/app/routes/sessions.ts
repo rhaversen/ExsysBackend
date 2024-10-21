@@ -8,17 +8,22 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import { isAdmin } from '../middleware/authorization.js'
 
 // Controller functions
-import { deleteSession, getCurrentSession, getSessions } from '../controllers/sessionController.js'
+import {
+	deleteSession,
+	getCurrentSession,
+	getSessions
+} from '../controllers/sessionController.js'
 
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route GET api/v1/sessions
- * @desc Get all sessions
+ * @route GET /api/v1/sessions
+ * @description Get all sessions.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - An array of session objects.
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Array<Object>} res.body - An array of session objects.
  */
 router.get('/',
 	isAdmin,
@@ -26,11 +31,12 @@ router.get('/',
 )
 
 /**
- * @route GET api/v1/sessions/current
- * @desc Get the current session
+ * @route GET /api/v1/sessions/current
+ * @description Get the current session.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The current session object.
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The current session object.
  */
 router.get('/current',
 	isAdmin,
@@ -38,10 +44,12 @@ router.get('/current',
 )
 
 /**
- * @route DELETE api/v1/sessions/:id
- * @desc Delete a session
+ * @route DELETE /api/v1/sessions/:id
+ * @description Delete a session by ID.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the session to be deleted.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
 	isAdmin,
