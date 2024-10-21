@@ -11,7 +11,6 @@ import helmet from 'helmet'
 import mongoose from 'mongoose'
 import RateLimit from 'express-rate-limit'
 import cors from 'cors'
-import gracefulShutdown from 'http-graceful-shutdown'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
@@ -211,18 +210,6 @@ export async function shutDown (): Promise<void> {
 
 	logger.info('Shutdown completed')
 }
-
-gracefulShutdown(server,
-	{
-		signals: 'SIGINT SIGTERM',
-		timeout: 20000,							// Timeout in ms
-		forceExit: true,						// Trigger process.exit() at the end of shutdown process
-		development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
-		// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
-		onShutdown: shutDown					// Shutdown function (async) - e.g. for cleanup DB, ...
-		// finally: finalFunction				// Finally function (sync) - e.g. for logging
-	}
-)
 
 export { server }
 export default app

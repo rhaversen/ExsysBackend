@@ -1,5 +1,4 @@
 // Global variables
-let gracefulShutdownFunction: () => Promise<void>
 
 before(async function () {
 	this.timeout(10000)
@@ -8,12 +7,4 @@ before(async function () {
 
 	// Importing and starting the app
 	await import('../../development/index.js')
-})
-
-after(async function () {
-	this.timeout(10000)
-	await gracefulShutdownFunction()
-
-	// exit the process after 3 seconds
-	setTimeout(() => process.exit(0), 3000)
 })

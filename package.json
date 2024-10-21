@@ -51,7 +51,6 @@
 		"express-rate-limit": "^7.4.1",
 		"express-session": "^1.18.1",
 		"helmet": "^8.0.0",
-		"http-graceful-shutdown": "^3.1.13",
 		"mongoose": "^8.7.2",
 		"nanoid": "^5.0.7",
 		"passport": "^0.7.0",
