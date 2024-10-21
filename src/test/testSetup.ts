@@ -13,6 +13,7 @@ import { type Server } from 'http'
 
 // Own modules
 import logger from '../app/utils/logger.js'
+import { disconnectFromInMemoryMongoDB } from './mongoMemoryReplSetConnector.js'
 
 // Test environment settings
 process.env.NODE_ENV = 'test'
@@ -64,6 +65,8 @@ after(async function () {
 	this.timeout(20000)
 	// Close the server
 	app.server.close()
+	// Disconnect from the database
+	await disconnectFromInMemoryMongoDB()
 })
 
 export { chaiAppServer }

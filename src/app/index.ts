@@ -201,11 +201,6 @@ export async function shutDown (): Promise<void> {
 	await mongoose.connection.close()
 	logger.info('Database connection closed')
 
-	if (databaseConnector.isMemoryDatabase()) {
-		const mongoMemoryReplSetConnector = await import('../test/mongoMemoryReplSetConnector.js')
-		await mongoMemoryReplSetConnector.disconnectFromInMemoryMongoDB()
-	}
-
 	logger.info('Shutdown completed')
 }
 
