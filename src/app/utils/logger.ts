@@ -86,12 +86,12 @@ function logToWinston (level: string, ...messages: any[]): void {
 }
 
 async function logToBetterStack (level: string, ...messages: any[]): Promise<void> {
-	if (process.env.BETTERSTACK_LOG_TOKEN === null || process.env.BETTERSTACK_LOG_TOKEN === undefined || (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging')) {
+	if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
 		return
 	}
 
 	if (betterStackLogger === null || betterStackLogger === undefined) {
-		betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN)
+		betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN ?? '')
 	}
 
 	const combinedMessage = messages.join(' ')

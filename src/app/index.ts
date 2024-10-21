@@ -1,3 +1,6 @@
+// Verify that all environment secrets are set
+import './utils/verifyEnvironmentSecrets.js'
+
 // Use Sentry
 import './utils/instrument.js'
 
@@ -73,11 +76,6 @@ app.set('trust proxy', 1) // Trust the first proxy (NGINX)
 // Connect to MongoDB in production and staging environment
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
 	await databaseConnector.connectToMongoDB()
-}
-
-if (process.env.SESSION_SECRET === undefined) {
-	logger.error('Session secret is not set!')
-	process.exit(1)
 }
 
 // Middleware

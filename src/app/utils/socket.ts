@@ -35,10 +35,6 @@ export async function initSocket (server: HttpServer): Promise<void> {
 
 	logger.info('Initializing socket.io with Redis adapter')
 
-	if (redisHost === undefined || redisPort === undefined) {
-		throw new Error('Redis host and port must be defined!')
-	}
-
 	io = new Server(server, {
 		cors: corsConfig
 	})
