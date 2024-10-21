@@ -11,6 +11,7 @@ import * as chai from 'chai'
 import mongoose from 'mongoose'
 import { type Server } from 'http'
 import { before, beforeEach, afterEach, after } from 'mocha'
+import * as Sentry from '@sentry/node'
 import type MongoStore from 'connect-mongo'
 
 // Own modules
@@ -70,6 +71,8 @@ after(async function () {
 	app.server.close()
 	// Disconnect from the database
 	await disconnectFromInMemoryMongoDB(app.sessionStore)
+	// Disconnect from sentry
+	await Sentry.close()
 })
 
 export { chaiAppServer }
