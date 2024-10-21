@@ -11,6 +11,7 @@ import * as chai from 'chai'
 import mongoose from 'mongoose'
 import { type Server } from 'http'
 import { before, beforeEach, afterEach, after } from 'mocha'
+import type MongoStore from 'connect-mongo'
 
 // Own modules
 import logger from '../app/utils/logger.js'
@@ -22,7 +23,7 @@ process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'
 
 // Global variables
 const chaiHttpObject = chai.use(chaiHttp)
-let app: { server: Server }
+let app: { server: Server, sessionStore: MongoStore }
 let chaiAppServer: ChaiHttp.Agent
 
 const cleanDatabase = async function (): Promise<void> {
@@ -68,7 +69,7 @@ after(async function () {
 	// Close the server
 	app.server.close()
 	// Disconnect from the database
-	await disconnectFromInMemoryMongoDB()
+	await disconnectFromInMemoryMongoDB(app.sessionStore)
 })
 
 export { chaiAppServer }

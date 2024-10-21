@@ -91,19 +91,24 @@ app.use('/api/v1/reader-callback', readerCallbackRoutes)
 // Apply cors config to all other routes
 app.use(cors(corsConfig))
 
-// Session management
+// Create a session store
+const sessionStore = MongoStore.create({
+	client: mongoose.connection.getClient(), // Use the existing connection
+	autoRemove: 'interval', // Remove expired sessions
+	autoRemoveInterval: 1 // 1 minute
+})
+
+// Apply session management middleware
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
 	secret: process.env.SESSION_SECRET ?? '', // Secret for signing session ID cookie
 	saveUninitialized: false, // Do not save session if not authenticated
-	store: MongoStore.create({ // Store session in MongoDB
-		client: mongoose.connection.getClient(), // Use the existing connection
-		autoRemove: 'interval', // Remove expired sessions
-		autoRemoveInterval: 1 // 1 minute
-	}),
+	store: sessionStore, // Store session in MongoDB
 	cookie: cookieOptions
 }))
+
+// Apply and configure Passport middleware
 app.use(passport.initialize()) // Initialize Passport
 app.use(passport.session()) // Passport session handling
 configurePassport(passport) // Use passportConfig
@@ -204,5 +209,5 @@ export async function shutDown (): Promise<void> {
 	logger.info('Shutdown completed')
 }
 
-export { server }
+export { server, sessionStore }
 export default app

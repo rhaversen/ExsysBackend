@@ -3,6 +3,7 @@
 // Third-party libraries
 import mongoose from 'mongoose'
 import { MongoMemoryReplSet } from 'mongodb-memory-server'
+import type MongoStore from 'connect-mongo'
 
 // Own modules
 import logger from '../app/utils/logger.js'
@@ -28,8 +29,24 @@ export default async function connectToInMemoryMongoDB (): Promise<void> {
 	}
 }
 
-export async function disconnectFromInMemoryMongoDB (): Promise<void> {
+function closeSessionStore (sessionStore: MongoStore): void {
+	// Clear the interval timer used by connect-mongo
+	const cleanupTimer = (sessionStore as any)._removeExpiredSessions
+	if (typeof cleanupTimer === 'function') {
+		clearInterval(cleanupTimer as NodeJS.Timeout)
+	}
+}
+
+export async function disconnectFromInMemoryMongoDB (sessionStore: MongoStore): Promise<void> {
 	try {
+		logger.info('Closing session store...')
+		closeSessionStore(sessionStore)
+		logger.info('Session store closed')
+
+		logger.info('Closing connection to in-memory MongoDB...')
+		await mongoose.disconnect()
+		logger.info('Mongoose disconnected')
+
 		logger.info('Stopping memory database replica set...')
 		await replSet.stop()
 		logger.info('Memory database replica set stopped')
