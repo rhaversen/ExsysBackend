@@ -13,6 +13,7 @@ import ReaderModel from '../models/Reader.js'
 import PaymentModel from '../models/Payment.js'
 import ProductModel from '../models/Product.js'
 import OptionModel from '../models/Option.js'
+import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
 
 interface OrderItem {
 	id: string
@@ -172,6 +173,11 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 
 		// Respond with the new order
 		res.status(201).json(newOrder)
+
+		// Emit the order if it is paid
+		if (checkoutMethod === 'later') {
+			await emitPaidOrderPosted(newOrder)
+		}
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
