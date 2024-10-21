@@ -60,6 +60,7 @@ beforeEach(async function () {
 afterEach(async function () {
 	sinon.restore()
 	await cleanDatabase()
+	chaiAppServer.close()
 })
 
 after(async function () {
