@@ -16,7 +16,6 @@ const configString = JSON.stringify(config.util.toObject(config), null, 4)
 // Log the configs used
 logger.info(`Using configs:\n${configString}`)
 
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 const AppConfig = {
 	veryLowSensitivityApiLimiterConfig: config.get('apiLimiter.sensitivity.veryLow') as RateLimitOptions,
 	lowSensitivityApiLimiterConfig: config.get('apiLimiter.sensitivity.low') as RateLimitOptions,

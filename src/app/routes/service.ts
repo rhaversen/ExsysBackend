@@ -16,7 +16,7 @@ const router = Router()
  * @access Public
  * @returns {number} res.status - The status code of the HTTP response.
  */
-router.get('/livez', (req, res) => {
+router.get('/livez', (_req, res) => {
 	res.status(200).send('OK')
 })
 
@@ -26,7 +26,7 @@ router.get('/livez', (req, res) => {
  * @access Public
  * @returns {number} res.status - The status code of the HTTP response.
  */
-router.get('/readyz', (req, res) => {
+router.get('/readyz', (_req, res) => {
 	const mongooseReady = mongoose.connection.readyState === 1
 	const socketReady = getSocketStatus()
 	if (mongooseReady && socketReady) {
@@ -42,7 +42,7 @@ router.get('/readyz', (req, res) => {
  * @access Public
  * @returns {number} res.status - The status code of the HTTP response.
  */
-router.get('/debug-sentry', (req, res) => {
+router.get('/debug-sentry', () => {
 	throw new Error('Sentry error')
 })
 
