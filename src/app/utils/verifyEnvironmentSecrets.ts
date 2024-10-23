@@ -38,10 +38,21 @@ const envSecretsDev = [
 	'SUMUP_MERCHANT_CODE'
 ]
 
+const envSecretsTest = [
+	'NODE_ENV',
+	'SESSION_SECRET'
+]
+
 // Verify that all environment secrets are set
 const missingSecrets = [] as string[]
-if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'development') {
 	envSecretsDev.forEach((secret) => {
+		if (process.env[secret] === undefined) {
+			missingSecrets.push(secret)
+		}
+	})
+} else if (process.env.NODE_ENV === 'test') {
+	envSecretsTest.forEach((secret) => {
 		if (process.env[secret] === undefined) {
 			missingSecrets.push(secret)
 		}
