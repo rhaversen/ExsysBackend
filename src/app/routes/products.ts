@@ -15,6 +15,10 @@ import {
 	patchProduct
 } from '../controllers/productController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

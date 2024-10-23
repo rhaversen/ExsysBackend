@@ -1,12 +1,18 @@
 // Node.js built-in modules
 
+// Third-party libraries
+
 // Own modules
 import logger from '../utils/logger.js'
 import { emitSocketEvent } from '../utils/socket.js'
 import { type IOrder, type IOrderWithNamesPopulatedPaymentId } from '../models/Order.js'
 import { type IProduct } from '../models/Product.js'
 
-// Third-party libraries
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export async function emitPaidOrderPosted (order: IOrder): Promise<void> {
 	try {

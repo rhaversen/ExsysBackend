@@ -10,7 +10,11 @@ import config from 'config'
 // Own modules
 import logger from './logger.js'
 
-// Convert config object to a plain object and then stringify it
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 const configString = JSON.stringify(config.util.toObject(config), null, 4)
 
 // Log the configs used

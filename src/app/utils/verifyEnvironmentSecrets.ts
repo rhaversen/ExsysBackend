@@ -1,12 +1,16 @@
 // Node.js built-in modules
 import 'process'
 
+// Third-party libraries
+
 // Own modules
 import logger from './logger.js'
 
-// Third-party libraries
+// Environment variables
 
-// List of env secrets to verify:
+// Config variables
+
+// Destructuring and global variables
 const envSecrets = [
 	// Database
 	'DB_NAME',

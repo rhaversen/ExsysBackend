@@ -15,6 +15,10 @@ import {
 	patchReader
 } from '../controllers/readerController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

@@ -8,6 +8,12 @@ import Admin, { type IAdmin } from '../models/Admin.js'
 import Kiosk, { type IKiosk } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 type User = IKiosk | IAdmin | undefined
 
 export function isAdmin (req: Request, res: Response, next: NextFunction): void {

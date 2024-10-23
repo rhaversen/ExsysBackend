@@ -15,6 +15,10 @@ import {
 } from '../controllers/authController.js'
 import { isAdmin, isKiosk } from '../middleware/authorization.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

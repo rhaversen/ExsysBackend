@@ -8,17 +8,20 @@ import logger from './logger.js'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { createClient } from 'redis'
 
-// Configs
+// Own modules
+
+// Environment variables
+const redisHost = process.env.REDIS_HOST
+const redisPort = process.env.REDIS_PORT
+const redisPassword = process.env.REDIS_PASSWORD
+
+// Config variables
 const {
 	corsConfig,
 	redisPrefix
 } = config
 
-// Global variables
-const redisHost = process.env.REDIS_HOST
-const redisPort = process.env.REDIS_PORT
-const redisPassword = process.env.REDIS_PASSWORD
-
+// Destructuring and global variables
 let io: Server | undefined
 
 export async function initSocket (server: HttpServer): Promise<void> {

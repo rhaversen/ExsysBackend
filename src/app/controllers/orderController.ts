@@ -15,6 +15,12 @@ import ProductModel from '../models/Product.js'
 import OptionModel from '../models/Option.js'
 import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 interface OrderItem {
 	id: string
 	quantity: number

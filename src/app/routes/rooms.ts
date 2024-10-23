@@ -16,6 +16,10 @@ import {
 	patchRoom
 } from '../controllers/roomController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

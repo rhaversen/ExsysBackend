@@ -15,6 +15,10 @@ import {
 	patchOption
 } from '../controllers/optionController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

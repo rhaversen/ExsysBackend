@@ -7,6 +7,10 @@ import mongoose from 'mongoose'
 // Own modules
 import { getSocketStatus } from '../utils/socket.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

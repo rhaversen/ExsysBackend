@@ -6,7 +6,13 @@ import { Logtail } from '@logtail/node'
 // Third-party libraries
 import { createLogger, format as _format, transports as _transports } from 'winston'
 
-// Global variables
+// Own modules
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 const _filename = fileURLToPath(import.meta.url)
 const _dirname = dirname(_filename)
 const logDirectory = join(_dirname, (['production', 'staging'].includes(process.env.NODE_ENV ?? '') ? './logs/' : '../../logs/'))

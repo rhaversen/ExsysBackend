@@ -15,6 +15,10 @@ import {
 	patchAdmin
 } from '../controllers/adminController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

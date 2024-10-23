@@ -1,11 +1,17 @@
 // Node.js built-in modules
 
+// Third-party libraries
+
 // Own modules
 import { type IPayment } from '../models/Payment.js'
 import { emitSocketEvent } from '../utils/socket.js'
 import { type IOrder } from '../models/Order.js'
 
-// Third-party libraries
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 // Function to notify all clients about payment status updates
 export async function emitPaymentStatusUpdate (payment: IPayment, order: IOrder): Promise<void> {

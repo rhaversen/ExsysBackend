@@ -15,6 +15,10 @@ import {
 	updateOrderStatus
 } from '../controllers/orderController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

@@ -13,6 +13,15 @@ import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHan
 import { type ISession } from '../models/Session.js'
 import { transformSession } from '../utils/sessionUtils.js'
 
+// Environment variables
+
+// Config variables
+const {
+	sessionExpiry
+} = config
+
+// Destructuring and global variables
+
 // Extend the Session interface to include ipAddress
 declare module 'express-session' {
 	interface Session {
@@ -23,11 +32,6 @@ declare module 'express-session' {
 		type?: string
 	}
 }
-
-// Config
-const {
-	sessionExpiry
-} = config
 
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Logging in admin')

@@ -16,6 +16,10 @@ import {
 	patchActivity
 } from '../controllers/activityController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

@@ -1,3 +1,4 @@
+/* eslint-disable local/enforce-comment-order */
 // Global variables
 
 before(async function () {

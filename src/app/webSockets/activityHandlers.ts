@@ -1,10 +1,16 @@
 // Node.js built-in modules
 
+// Third-party libraries
+
 // Own modules
 import { emitSocketEvent } from '../utils/socket.js'
 import { type IActivity } from '../models/Activity.js'
 
-// Third-party libraries
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export function emitActivityPosted (activity: IActivity): void {
 	emitSocketEvent<IActivity>(

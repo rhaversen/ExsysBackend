@@ -1,10 +1,16 @@
 // Node.js built-in modules
 
+// Third-party libraries
+
 // Own modules
 import { emitSocketEvent } from '../utils/socket.js'
 import { type TransformedSession } from '../utils/sessionUtils'
 
-// Third-party libraries
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export function emitSessionCreated (session: TransformedSession): void {
 	emitSocketEvent<TransformedSession>(

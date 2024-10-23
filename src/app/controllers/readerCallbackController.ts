@@ -11,6 +11,12 @@ import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
 import OrderModel from '../models/Order.js'
 import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 interface ICreateReaderCallback extends Request {
 	body: {
 		id: string

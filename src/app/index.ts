@@ -20,7 +20,7 @@ import passport from 'passport'
 import MongoStore from 'connect-mongo'
 import * as Sentry from '@sentry/node'
 
-// Own Modules
+// Own modules
 import databaseConnector from './utils/databaseConnector.js'
 import logger from './utils/logger.js'
 import config from './utils/setupConfig.js'
@@ -57,7 +57,9 @@ if (typeof process.env.NODE_ENV !== 'undefined') {
 	process.exit(1)
 }
 
-// Configs
+// Environment variables
+
+// Config variables
 const {
 	veryLowSensitivityApiLimiterConfig,
 	mediumSensitivityApiLimiterConfig,
@@ -67,9 +69,11 @@ const {
 	cookieOptions
 } = config
 
-// Global variables and setup
+// Destructuring and global variables
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
+
+// Setup
 await initSocket(server) // Initialize socket.io
 app.set('trust proxy', 1) // Trust the first proxy (NGINX)
 

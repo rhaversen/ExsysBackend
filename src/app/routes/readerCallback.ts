@@ -9,6 +9,10 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 // Controller functions
 import { updatePaymentStatus } from '../controllers/readerCallbackController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 

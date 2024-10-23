@@ -1,3 +1,5 @@
+/* eslint-disable local/enforce-comment-order */
+
 // Node.js built-in modules
 
 // Third-party libraries
