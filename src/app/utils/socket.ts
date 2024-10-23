@@ -8,17 +8,20 @@ import logger from './logger.js'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { createClient } from 'redis'
 
-// Configs
+// Own modules
+
+// Environment variables
+const redisHost = process.env.REDIS_HOST
+const redisPort = process.env.REDIS_PORT
+const redisPassword = process.env.REDIS_PASSWORD
+
+// Config variables
 const {
 	corsConfig,
 	redisPrefix
 } = config
 
-// Global variables
-const redisHost = process.env.REDIS_HOST
-const redisPort = process.env.REDIS_PORT
-const redisPassword = process.env.REDIS_PASSWORD
-
+// Destructuring and global variables
 let io: Server | undefined
 
 export async function initSocket (server: HttpServer): Promise<void> {
@@ -34,10 +37,6 @@ export async function initSocket (server: HttpServer): Promise<void> {
 	}
 
 	logger.info('Initializing socket.io with Redis adapter')
-
-	if (redisHost === undefined || redisPort === undefined) {
-		throw new Error('Redis host and port must be defined!')
-	}
 
 	io = new Server(server, {
 		cors: corsConfig
@@ -78,4 +77,19 @@ export function getSocket (): Server {
 
 export function getSocketStatus (): boolean {
 	return io !== null && io !== undefined
+}
+
+export function emitSocketEvent<T> (
+	eventName: string,
+	data: T,
+	successLog: string
+): void {
+	const io = getSocket()
+
+	try {
+		io.emit(eventName, data)
+		logger.silly(successLog)
+	} catch (error) {
+		logger.error(`Failed to emit ${eventName}:`, error)
+	}
 }

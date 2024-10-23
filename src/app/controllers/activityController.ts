@@ -9,6 +9,12 @@ import logger from '../utils/logger.js'
 import ActivityModel from '../models/Activity.js'
 import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export async function createActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating activity')
 

@@ -9,6 +9,12 @@ import logger from '../utils/logger.js'
 import RoomModel from '../models/Room.js'
 import { emitRoomCreated, emitRoomDeleted, emitRoomUpdated } from '../webSockets/roomHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating room')
 

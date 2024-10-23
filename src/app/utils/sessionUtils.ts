@@ -1,5 +1,16 @@
+// Node.js built-in modules
+
+// Third-party libraries
+
+// Own modules
 import { type ISession } from '../models/Session.js'
 import { type ParsedSessionData } from '../controllers/sessionController.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export interface TransformedSession {
 	_id: string

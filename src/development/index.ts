@@ -1,3 +1,4 @@
+/* eslint-disable local/enforce-comment-order */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
@@ -17,9 +18,6 @@ async function startServer (): Promise<void> {
 
 		// Start the application server
 		await import('../app/index.js')
-
-		// Must not use logger
-		console.log('Server started successfully')
 	} catch (error) {
 		console.error('Failed to start the server:', error)
 	}

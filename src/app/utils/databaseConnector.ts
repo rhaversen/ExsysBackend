@@ -8,7 +8,9 @@ import logger from './logger.js'
 import config from './setupConfig.js'
 import { shutDown } from '../index.js'
 
-// Constants
+// Environment variables
+
+// Config variables
 const {
 	mongooseOpts,
 	maxRetryAttempts,
@@ -17,6 +19,8 @@ const {
 	w,
 	appName
 } = config
+
+// Destructuring and global variables
 const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=${retryWrites}&w=${w}&appName=${appName}`
 
 function isMemoryDatabase (): boolean {

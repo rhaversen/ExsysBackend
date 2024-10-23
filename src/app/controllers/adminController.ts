@@ -9,6 +9,12 @@ import logger from '../utils/logger.js'
 import AdminModel, { type IAdmin } from '../models/Admin.js'
 import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSockets/adminHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export async function createAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating admin')
 

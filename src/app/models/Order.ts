@@ -10,6 +10,10 @@ import ProductModel, { type IProduct } from './Product.js'
 import ActivityModel from './Activity.js'
 import PaymentModel, { type IPayment } from './Payment.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 
 // Interfaces

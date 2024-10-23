@@ -1,44 +1,37 @@
 // Node.js built-in modules
 
-// Own modules
-import logger from '../utils/logger.js'
-import { getSocket } from '../utils/socket.js'
-import { type IAdminFrontend } from '../models/Admin.js'
-
 // Third-party libraries
 
+// Own modules
+import { emitSocketEvent } from '../utils/socket.js'
+import { type IAdminFrontend } from '../models/Admin.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export function emitAdminCreated (admin: IAdminFrontend): void {
-	const io = getSocket()
-
-	try {
-		io.emit('adminCreated', admin)
-
-		logger.silly(`Broadcasted admin created for admin ${admin._id}`)
-	} catch (error) {
-		logger.error(error)
-	}
+	emitSocketEvent<IAdminFrontend>(
+		'adminCreated',
+		admin,
+		`Broadcasted admin created for admin ${admin._id}`
+	)
 }
 
 export function emitAdminUpdated (admin: IAdminFrontend): void {
-	const io = getSocket()
-
-	try {
-		io.emit('adminUpdated', admin)
-
-		logger.silly(`Broadcasted admin updated for admin ${admin._id}`)
-	} catch (error) {
-		logger.error(error)
-	}
+	emitSocketEvent<IAdminFrontend>(
+		'adminUpdated',
+		admin,
+		`Broadcasted admin updated for admin ${admin._id}`
+	)
 }
 
 export function emitAdminDeleted (adminId: string): void {
-	const io = getSocket()
-
-	try {
-		io.emit('adminDeleted', adminId)
-
-		logger.silly(`Broadcasted admin deleted for admin ${adminId}`)
-	} catch (error) {
-		logger.error(error)
-	}
+	emitSocketEvent<string>(
+		'adminDeleted',
+		adminId,
+		`Broadcasted admin deleted for admin ${adminId}`
+	)
 }

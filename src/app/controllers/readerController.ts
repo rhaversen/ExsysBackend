@@ -10,6 +10,12 @@ import logger from '../utils/logger.js'
 import { pairReader, unpairReader } from '../services/apiServices.js'
 import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webSockets/readerHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export async function createReader (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating reader')
 

@@ -11,12 +11,14 @@ import config from '../utils/setupConfig.js'
 import ReaderModel from './Reader.js'
 import ActivityModel from './Activity.js'
 
-// Destructuring and global variables
+// Environment variables
+
+// Config variables
 const {
 	bcryptSaltRounds
 } = config
 
-// Nanoid setup
+// Destructuring and global variables
 const nanoidAlphabet = '123465789'
 const nanoidLength = 5
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)

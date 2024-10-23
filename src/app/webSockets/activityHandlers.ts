@@ -1,44 +1,37 @@
 // Node.js built-in modules
 
-// Own modules
-import logger from '../utils/logger.js'
-import { getSocket } from '../utils/socket.js'
-import { type IActivity } from '../models/Activity.js'
-
 // Third-party libraries
 
+// Own modules
+import { emitSocketEvent } from '../utils/socket.js'
+import { type IActivity } from '../models/Activity.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export function emitActivityPosted (activity: IActivity): void {
-	const io = getSocket()
-
-	try {
-		io.emit('activityCreated', activity)
-
-		logger.silly(`Broadcasted activity created for activity ${activity.id}`)
-	} catch (error) {
-		logger.error(error)
-	}
+	emitSocketEvent<IActivity>(
+		'activityCreated',
+		activity,
+		`Broadcasted activity created for activity ${activity.id}`
+	)
 }
 
 export function emitActivityUpdated (activity: IActivity): void {
-	const io = getSocket()
-
-	try {
-		io.emit('activityUpdated', activity)
-
-		logger.silly(`Broadcasted activity updated for activity ${activity.id}`)
-	} catch (error) {
-		logger.error(error)
-	}
+	emitSocketEvent<IActivity>(
+		'activityUpdated',
+		activity,
+		`Broadcasted activity updated for activity ${activity.id}`
+	)
 }
 
 export function emitActivityDeleted (activityId: string): void {
-	const io = getSocket()
-
-	try {
-		io.emit('activityDeleted', activityId)
-
-		logger.silly(`Broadcasted activity deleted for activity ${activityId}`)
-	} catch (error) {
-		logger.error(error)
-	}
+	emitSocketEvent<string>(
+		'activityDeleted',
+		activityId,
+		`Broadcasted activity deleted for activity ${activityId}`
+	)
 }

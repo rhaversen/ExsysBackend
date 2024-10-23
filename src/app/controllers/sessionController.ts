@@ -8,6 +8,12 @@ import Session from '../models/Session.js'
 import { emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 import { transformSession } from '../utils/sessionUtils.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export interface ParsedSessionData {
 	cookie: {
 		originalMaxAge: number | null
