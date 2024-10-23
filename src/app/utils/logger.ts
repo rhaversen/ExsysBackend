@@ -16,6 +16,12 @@ import { createLogger, format as _format, transports as _transports } from 'wins
 const _filename = fileURLToPath(import.meta.url)
 const _dirname = dirname(_filename)
 const logDirectory = join(_dirname, (['production', 'staging'].includes(process.env.NODE_ENV ?? '') ? './logs/' : '../../logs/'))
+const logLevel = {
+	development: 'silly',
+	production: 'info',
+	staging: 'info',
+	test: 'debug'
+}
 
 const winstonLogger = createLogger({
 	levels: {
@@ -56,7 +62,7 @@ const winstonLogger = createLogger({
 					return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`
 				})
 			),
-			level: process.env.NODE_ENV === 'development' ? 'silly' : 'info' // Log all levels in development, else log info and above
+			level: logLevel[process.env.NODE_ENV as keyof typeof logLevel]
 		})
 	]
 })
