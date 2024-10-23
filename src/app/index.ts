@@ -97,7 +97,7 @@ app.use(cors(corsConfig))
 
 // Create a session store
 const sessionStore = MongoStore.create({
-	client: mongoose.connection.getClient(), // Use the existing connection
+	client: mongoose.connection.getClient() as any, // Use the existing connection
 	autoRemove: 'interval', // Remove expired sessions
 	autoRemoveInterval: 1 // 1 minute
 })
