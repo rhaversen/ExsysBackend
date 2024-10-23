@@ -33,7 +33,9 @@ const envSecrets = [
 
 const envSecretsDev = [
 	'NODE_ENV',
-	'SESSION_SECRET'
+	'SESSION_SECRET',
+	'SUMUP_API_KEY',
+	'SUMUP_MERCHANT_CODE'
 ]
 
 // Verify that all environment secrets are set
