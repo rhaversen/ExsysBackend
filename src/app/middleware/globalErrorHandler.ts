@@ -22,4 +22,5 @@ export default (function (err: Error, req: Request, res: Response, next: NextFun
 	}
 
 	res.status(500).json({ error: 'An error occurred, please try again later' })
+	next()
 })
