@@ -50,7 +50,7 @@ export async function disconnectFromInMemoryMongoDB (sessionStore: MongoStore): 
 		logger.info('Mongoose disconnected')
 
 		logger.info('Stopping memory database replica set...')
-		await replSet.stop()
+		await replSet.stop({ force: true })
 		logger.info('Memory database replica set stopped')
 	} catch (error: any) {
 		logger.error(`Error disconnecting from in-memory MongoDB: ${error.message !== undefined ? error.message : error}`)
