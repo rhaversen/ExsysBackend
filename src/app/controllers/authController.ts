@@ -86,11 +86,19 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 			const transformedSession = transformSession(sessionDoc)
 
-			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
-			const { password, ...userWithoutPassword } = user as IAdmin
+			const admin = user as IAdmin
+
+			const adminWithoutPassword = {
+				_id: admin._id,
+				name: admin.name,
+				createdAt: admin.createdAt,
+				updatedAt: admin.updatedAt,
+			}
+
+			logger.silly(`Admin ${admin.name} logged in`)
 			res.status(200).json({
 				auth: true,
-				user: userWithoutPassword
+				user: adminWithoutPassword
 			})
 
 			emitSessionCreated(transformedSession)
@@ -149,11 +157,19 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			}
 			const transformedSession = transformSession(sessionDoc)
 
-			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
-			const { password, ...userWithoutPassword } = user as IKiosk
+			const kiosk = user as IKiosk
+
+			const kioskWithoutPassword = {
+				_id: kiosk._id,
+				kioskTag: kiosk.kioskTag,
+				createdAt: kiosk.createdAt,
+				updatedAt: kiosk.updatedAt
+			}
+
+			logger.silly(`Kiosk ${kiosk.kioskTag} logged in`)
 			res.status(200).json({
 				auth: true,
-				user: userWithoutPassword
+				user: kioskWithoutPassword
 			})
 
 			emitSessionCreated(transformedSession)
