@@ -70,7 +70,8 @@ router.post('/logout-local',
 router.get('/is-authenticated',
 	ensureAuthenticated,
 	(req, res) => {
-		res.status(200).send()
+		// If user is authenticated, return 200 OK and session ID
+		res.status(200).send(req.sessionID)
 	}
 )
 
