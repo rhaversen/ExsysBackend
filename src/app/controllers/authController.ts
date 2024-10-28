@@ -87,9 +87,10 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			const transformedSession = transformSession(sessionDoc)
 
 			logger.silly(`Admin ${(user as IAdmin).name} logged in`)
+			const { password, ...userWithoutPassword } = user as IAdmin
 			res.status(200).json({
 				auth: true,
-				user
+				user: userWithoutPassword
 			})
 
 			emitSessionCreated(transformedSession)
@@ -149,9 +150,10 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			const transformedSession = transformSession(sessionDoc)
 
 			logger.silly(`Kiosk ${(user as IKiosk).kioskTag} logged in`)
+			const { password, ...userWithoutPassword } = user as IKiosk
 			res.status(200).json({
 				auth: true,
-				user
+				user: userWithoutPassword
 			})
 
 			emitSessionCreated(transformedSession)
