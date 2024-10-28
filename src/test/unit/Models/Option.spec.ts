@@ -12,10 +12,10 @@ import { describe, it } from 'mocha'
 
 // Own modules
 import OptionModel from '../../../app/models/Option.js'
+import ProductModel from '../../../app/models/Product.js'
 
 // Setup test environment
 import '../../testSetup.js'
-import ProductModel from '../../../app/models/Product.js'
 
 describe('Option Model', function () {
 	let testOptionFields: {
@@ -141,28 +141,92 @@ describe('Option Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should remove the option from any products when deleted', async function () {
-		const option = await OptionModel.create(testOptionFields)
-		const product = await ProductModel.create({
-			name: 'TestProduct',
-			imageURL: 'https://example.com/image.jpg',
+	describe('Delete middleware', function () {
+		const testProductFields = {
+			name: 'Test Product',
 			price: 100,
-			options: [option._id],
 			orderWindow: {
 				from: {
-					hour: 12,
+					hour: 0,
 					minute: 0
 				},
 				to: {
-					hour: 18,
-					minute: 0
+					hour: 23,
+					minute: 59
 				}
-			}
+			},
+			options: []
+		}
+
+		describe('Pre-delete middleware', function () {
+			it('should remove the option from any products when deleted', async function () {
+				const option = await OptionModel.create(testOptionFields)
+				const product = await ProductModel.create({...testProductFields, options: [option._id]})
+		
+				await OptionModel.deleteOne({ _id: option._id })
+		
+				const updatedProduct = await ProductModel.findById(product._id)
+				expect(updatedProduct?.options).to.be.empty
+			})
+
+			it('should not remove other options from the product when deleting an option', async function () {
+				const option1 = await OptionModel.create(testOptionFields)
+				const option2 = await OptionModel.create(testOptionFields)
+				const product = await ProductModel.create({...testProductFields, options: [option1._id, option2._id]})
+		
+				await OptionModel.deleteOne({ _id: option1._id })
+		
+				const updatedProduct = await ProductModel.findById(product._id)
+				expect(updatedProduct?.options).to.have.lengthOf(1)
+			})
+
+			it('should remove the option from any orders when deleting a option', async function () {
+				const option = await OptionModel.create(testOptionFields)
+				const product = await ProductModel.create(testProductFields)
+		
+				await ProductModel.findByIdAndUpdate(product._id, { $push: { options: option._id } })
+		
+				await OptionModel.deleteOne({ _id: option._id })
+		
+				const updatedProduct = await ProductModel.findById(product._id)
+				expect(updatedProduct?.options).to.be.empty
+			})
 		})
 
-		await OptionModel.deleteOne({ _id: option._id })
+		describe('Pre-delete-many middleware', function () {
+			it('should remove the options from any products when deleted', async function () {
+				const option1 = await OptionModel.create(testOptionFields)
+				const option2 = await OptionModel.create(testOptionFields)
+				const product = await ProductModel.create({...testProductFields, options: [option1._id, option2._id]})
+		
+				await OptionModel.deleteMany({ _id: { $in: [option1._id, option2._id] } })
+		
+				const updatedProduct = await ProductModel.findById(product._id)
 
-		const updatedProduct = await ProductModel.findById(product._id)
-		expect(updatedProduct?.options).to.be.empty
+				expect(updatedProduct?.options).to.be.empty
+			})
+
+			it('should not remove other options from the product when deleting options', async function () {
+				const option1 = await OptionModel.create(testOptionFields)
+				const option2 = await OptionModel.create(testOptionFields)
+				const product = await ProductModel.create({...testProductFields, options: [option1._id, option2._id]})
+		
+				await OptionModel.deleteMany({ _id: option1._id })
+		
+				const updatedProduct = await ProductModel.findById(product._id)
+				expect(updatedProduct?.options).to.have.lengthOf(1)
+			})
+
+			it('should remove the options from any orders when deleting options', async function () {
+				const option1 = await OptionModel.create(testOptionFields)
+				const option2 = await OptionModel.create(testOptionFields)
+				const product = await ProductModel.create(testProductFields)
+				
+				await OptionModel.deleteMany({ _id: { $in: [option1._id, option2._id] } })
+		
+				const updatedProduct = await ProductModel.findById(product._id)
+				expect(updatedProduct?.options).to.be.empty
+			})
+		})
 	})
 })

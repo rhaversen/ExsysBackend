@@ -197,6 +197,8 @@ orderSchema.path('paymentId').validate(async function (v: Schema.Types.ObjectId)
 // Adding indexes
 orderSchema.index({ createdAt: 1 })
 orderSchema.index({ paymentId: 1 })
+orderSchema.index({ products: 1 })
+orderSchema.index({ options: 1 })
 
 // Pre-save middleware
 orderSchema.pre('save', function (next) {
