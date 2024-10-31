@@ -161,6 +161,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 			const kioskWithoutPassword = {
 				_id: kiosk._id,
+				name: kiosk.name,
 				kioskTag: kiosk.kioskTag,
 				createdAt: kiosk.createdAt,
 				updatedAt: kiosk.updatedAt
