@@ -49,15 +49,8 @@ import readerCallbackRoutes from './routes/readerCallback.js'
 // Service routes
 import serviceRoutes from './routes/service.js'
 
-// Logging environment
-if (typeof process.env.NODE_ENV !== 'undefined') {
-	logger.info(`Node environment: ${process.env.NODE_ENV}`)
-} else {
-	logger.warn('Node environment is undefined. Shutting down...')
-	process.exit(1)
-}
-
 // Environment variables
+const { NODE_ENV, SESSION_SECRET } = process.env as Record<string, string>
 
 // Config variables
 const {
@@ -73,12 +66,15 @@ const {
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
 
+// Logging environment
+logger.info(`Node environment: ${NODE_ENV}`)
+
 // Setup
 await initSocket(server) // Initialize socket.io
 app.set('trust proxy', 1) // Trust the first proxy (NGINX)
 
 // Connect to MongoDB in production and staging environment
-if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+if (NODE_ENV === 'production' || NODE_ENV === 'staging') {
 	await databaseConnector.connectToMongoDB()
 }
 
@@ -106,7 +102,7 @@ const sessionStore = MongoStore.create({
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
-	secret: process.env.SESSION_SECRET ?? '', // Secret for signing session ID cookie
+	secret: SESSION_SECRET ?? '', // Secret for signing session ID cookie
 	saveUninitialized: false, // Do not save session if not authenticated
 	store: sessionStore, // Store session in MongoDB
 	cookie: cookieOptions
