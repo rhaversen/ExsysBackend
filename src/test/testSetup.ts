@@ -6,7 +6,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import sinon from 'sinon'
+import { restore } from 'sinon'
 import chaiHttp from 'chai-http'
 import * as chai from 'chai'
 import mongoose from 'mongoose'
@@ -61,7 +61,7 @@ beforeEach(async function () {
 })
 
 afterEach(async function () {
-	sinon.restore()
+	restore()
 	await cleanDatabase()
 	chaiAppServer.close()
 })
