@@ -53,7 +53,7 @@
 		"SameSite": "strict"
 	},
 	"session": {
-		"expiry": 2592000000
+		"expiry": 5184000000
 	},
 	"webhook": {
 		"cors": {

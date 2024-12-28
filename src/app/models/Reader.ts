@@ -8,7 +8,11 @@ import { customAlphabet } from 'nanoid'
 import logger from '../utils/logger.js'
 import KioskModel from './Kiosk.js'
 
-// Nanoid setup
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 const nanoidAlphabet = '123465789'
 const nanoidLength = 5
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)

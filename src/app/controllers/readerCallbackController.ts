@@ -8,6 +8,14 @@ import mongoose from 'mongoose'
 import logger from '../utils/logger.js'
 import PaymentModel from '../models/Payment.js'
 import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
+import OrderModel from '../models/Order.js'
+import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 interface ICreateReaderCallback extends Request {
 	body: {
@@ -53,7 +61,13 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 
 		res.status(200).send()
 
-		await emitPaymentStatusUpdate(payment)
+		const order = await OrderModel.findOne({ paymentId: payment.id })
+		if (order !== null) {
+			await emitPaymentStatusUpdate(payment, order)
+			await emitPaidOrderPosted(order)
+		} else {
+			logger.warn(`No orders found for paymentId ${payment.id}`)
+		}
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

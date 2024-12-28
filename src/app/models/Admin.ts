@@ -8,10 +8,14 @@ import { compare, hash } from 'bcrypt'
 import logger from '../utils/logger.js'
 import config from '../utils/setupConfig.js'
 
-// Destructuring and global variables
+// Environment variables
+
+// Config variables
 const {
 	bcryptSaltRounds
 } = config
+
+// Destructuring and global variables
 
 // Interfaces
 export interface IAdmin extends Document {

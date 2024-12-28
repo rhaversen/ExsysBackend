@@ -2,9 +2,17 @@
 
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
+
+// Own modules
 import logger from '../utils/logger.js'
 import RoomModel from './Room.js'
 import KioskModel from './Kiosk.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 // Interfaces
 export interface IActivity extends Document {

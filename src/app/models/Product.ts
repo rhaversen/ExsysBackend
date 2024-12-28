@@ -6,6 +6,11 @@ import { type Document, model, Schema } from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import OptionModel from './Option.js'
+import OrderModel from './Order.js'
+
+// Environment variables
+
+// Config variables
 
 // Destructuring and global variables
 
@@ -147,6 +152,53 @@ productSchema.path('options').validate(function (v: Schema.Types.ObjectId[]) {
 // Pre-save middleware
 productSchema.pre('save', function (next) {
 	logger.silly('Saving product')
+	next()
+})
+
+// Pre-delete middleware
+productSchema.pre(['deleteOne', 'findOneAndDelete'], async function (next) {
+	const doc = await ProductModel.findOne(this.getQuery())
+	if (doc !== null && doc !== undefined) {
+		logger.silly('Removing product from orders with ID:', doc._id)
+		// Delete product from all orders and delete orders which are now empty
+		await OrderModel.bulkWrite([
+			{
+				updateMany: {
+					filter: { 'products.id': doc._id },
+					update: { $pull: { products: { id: doc._id } } }
+				}
+			},
+			{
+				deleteMany: {
+					filter: { products: { $size: 0 } }
+				}
+			}
+		])
+	}
+	next()
+})
+
+// Pre-delete-many middleware
+productSchema.pre('deleteMany', async function (next) {
+	const docs = await ProductModel.find(this.getQuery())
+	const docIds = docs.map(doc => doc._id)
+	if (docIds.length > 0) {
+		logger.silly('Removing products from orders with IDs:', docIds)
+		// Delete products from all orders and delete orders which are now empty
+		await OrderModel.bulkWrite([
+			{
+				updateMany: {
+					filter: { 'products.id': { $in: docIds } },
+					update: { $pull: { products: { id: { $in: docIds } } } }
+				}
+			},
+			{
+				deleteMany: {
+					filter: { products: { $size: 0 } }
+				}
+			}
+		])
+	}
 	next()
 })
 
