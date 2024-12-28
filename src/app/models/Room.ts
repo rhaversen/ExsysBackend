@@ -7,6 +7,10 @@ import { type Document, model, Schema } from 'mongoose'
 import logger from '../utils/logger.js'
 import ActivityModel from './Activity.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 
 // Interfaces

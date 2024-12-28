@@ -13,7 +13,13 @@ import ReaderModel from '../models/Reader.js'
 import PaymentModel from '../models/Payment.js'
 import ProductModel from '../models/Product.js'
 import OptionModel from '../models/Option.js'
-import { emitOrderPosted } from '../webSockets/orderStatusHandlers.js'
+import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 interface OrderItem {
 	id: string
@@ -85,7 +91,7 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 	return newPayment.id
 }
 
-async function createCashCheckout (): Promise<string> {
+async function createLaterCheckout (): Promise<string> {
 	const newPayment = await PaymentModel.create({
 		paymentStatus: 'successful'
 	})
@@ -103,7 +109,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		checkoutMethod
 	} = req.body as Record<string, unknown>
 
-	// Check if the products
+	// Check if the products are valid
 	if (!Array.isArray(products) || !isOrderItemList(products)) {
 		res.status(400).json({ error: 'Invalid produkt data' })
 		return
@@ -150,8 +156,8 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 				}
 				break
 
-			case 'cash':
-				paymentId = await createCashCheckout()
+			case 'later':
+				paymentId = await createLaterCheckout()
 				break
 
 			case 'mobilePay':
@@ -174,7 +180,10 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		// Respond with the new order
 		res.status(201).json(newOrder)
 
-		await emitOrderPosted(newOrder)
+		// Emit the order if it is paid
+		if (checkoutMethod === 'later') {
+			await emitPaidOrderPosted(newOrder)
+		}
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })

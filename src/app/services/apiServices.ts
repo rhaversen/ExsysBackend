@@ -7,8 +7,13 @@ import axios from 'axios'
 // Own modules
 import logger from '../utils/logger.js'
 
+// Environment variables
 const SUMUP_API_KEY = process.env.SUMUP_API_KEY
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
+
+// Config variables
+
+// Destructuring and global variables
 
 export async function createReaderCheckout (readerId: string, totalAmount: number): Promise<string | undefined> {
 	logger.silly('Creating reader checkout')

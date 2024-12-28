@@ -8,6 +8,10 @@ import { type PassportStatic } from 'passport'
 import AdminModel, { type IAdmin } from '../models/Admin.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 
 const configurePassport = (passport: PassportStatic): void => {

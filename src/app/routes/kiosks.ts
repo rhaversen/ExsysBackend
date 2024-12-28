@@ -18,20 +18,25 @@ import {
 	patchKiosk
 } from '../controllers/kioskController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route POST api/v1/kiosks
- * @desc Create a new kiosk
+ * @route POST /api/v1/kiosks
+ * @description Create a new kiosk.
  * @access Private
+ * @middleware isAdmin
  * @param {string} req.body.name - The name of the kiosk.
- * @param {string} [req.body.kioskTag] - The tag of the kiosk.
- * @param {string} [req.body.readerId - The id of the reader the kiosk should send checkouts to (optional).
+ * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
+ * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
  * @param {string} req.body.password - The password of the kiosk.
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The newly created kiosk.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The newly created kiosk.
  */
 router.post('/',
 	isAdmin,
@@ -39,11 +44,12 @@ router.post('/',
 )
 
 /**
- * @route GET api/v1/kiosks/me
- * @desc Get the kiosk that is currently logged in
+ * @route GET /api/v1/kiosks/me
+ * @description Get the currently logged-in kiosk.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The kiosk.
+ * @middleware isKiosk
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The kiosk.
  */
 router.get('/me',
 	isKiosk,
@@ -51,12 +57,13 @@ router.get('/me',
 )
 
 /**
- * @route GET api/v1/kiosks/:id
- * @desc Get an kiosk
+ * @route GET /api/v1/kiosks/:id
+ * @description Get a kiosk by its ID.
  * @access Private
- * @param {string} req.params.id - The id of the kiosk to be fetched.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The kiosk.
+ * @middleware isAdminOrKiosk
+ * @param {string} req.params.id - The ID of the kiosk to be fetched.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The kiosk details.
  */
 router.get('/:id',
 	isAdminOrKiosk,
@@ -64,11 +71,12 @@ router.get('/:id',
 )
 
 /**
- * @route GET api/v1/kiosks
- * @desc Get all kiosks
+ * @route GET /api/v1/kiosks
+ * @description Get all kiosks.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {Array<object>} res.body - The kiosks.
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Array<Object>} res.body - The list of kiosks.
  */
 router.get('/',
 	isAdmin,
@@ -76,17 +84,18 @@ router.get('/',
 )
 
 /**
- * @route PATCH api/v1/kiosks/:id
- * @desc Update an kiosk
+ * @route PATCH /api/v1/kiosks/:id
+ * @description Update a kiosk.
  * @access Private
- * @param {string} req.params.id - The id of the kiosk to be patched.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the kiosk to be updated.
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
- * @param {string} [req.body.readerId] - The id of the reader the kiosk should send checkouts to (optional).
+ * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
  * @param {string} [req.body.password] - The password of the kiosk (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The updated kiosk.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The updated kiosk.
  */
 router.patch('/:id',
 	isAdmin,
@@ -94,12 +103,13 @@ router.patch('/:id',
 )
 
 /**
- * @route PATCH api/v1/kiosks/:id/kioskTag
- * @desc Create a new kioskTag
+ * @route PATCH /api/v1/kiosks/:id/kioskTag
+ * @description Create a new kiosk tag.
  * @access Private
- * @param {string} req.params.id - The id of the kiosk to be patched.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The updated kiosk.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the kiosk to be updated.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The updated kiosk with a new kiosk tag.
  */
 router.patch('/:id/kioskTag',
 	isAdmin,
@@ -107,12 +117,13 @@ router.patch('/:id/kioskTag',
 )
 
 /**
- * @route DELETE api/v1/kiosks/:id
- * @desc Delete an kiosk
+ * @route DELETE /api/v1/kiosks/:id
+ * @description Delete a kiosk by its ID.
  * @access Private
- * @param {string} req.params.id - The id of the kiosk to be deleted.
- * @param {boolean} req.body.confirm - Confirm the deletion.
- * @return {number} res.status - The status code of the HTTP response.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the kiosk to be deleted.
+ * @param {boolean} req.body.confirm - Confirmation of the deletion.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
 	isAdmin,

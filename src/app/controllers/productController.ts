@@ -8,6 +8,13 @@ import mongoose from 'mongoose'
 import ProductModel from '../models/Product.js'
 import logger from '../utils/logger.js'
 import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
+import OrderModel from '../models/Order.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating product')
