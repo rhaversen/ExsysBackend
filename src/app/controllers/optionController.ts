@@ -8,6 +8,13 @@ import mongoose from 'mongoose'
 import OptionModel from '../models/Option.js'
 import logger from '../utils/logger.js'
 import { emitOptionCreated, emitOptionDeleted, emitOptionUpdated } from '../webSockets/optionHandlers.js'
+import OrderModel from '../models/Order.js'
+
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating option')

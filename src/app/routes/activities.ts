@@ -16,17 +16,22 @@ import {
 	patchActivity
 } from '../controllers/activityController.js'
 
+// Environment variables
+
+// Config variables
+
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route POST api/v1/activities
- * @desc Create a new activity
+ * @route POST /api/v1/activities
+ * @description Create a new activity.
  * @access Private
+ * @middleware isAdmin
  * @param {string} req.body.name - The name of the activity.
- * @param {string} req.body.roomId - The id of the room the activity is in.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The newly created activity.
+ * @param {string} req.body.roomId - The ID of the room the activity belongs to.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The newly created activity.
  */
 router.post('/',
 	isAdmin,
@@ -34,12 +39,13 @@ router.post('/',
 )
 
 /**
- * @route GET api/v1/activities/:id
- * @desc Get an activity
+ * @route GET /api/v1/activities/:id
+ * @description Get an activity by its ID.
  * @access Private
- * @param {string} req.params.id - The id of the activity to be fetched.
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The activity.
+ * @middleware isAdminOrKiosk
+ * @param {string} req.params.id - The ID of the activity to be fetched.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The activity details.
  */
 router.get('/:id',
 	isAdminOrKiosk,
@@ -47,11 +53,12 @@ router.get('/:id',
 )
 
 /**
- * @route GET api/v1/activities
- * @desc Get all activities
+ * @route GET /api/v1/activities
+ * @description Get all activities.
  * @access Private
- * @return {number} res.status - The status code of the HTTP response.
- * @return {Array<object>} res.body - The activities.
+ * @middleware isAdminOrKiosk
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Array<Object>} res.body - The list of activities.
  */
 router.get('/',
 	isAdminOrKiosk,
@@ -59,14 +66,15 @@ router.get('/',
 )
 
 /**
- * @route PATCH api/v1/activities/:id
- * @desc Update an activity
+ * @route PATCH /api/v1/activities/:id
+ * @description Update an activity by its ID.
  * @access Private
- * @param {string} req.params.id - The id of the activity to be patched.
- * @param {string} [req.body.name] - The name of the activity (optional).
- * @param {string} [req.body.roomId] - The id of the room the activity is in (optional).
- * @return {number} res.status - The status code of the HTTP response.
- * @return {object} res.body - The updated activity.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the activity to be patched.
+ * @param {string} [req.body.name] - The new name of the activity (optional).
+ * @param {string} [req.body.roomId] - The ID of the room the activity belongs to (optional).
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The updated activity.
  */
 router.patch('/:id',
 	isAdmin,
@@ -74,12 +82,13 @@ router.patch('/:id',
 )
 
 /**
- * @route DELETE api/v1/activities/:id
- * @desc Delete an activity
+ * @route DELETE /api/v1/activities/:id
+ * @description Delete an activity by its ID.
  * @access Private
- * @param {string} req.params.id - The id of the activity to be deleted.
- * @param {boolean} req.body.confirm - Confirm the deletion.
- * @return {number} res.status - The status code of the HTTP response.
+ * @middleware isAdmin
+ * @param {string} req.params.id - The ID of the activity to be deleted.
+ * @param {boolean} req.body.confirm - Confirmation of the deletion.
+ * @returns {number} res.status - The status code of the HTTP response.
  */
 router.delete('/:id',
 	isAdmin,

@@ -9,6 +9,12 @@ import logger from '../utils/logger.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
+
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
 

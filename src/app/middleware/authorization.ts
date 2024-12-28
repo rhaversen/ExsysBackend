@@ -4,16 +4,17 @@
 import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
-import Admin, { type IAdmin } from '../models/Admin.js'
-import Kiosk, { type IKiosk } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
 
-type User = IKiosk | IAdmin | undefined
+// Environment variables
+
+// Config variables
+
+// Destructuring and global variables
 
 export function isAdmin (req: Request, res: Response, next: NextFunction): void {
 	logger.silly('Checking if user is an admin')
-	const user = req.user as User
-	if (!req.isAuthenticated() || user === undefined || !(user instanceof Admin)) {
+	if (!req.isAuthenticated() || req.session.type !== 'admin') {
 		res.status(403).send('Forbidden')
 		return
 	}
@@ -22,8 +23,7 @@ export function isAdmin (req: Request, res: Response, next: NextFunction): void 
 
 export function isKiosk (req: Request, res: Response, next: NextFunction): void {
 	logger.silly('Checking if user is a kiosk')
-	const user = req.user as User
-	if (!req.isAuthenticated() || user === undefined || !(user instanceof Kiosk)) {
+	if (!req.isAuthenticated() || req.session.type !== 'kiosk') {
 		res.status(403).send('Forbidden')
 		return
 	}
@@ -32,8 +32,7 @@ export function isKiosk (req: Request, res: Response, next: NextFunction): void 
 
 export function isAdminOrKiosk (req: Request, res: Response, next: NextFunction): void {
 	logger.silly('Checking if user is a kiosk or an admin')
-	const user = req.user as User
-	if (!req.isAuthenticated() || user === undefined) {
+	if (!req.isAuthenticated() || (req.session.type !== 'kiosk' && req.session.type !== 'admin')) {
 		res.status(403).send('Forbidden')
 		return
 	}

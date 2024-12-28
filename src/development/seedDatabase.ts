@@ -1,3 +1,4 @@
+/* eslint-disable local/enforce-comment-order */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
@@ -15,6 +16,8 @@ import logger from '../app/utils/logger.js'
 
 logger.info('Seeding database')
 
+const sampleImageURL = 'https://dummyimage.com/200x200/ffffff/000000.png&text=Sample+Image+200x200'
+
 // Products for every hour of the day
 await ProductModel.create({
 	name: '0 Cake',
@@ -29,7 +32,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '1 Cake',
@@ -44,7 +47,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '2 Cake',
@@ -59,7 +62,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '3 Cake',
@@ -74,7 +77,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '4 Cake',
@@ -89,7 +92,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '5 Cake',
@@ -104,7 +107,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '6 Cake',
@@ -119,7 +122,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '7 Cake',
@@ -134,7 +137,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '8 Cake',
@@ -149,7 +152,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '9 Cake',
@@ -164,7 +167,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '10 Cake',
@@ -179,7 +182,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '11 Cake',
@@ -194,7 +197,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '12 Cake',
@@ -209,7 +212,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '13 Cake',
@@ -224,7 +227,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '14 Cake',
@@ -239,7 +242,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '15 Cake',
@@ -254,7 +257,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '16 Cake',
@@ -269,7 +272,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '17 Cake',
@@ -284,7 +287,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '18 Cake',
@@ -299,7 +302,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '19 Cake',
@@ -314,7 +317,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '20 Cake',
@@ -329,7 +332,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '21 Cake',
@@ -344,7 +347,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '22 Cake',
@@ -359,7 +362,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 await ProductModel.create({
 	name: '23 Cake',
@@ -374,7 +377,7 @@ await ProductModel.create({
 			minute: 0
 		}
 	},
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 
 // Products with no image
@@ -411,24 +414,24 @@ await ProductModel.create({
 const option1 = await OptionModel.create({
 	name: 'Option 1',
 	price: 0,
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 const option2 = await OptionModel.create({
 	name: 'Option 2',
 	price: 1,
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 const option3 = await OptionModel.create({
 	name: 'Option 3',
 	price: 2,
-	imageURL: 'https://via.placeholder.com/150'
+	imageURL: sampleImageURL
 })
 
 // Products with options
 const product1 = await ProductModel.create({
 	name: 'One option',
 	price: 5,
-	imageURL: 'https://via.placeholder.com/150',
+	imageURL: sampleImageURL,
 	options: [option1.id],
 	orderWindow: {
 		from: {
@@ -444,7 +447,7 @@ const product1 = await ProductModel.create({
 const product2 = await ProductModel.create({
 	name: 'Two options',
 	price: 10,
-	imageURL: 'https://via.placeholder.com/150',
+	imageURL: sampleImageURL,
 	options: [option1.id, option2.id],
 	orderWindow: {
 		from: {
@@ -460,7 +463,7 @@ const product2 = await ProductModel.create({
 const product3 = await ProductModel.create({
 	name: 'Three options',
 	price: 15,
-	imageURL: 'https://via.placeholder.com/150',
+	imageURL: sampleImageURL,
 	options: [option1.id, option2.id, option3.id],
 	orderWindow: {
 		from: {
@@ -478,7 +481,7 @@ const product3 = await ProductModel.create({
 await ProductModel.create({
 	name: 'Free morning',
 	price: 0,
-	imageURL: 'https://via.placeholder.com/150',
+	imageURL: sampleImageURL,
 	orderWindow: {
 		from: {
 			hour: 0,
@@ -493,7 +496,7 @@ await ProductModel.create({
 await ProductModel.create({
 	name: 'Free afternoon',
 	price: 0,
-	imageURL: 'https://via.placeholder.com/150',
+	imageURL: sampleImageURL,
 	orderWindow: {
 		from: {
 			hour: 12,
@@ -508,7 +511,7 @@ await ProductModel.create({
 await ProductModel.create({
 	name: 'Free +options',
 	price: 0,
-	imageURL: 'https://via.placeholder.com/150',
+	imageURL: sampleImageURL,
 	options: [option1.id, option2.id, option3.id],
 	orderWindow: {
 		from: {

@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable local/enforce-comment-order */
+/* eslint-disable typescript/no-unused-vars */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
@@ -13,6 +14,9 @@ import { Types } from 'mongoose'
 // Own modules
 import ProductModel from '../../../app/models/Product.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import OrderModel from '../../../app/models/Order.js'
+import PaymentModel from '../../../app/models/Payment.js'
+import ActivityModel from '../../../app/models/Activity.js'
 
 // Setup test environment
 import '../../testSetup.js'
@@ -830,6 +834,113 @@ describe('Product Model', function () {
 				}
 			})
 			expect(product).to.exist
+		})
+	})
+	describe('Delete', function () {
+		let paymentId: Types.ObjectId
+		let activityId: Types.ObjectId
+
+		beforeEach(async function () {
+			const payment = await PaymentModel.create({})
+			const activity = await ActivityModel.create({ name: 'Test Activity' })
+			paymentId = payment.id
+			activityId = activity.id
+		})
+
+		describe('Pre-delete middleware', function () {
+			it('should remove the product from orders when deleting a product', async function () {
+				const product1 = await ProductModel.create(testProductFields)
+				const product2 = await ProductModel.create({...testProductFields, name: 'Test Product 2'})
+
+				const order = await OrderModel.create({
+					products: [{
+						id: product1.id,
+						quantity: 1
+					}, {
+						id: product2.id,
+						quantity: 1
+					}],
+					paymentId,
+					activityId
+				})
+
+				await product1.deleteOne()
+
+				const updatedOrder = await OrderModel.findById(order.id)
+
+				expect(updatedOrder?.products.length).to.equal(1)
+			})
+
+			it('should remove orders with no products when deleting a product', async function () {
+				const product1 = await ProductModel.create(testProductFields)
+
+				await OrderModel.create({
+					products: [{
+						id: product1.id,
+						quantity: 1
+					}],
+					paymentId,
+					activityId
+				})
+
+				await product1.deleteOne()
+
+				const orders = await OrderModel.find({})
+
+				expect(orders.length).to.equal(0)
+			})
+		})
+
+		describe('Pre-delete-many middleware', function () {
+			it('should remove the products from orders when deleting multiple products', async function () {
+				const product1 = await ProductModel.create(testProductFields)
+				const product2 = await ProductModel.create({...testProductFields, name: 'Test Product 2'})
+				const product3 = await ProductModel.create({...testProductFields, name: 'Test Product 3'})
+
+				const order = await OrderModel.create({
+					products: [{
+						id: product1.id,
+						quantity: 1
+					}, {
+						id: product2.id,
+						quantity: 1
+					}, {
+						id: product3.id,
+						quantity: 1
+					}],
+					paymentId,
+					activityId
+				})
+
+				await ProductModel.deleteMany({ name: { $ne: 'Test Product 2' } })
+
+				const updatedOrder = await OrderModel.findById(order.id)
+
+				expect(updatedOrder?.products.length).to.equal(1)
+			})
+
+			it('should remove orders with no products when deleting multiple products', async function () {
+				const product1 = await ProductModel.create(testProductFields)
+				const product2 = await ProductModel.create({...testProductFields, name: 'Test Product 2'})
+
+				await OrderModel.create({
+					products: [{
+						id: product1.id,
+						quantity: 1
+					}, {
+						id: product2.id,
+						quantity: 1
+					}],
+					paymentId,
+					activityId
+				})
+
+				await ProductModel.deleteMany({})
+
+				const orders = await OrderModel.find({})
+
+				expect(orders.length).to.equal(0)
+			})
 		})
 	})
 })

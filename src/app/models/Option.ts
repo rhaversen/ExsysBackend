@@ -6,6 +6,11 @@ import { type Document, model, Schema } from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import ProductModel from './Product.js'
+import OrderModel from './Order.js'
+
+// Environment variables
+
+// Config variables
 
 // Destructuring and global variables
 
@@ -59,7 +64,10 @@ optionSchema.pre(['deleteOne', 'findOneAndDelete'], async function (next) {
 	const doc = await OptionModel.findOne(this.getQuery())
 	if (doc !== null && doc !== undefined) {
 		logger.silly('Removing options from products with ID:', doc._id)
+		// Remove the option from all products that have it
 		await ProductModel.updateMany({ options: doc._id }, { $pull: { options: doc._id } })
+		// Delete option from all orders
+		await OrderModel.updateMany({ 'options.id': doc._id }, { $pull: { options: { id: doc._id } } })
 	}
 	next()
 })
@@ -70,7 +78,10 @@ optionSchema.pre('deleteMany', async function (next) {
 	const docIds = docs.map(doc => doc._id)
 	if (docIds.length > 0) {
 		logger.silly('Removing options from products with IDs:', docIds)
+		// Remove the options from all products that have them
 		await ProductModel.updateMany({ options: { $in: docIds } }, { $pull: { options: { $in: docIds } } })
+		// Delete options from all orders
+		await OrderModel.updateMany({ 'options.id': { $in: docIds } }, { $pull: { options: { id: { $in: docIds } } } })
 	}
 	next()
 })

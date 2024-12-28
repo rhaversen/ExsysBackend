@@ -1,3 +1,6 @@
+// Verify that all environment secrets are set
+import './utils/verifyEnvironmentSecrets.js'
+
 // Use Sentry
 import './utils/instrument.js'
 
@@ -11,14 +14,13 @@ import helmet from 'helmet'
 import mongoose from 'mongoose'
 import RateLimit from 'express-rate-limit'
 import cors from 'cors'
-import gracefulShutdown from 'http-graceful-shutdown'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import MongoStore from 'connect-mongo'
 import * as Sentry from '@sentry/node'
 
-// Own Modules
+// Own modules
 import databaseConnector from './utils/databaseConnector.js'
 import logger from './utils/logger.js'
 import config from './utils/setupConfig.js'
@@ -47,15 +49,10 @@ import readerCallbackRoutes from './routes/readerCallback.js'
 // Service routes
 import serviceRoutes from './routes/service.js'
 
-// Logging environment
-if (typeof process.env.NODE_ENV !== 'undefined') {
-	logger.info(`Node environment: ${process.env.NODE_ENV}`)
-} else {
-	logger.warn('Node environment is undefined. Shutting down...')
-	process.exit(1)
-}
+// Environment variables
+const { NODE_ENV, SESSION_SECRET } = process.env as Record<string, string>
 
-// Configs
+// Config variables
 const {
 	veryLowSensitivityApiLimiterConfig,
 	mediumSensitivityApiLimiterConfig,
@@ -65,20 +62,20 @@ const {
 	cookieOptions
 } = config
 
-// Global variables and setup
+// Destructuring and global variables
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
+
+// Logging environment
+logger.info(`Node environment: ${NODE_ENV}`)
+
+// Setup
 await initSocket(server) // Initialize socket.io
 app.set('trust proxy', 1) // Trust the first proxy (NGINX)
 
 // Connect to MongoDB in production and staging environment
-if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+if (NODE_ENV === 'production' || NODE_ENV === 'staging') {
 	await databaseConnector.connectToMongoDB()
-}
-
-if (process.env.SESSION_SECRET === undefined) {
-	logger.error('Session secret is not set!')
-	process.exit(1)
 }
 
 // Middleware
@@ -94,19 +91,24 @@ app.use('/api/v1/reader-callback', readerCallbackRoutes)
 // Apply cors config to all other routes
 app.use(cors(corsConfig))
 
-// Session management
+// Create a session store
+const sessionStore = MongoStore.create({
+	client: mongoose.connection.getClient() as any, // Use the existing connection
+	autoRemove: 'interval', // Remove expired sessions
+	autoRemoveInterval: 1 // 1 minute
+})
+
+// Apply session management middleware
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
-	secret: process.env.SESSION_SECRET,
+	secret: SESSION_SECRET ?? '', // Secret for signing session ID cookie
 	saveUninitialized: false, // Do not save session if not authenticated
-	store: MongoStore.create({
-		client: mongoose.connection.getClient() as any,
-		autoRemove: 'interval',
-		autoRemoveInterval: 1
-	}),
+	store: sessionStore, // Store session in MongoDB
 	cookie: cookieOptions
 }))
+
+// Apply and configure Passport middleware
 app.use(passport.initialize()) // Initialize Passport
 app.use(passport.session()) // Passport session handling
 configurePassport(passport) // Use passportConfig
@@ -204,25 +206,8 @@ export async function shutDown (): Promise<void> {
 	await mongoose.connection.close()
 	logger.info('Database connection closed')
 
-	if (databaseConnector.isMemoryDatabase()) {
-		const mongoMemoryReplSetConnector = await import('../test/mongoMemoryReplSetConnector.js')
-		await mongoMemoryReplSetConnector.disconnectFromInMemoryMongoDB()
-	}
-
 	logger.info('Shutdown completed')
 }
 
-gracefulShutdown(server,
-	{
-		signals: 'SIGINT SIGTERM',
-		timeout: 20000,							// Timeout in ms
-		forceExit: true,						// Trigger process.exit() at the end of shutdown process
-		development: false,						// Terminate the server, ignoring open connections, shutdown function, finally function
-		// preShutdown: preShutdownFunction,	// Operation before httpConnections are shut down
-		onShutdown: shutDown					// Shutdown function (async) - e.g. for cleanup DB, ...
-		// finally: finalFunction				// Finally function (sync) - e.g. for logging
-	}
-)
-
-export { server }
+export { server, sessionStore }
 export default app
