@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 
 // Own modules
 import { getSocketStatus } from '../utils/socket.js'
+import logger from '../utils/logger.js'
 
 // Environment variables
 
@@ -33,6 +34,8 @@ router.get('/livez', (_req, res) => {
 router.get('/readyz', (_req, res) => {
 	const mongooseReady = mongoose.connection.readyState === 1
 	const socketReady = getSocketStatus()
+	if (!mongooseReady) logger.error('MongoDB not ready')
+	if (!socketReady) logger.error('Socket.io not ready')
 	if (mongooseReady && socketReady) {
 		return res.status(200).send('OK')
 	} else {
