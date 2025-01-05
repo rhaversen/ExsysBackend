@@ -147,6 +147,11 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 		return false
 	}
 
+	// Skip order window validation if this is an update operation
+	if (!this.isNew) {
+		return true
+	}
+
 	const now = new Date()
 	const nowHour = now.getUTCHours()
 	const nowMinute = now.getUTCMinutes()
