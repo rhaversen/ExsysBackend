@@ -1,5 +1,5 @@
 /* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+ 
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
@@ -1440,6 +1440,56 @@ describe('Orders routes', function () {
 				status: 'delivered'
 			}).set('Cookie', sessionCookie)
 			const updatedOrder = await OrderModel.findById(order1.id)
+			expect(updatedOrder).to.exist
+			expect(updatedOrder?.status).to.equal('delivered')
+		})
+
+		it('should update the status of an order to confirmed even if products are out of order window', async function () {
+			await ProductModel.findByIdAndUpdate(testProduct1.id, {
+				orderWindow: {
+					from: {
+						hour: 23,
+						minute: 59
+					},
+					to: {
+						hour: 0,
+						minute: 0
+					}
+				}
+			})
+
+			await agent.patch('/api/v1/orders').send({
+				orderIds: [order1.id],
+				status: 'confirmed'
+			}).set('Cookie', sessionCookie)
+
+			const updatedOrder = await OrderModel.findById(order1.id)
+
+			expect(updatedOrder).to.exist
+			expect(updatedOrder?.status).to.equal('confirmed')
+		})
+
+		it('should update the status of an order to delivered even if products are out of order window', async function () {
+			await ProductModel.findByIdAndUpdate(testProduct1.id, {
+				orderWindow: {
+					from: {
+						hour: 23,
+						minute: 59
+					},
+					to: {
+						hour: 0,
+						minute: 0
+					}
+				}
+			})
+
+			await agent.patch('/api/v1/orders').send({
+				orderIds: [order1.id],
+				status: 'delivered'
+			}).set('Cookie', sessionCookie)
+
+			const updatedOrder = await OrderModel.findById(order1.id)
+
 			expect(updatedOrder).to.exist
 			expect(updatedOrder?.status).to.equal('delivered')
 		})

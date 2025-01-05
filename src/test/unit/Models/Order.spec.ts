@@ -13,7 +13,7 @@ import { Types } from 'mongoose'
 import sinon from 'sinon'
 
 // Own modules
-import OrderModel from '../../../app/models/Order.js'
+import OrderModel, { IOrder } from '../../../app/models/Order.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
@@ -728,6 +728,49 @@ describe('Order Model', function () {
 				errorOccurred = true
 			}
 			expect(errorOccurred).to.be.true
+		})
+
+		describe('Order Status Updates', function () {
+			let testOrder: IOrder
+
+			beforeEach(async function () {
+				// Set the fake time to a specific date and time that is before lunch
+				sinon.restore() // Restore the JavaScript environment's time
+				const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+
+				testOrder = await OrderModel.create({
+					...testOrderFields,
+					products: [{
+						id: testProductBeforeLunch._id,
+						quantity: 1
+					}]
+				})
+			})
+
+			it('should allow order status to be updated to confirmed after the order window has passed', async function () {
+				// Set the fake time to a specific date and time that is after lunch
+				sinon.restore() // Restore the JavaScript environment's time
+				const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+				
+				testOrder.status = 'confirmed'
+				await testOrder.save()
+
+				expect(testOrder.status).to.equal('confirmed')
+			})
+
+			it('should allow order status to be updated to delivered after the order window has passed', async function () {
+				// Set the fake time to a specific date and time that is after lunch
+				sinon.restore() // Restore the JavaScript environment's time
+				const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
+				
+				testOrder.status = 'delivered'
+				await testOrder.save()
+
+				expect(testOrder.status).to.equal('delivered')
+			})
 		})
 	})
 })
