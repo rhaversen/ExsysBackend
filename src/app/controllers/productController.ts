@@ -8,7 +8,6 @@ import mongoose from 'mongoose'
 import ProductModel from '../models/Product.js'
 import logger from '../utils/logger.js'
 import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
-import OrderModel from '../models/Order.js'
 
 // Environment variables
 
