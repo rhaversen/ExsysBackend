@@ -67,9 +67,9 @@ describe('Configs routes', function () {
 		it('should return configs with default values when no configs exist', async function () {
 			const response = await agent.get('/api/v1/configs').set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeoutMs', 60000)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', 10000)
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', 10000)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', 60000)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', 10000)
+			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', 10000)
 		})
 
 		it('should return existing configs when they exist', async function () {
@@ -82,9 +82,9 @@ describe('Configs routes', function () {
 
 			const response = await agent.get('/api/v1/configs').set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeoutMs', testConfigs.kioskInactivityTimeoutMs)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', testConfigs.kioskInactivityTimeoutWarningMs)
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', testConfigs.kioskOrderConfirmationTimeoutMs)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', testConfigs.kioskInactivityTimeoutMs)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', testConfigs.kioskInactivityTimeoutWarningMs)
+			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', testConfigs.kioskOrderConfirmationTimeoutMs)
 		})
 
 		it('should return same config document when called multiple times', async function () {
@@ -137,9 +137,9 @@ describe('Configs routes', function () {
 				.send(updatedConfigs)
 				.set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeoutMs', updatedConfigs.kioskInactivityTimeoutMs)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', updatedConfigs.kioskInactivityTimeoutWarningMs)
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', updatedConfigs.kioskInactivityTimeoutMs)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', updatedConfigs.kioskInactivityTimeoutWarningMs)
+			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
 		})
 
 		it('should allow partial updates', async function () {
@@ -152,9 +152,9 @@ describe('Configs routes', function () {
 				.send(partialUpdate)
 				.set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeoutMs', partialUpdate.kioskInactivityTimeoutMs)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', 10000) // default value
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', 10000) // default value
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', partialUpdate.kioskInactivityTimeoutMs)
+			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', 10000) // default value
+			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', 10000) // default value
 		})
 
 		it('should validate minimum values', async function () {
@@ -200,7 +200,7 @@ describe('Configs routes', function () {
 				.send({ kioskInactivityTimeoutMs: 40000 })
 				.set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.include({
+			expect(response.body.configs).to.include({
 				kioskInactivityTimeoutMs: 40000,
 				kioskInactivityTimeoutWarningMs: 5000,
 				kioskOrderConfirmationTimeoutMs: 15000

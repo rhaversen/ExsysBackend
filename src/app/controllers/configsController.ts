@@ -29,7 +29,18 @@ export async function getConfigs(req: Request, res: Response, next: NextFunction
 	try {
 		const configs = await getOrCreateConfigs()
 
-		res.status(200).json(configs)
+		const transformedConfigs = {
+			_id: configs.id,
+			configs: {
+				kioskInactivityTimeoutMs: configs.kioskInactivityTimeoutMs,
+				kioskInactivityTimeoutWarningMs: configs.kioskInactivityTimeoutWarningMs,
+				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs
+			},
+			createdAt: configs.createdAt,
+			updatedAt: configs.updatedAt
+		}
+
+		res.status(200).json(transformedConfigs)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -59,7 +70,18 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 
-		res.status(200).json(savedConfigs)
+		const transformedConfigs = {
+			_id: savedConfigs.id,
+			configs: {
+				kioskInactivityTimeoutMs: savedConfigs.kioskInactivityTimeoutMs,
+				kioskInactivityTimeoutWarningMs: savedConfigs.kioskInactivityTimeoutWarningMs,
+				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs
+			},
+			createdAt: savedConfigs.createdAt,
+			updatedAt: savedConfigs.updatedAt
+		}
+
+		res.status(200).json(transformedConfigs)
 	} catch (error) {
 		await session.abortTransaction()
 

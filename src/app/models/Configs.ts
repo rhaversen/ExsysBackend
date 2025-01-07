@@ -24,6 +24,17 @@ export interface IConfigs extends Document {
 	updatedAt: Date
 }
 
+export interface IConfigsFrontend {
+	_id: string
+	configs: {
+		kioskInactivityTimeoutMs: number
+		kioskInactivityTimeoutWarningMs: number
+		kioskOrderConfirmationTimeoutMs: number	
+	},
+	createdAt: Date
+	updatedAt: Date
+}
+
 // Schema
 const configsSchema = new Schema<IConfigs>({
 	kioskInactivityTimeoutMs: {
