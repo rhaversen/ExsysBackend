@@ -67,24 +67,24 @@ describe('Configs routes', function () {
 		it('should return configs with default values when no configs exist', async function () {
 			const response = await agent.get('/api/v1/configs').set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeout', 60000)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarning', 10000)
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeout', 10000)
+			expect(response.body).to.have.property('kioskInactivityTimeoutMs', 60000)
+			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', 10000)
+			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', 10000)
 		})
 
 		it('should return existing configs when they exist', async function () {
 			const testConfigs = {
-				kioskInactivityTimeout: 30000,
-				kioskInactivityTimeoutWarning: 5000,
-				kioskOrderConfirmationTimeout: 15000
+				kioskInactivityTimeoutMs: 30000,
+				kioskInactivityTimeoutWarningMs: 5000,
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 			await ConfigsModel.create(testConfigs)
 
 			const response = await agent.get('/api/v1/configs').set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeout', testConfigs.kioskInactivityTimeout)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarning', testConfigs.kioskInactivityTimeoutWarning)
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeout', testConfigs.kioskOrderConfirmationTimeout)
+			expect(response.body).to.have.property('kioskInactivityTimeoutMs', testConfigs.kioskInactivityTimeoutMs)
+			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', testConfigs.kioskInactivityTimeoutWarningMs)
+			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', testConfigs.kioskOrderConfirmationTimeoutMs)
 		})
 
 		it('should return same config document when called multiple times', async function () {
@@ -114,7 +114,7 @@ describe('Configs routes', function () {
 		it('should have status 200 when accessed as admin', async function () {
 			const response = await agent
 				.patch('/api/v1/configs')
-				.send({ kioskInactivityTimeout: 30000 })
+				.send({ kioskInactivityTimeoutMs: 30000 })
 				.set('Cookie', adminSessionCookie)
 
 			expect(response).to.have.status(200)
@@ -123,7 +123,7 @@ describe('Configs routes', function () {
 		it('should have status 403 when accessed as kiosk', async function () {
 			const response = await agent
 				.patch('/api/v1/configs')
-				.send({ kioskInactivityTimeout: 30000 })
+				.send({ kioskInactivityTimeoutMs: 30000 })
 				.set('Cookie', kioskSessionCookie)
 
 			expect(response).to.have.status(403)
@@ -132,16 +132,16 @@ describe('Configs routes', function () {
 		it('should have status 403 if not logged in', async function () {
 			const response = await agent
 				.patch('/api/v1/configs')
-				.send({ kioskInactivityTimeout: 30000 })
+				.send({ kioskInactivityTimeoutMs: 30000 })
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should update existing configs', async function () {
 			const updatedConfigs = {
-				kioskInactivityTimeout: 30000,
-				kioskInactivityTimeoutWarning: 5000,
-				kioskOrderConfirmationTimeout: 15000
+				kioskInactivityTimeoutMs: 30000,
+				kioskInactivityTimeoutWarningMs: 5000,
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 
 			const response = await agent
@@ -149,14 +149,14 @@ describe('Configs routes', function () {
 				.send(updatedConfigs)
 				.set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeout', updatedConfigs.kioskInactivityTimeout)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarning', updatedConfigs.kioskInactivityTimeoutWarning)
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeout', updatedConfigs.kioskOrderConfirmationTimeout)
+			expect(response.body).to.have.property('kioskInactivityTimeoutMs', updatedConfigs.kioskInactivityTimeoutMs)
+			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', updatedConfigs.kioskInactivityTimeoutWarningMs)
+			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
 		})
 
 		it('should allow partial updates', async function () {
 			const partialUpdate = {
-				kioskInactivityTimeout: 30000
+				kioskInactivityTimeoutMs: 30000
 			}
 
 			const response = await agent
@@ -164,14 +164,14 @@ describe('Configs routes', function () {
 				.send(partialUpdate)
 				.set('Cookie', adminSessionCookie)
 
-			expect(response.body).to.have.property('kioskInactivityTimeout', partialUpdate.kioskInactivityTimeout)
-			expect(response.body).to.have.property('kioskInactivityTimeoutWarning', 10000) // default value
-			expect(response.body).to.have.property('kioskOrderConfirmationTimeout', 10000) // default value
+			expect(response.body).to.have.property('kioskInactivityTimeoutMs', partialUpdate.kioskInactivityTimeoutMs)
+			expect(response.body).to.have.property('kioskInactivityTimeoutWarningMs', 10000) // default value
+			expect(response.body).to.have.property('kioskOrderConfirmationTimeoutMs', 10000) // default value
 		})
 
 		it('should validate minimum values', async function () {
 			const invalidConfigs = {
-				kioskInactivityTimeout: 500 // Less than minimum 1000
+				kioskInactivityTimeoutMs: 500 // Less than minimum 1000
 			}
 
 			const response = await agent
@@ -197,9 +197,9 @@ describe('Configs routes', function () {
 		it('should preserve other fields when updating partially', async function () {
 			// First set all fields
 			const initialUpdate = {
-				kioskInactivityTimeout: 30000,
-				kioskInactivityTimeoutWarning: 5000,
-				kioskOrderConfirmationTimeout: 15000
+				kioskInactivityTimeoutMs: 30000,
+				kioskInactivityTimeoutWarningMs: 5000,
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 			await agent
 				.patch('/api/v1/configs')
@@ -209,13 +209,13 @@ describe('Configs routes', function () {
 			// Then update just one field
 			const response = await agent
 				.patch('/api/v1/configs')
-				.send({ kioskInactivityTimeout: 40000 })
+				.send({ kioskInactivityTimeoutMs: 40000 })
 				.set('Cookie', adminSessionCookie)
 
 			expect(response.body).to.include({
-				kioskInactivityTimeout: 40000,
-				kioskInactivityTimeoutWarning: 5000,
-				kioskOrderConfirmationTimeout: 15000
+				kioskInactivityTimeoutMs: 40000,
+				kioskInactivityTimeoutWarningMs: 5000,
+				kioskOrderConfirmationTimeoutMs: 15000
 			})
 		})
 	})

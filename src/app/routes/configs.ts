@@ -37,9 +37,9 @@ router.get('/',
  * @description Update a config.
  * @access Private
  * @middleware isAdmin
- * @param {string} [req.body.kioskInactivityTimeout] - The inactivity timeout of the kiosk (optional).
- * @param {string} [req.body.kioskInactivityTimeoutWarning] - The inactivity timeout warning of the kiosk (optional).
- * @param {string} [req.body.kioskOrderConfirmationTimeout] - The order confirmation timeout of the kiosk (optional).
+ * @param {string} [req.body.kioskInactivityTimeoutMs] - The inactivity timeout of the kiosk (optional).
+ * @param {string} [req.body.kioskInactivityTimeoutWarningMs] - The inactivity timeout warning of the kiosk (optional).
+ * @param {string} [req.body.kioskOrderConfirmationTimeoutMs] - The order confirmation timeout of the kiosk (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated configs.
  */

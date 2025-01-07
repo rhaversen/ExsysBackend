@@ -15,9 +15,9 @@ import { type Document, model, Schema } from 'mongoose'
 export interface IConfigs extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	kioskInactivityTimeout: number
-	kioskInactivityTimeoutWarning: number
-	kioskOrderConfirmationTimeout: number
+	kioskInactivityTimeoutMs: number
+	kioskInactivityTimeoutWarningMs: number
+	kioskOrderConfirmationTimeoutMs: number
 
 	// Timestamps
 	createdAt: Date
@@ -26,17 +26,17 @@ export interface IConfigs extends Document {
 
 // Schema
 const configsSchema = new Schema<IConfigs>({
-	kioskInactivityTimeout: {
+	kioskInactivityTimeoutMs: {
 		type: Schema.Types.Number,
 		default: 60000, // 60 seconds
 		min: [1000, 'Inaktivitets timeout skal være mindst 1 sekund'],
 	},
-	kioskInactivityTimeoutWarning: {
+	kioskInactivityTimeoutWarningMs: {
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
 		min: [1000, 'Inaktivitets timeout advarsel skal være mindst 1 sekund'],
 	},
-	kioskOrderConfirmationTimeout: {
+	kioskOrderConfirmationTimeoutMs: {
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
 		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund'],

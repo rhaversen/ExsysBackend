@@ -49,9 +49,9 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 		const configs = await getOrCreateConfigs(session)
 
 		// Set fields directly, checking for undefined to ensure not overwriting with undefined
-		if (req.body.kioskInactivityTimeout !== undefined) configs.kioskInactivityTimeout = req.body.kioskInactivityTimeout
-		if (req.body.kioskInactivityTimeoutWarning !== undefined) configs.kioskInactivityTimeoutWarning = req.body.kioskInactivityTimeoutWarning
-		if (req.body.kioskOrderConfirmationTimeout !== undefined) configs.kioskOrderConfirmationTimeout = req.body.kioskOrderConfirmationTimeout
+		if (req.body.kioskInactivityTimeoutMs !== undefined) configs.kioskInactivityTimeoutMs = req.body.kioskInactivityTimeoutMs
+		if (req.body.kioskInactivityTimeoutWarningMs !== undefined) configs.kioskInactivityTimeoutWarningMs = req.body.kioskInactivityTimeoutWarningMs
+		if (req.body.kioskOrderConfirmationTimeoutMs !== undefined) configs.kioskOrderConfirmationTimeoutMs = req.body.kioskOrderConfirmationTimeoutMs
 
 		// Validate and save the updated document
 		await configs.validate()
