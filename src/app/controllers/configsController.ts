@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 // Own modules
 import logger from '../utils/logger.js'
 import ConfigsModel from '../models/Configs.js'
+import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 // Environment variables
 
@@ -82,6 +83,8 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 		}
 
 		res.status(200).json(transformedConfigs)
+
+		emitConfigsUpdated(transformedConfigs)
 	} catch (error) {
 		await session.abortTransaction()
 
