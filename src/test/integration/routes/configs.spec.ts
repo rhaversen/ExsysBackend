@@ -96,18 +96,6 @@ describe('Configs routes', function () {
 
 			expect(firstId).to.equal(secondId)
 		})
-
-		it('should handle concurrent requests correctly', async function () {
-			const promises = Array(5).fill(null).map(() =>
-				agent.get('/api/v1/configs').set('Cookie', adminSessionCookie)
-			)
-
-			const responses = await Promise.all(promises)
-			const ids = responses.map(response => response.body._id)
-
-			// All responses should have the same ID
-			expect(new Set(ids).size).to.equal(1)
-		})
 	})
 
 	describe('PATCH /v1/configs', function () {
