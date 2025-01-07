@@ -142,6 +142,25 @@ describe('Configs routes', function () {
 			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
 		})
 
+		it('should save the configs to the database', async function () {
+			const updatedConfigs = {
+				kioskInactivityTimeoutMs: 30000,
+				kioskInactivityTimeoutWarningMs: 5000,
+				kioskOrderConfirmationTimeoutMs: 15000
+			}
+
+			await agent
+				.patch('/api/v1/configs')
+				.send(updatedConfigs)
+				.set('Cookie', adminSessionCookie)
+
+			const savedConfigs = await ConfigsModel.findOne()
+
+			expect(savedConfigs).to.have.property('kioskInactivityTimeoutMs', updatedConfigs.kioskInactivityTimeoutMs)
+			expect(savedConfigs).to.have.property('kioskInactivityTimeoutWarningMs', updatedConfigs.kioskInactivityTimeoutWarningMs)
+			expect(savedConfigs).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
+		})
+
 		it('should allow partial updates', async function () {
 			const partialUpdate = {
 				kioskInactivityTimeoutMs: 30000
