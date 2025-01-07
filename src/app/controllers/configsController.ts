@@ -14,10 +14,10 @@ import ConfigsModel from '../models/Configs.js'
 
 // Destructuring and global variables
 
-async function getOrCreateConfigs(session?: mongoose.ClientSession) {
-	const configs = await ConfigsModel.findOne().session(session ?? null)
+async function getOrCreateConfigs() {
+	const configs = await ConfigsModel.findOne()
 	if (configs === null || configs === undefined) {
-		const newConfigs = await ConfigsModel.create({}, { session: session ?? null }).then(docs => docs[0])
+		const newConfigs = await ConfigsModel.create({})
 		return newConfigs
 	}
 	return configs
@@ -46,7 +46,7 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 	session.startTransaction()
 
 	try {
-		const configs = await getOrCreateConfigs(session)
+		const configs = await getOrCreateConfigs()
 
 		// Set fields directly, checking for undefined to ensure not overwriting with undefined
 		if (req.body.kioskInactivityTimeoutMs !== undefined) configs.kioskInactivityTimeoutMs = req.body.kioskInactivityTimeoutMs
