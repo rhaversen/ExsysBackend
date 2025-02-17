@@ -565,118 +565,123 @@ await RoomModel.create({
 
 // Activities
 const activity1 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Billiards'
 })
 const activity2 = await ActivityModel.create({
-	roomId: room2.id,
+	rooms: [room2.id],
 	name: 'Reading'
 })
 const activity3 = await ActivityModel.create({
-	roomId: room3.id,
+	rooms: [room3.id],
 	name: 'Music'
 })
 const activity4 = await ActivityModel.create({
-	roomId: room4.id,
+	rooms: [room4.id],
 	name: 'Yoga'
 })
 const activity5 = await ActivityModel.create({
-	roomId: room4.id,
+	rooms: [room4.id],
 	name: 'Basket'
 })
 await ActivityModel.create({
-	roomId: room4.id,
+	rooms: [room4.id],
 	name: 'Football'
 })
 await ActivityModel.create({
-	roomId: room5.id,
+	rooms: [room5.id],
 	name: 'Cooking'
 })
 await ActivityModel.create({
+	rooms: [],
 	name: 'No Room'
+})
+await ActivityModel.create({
+	rooms: [room1.id, room2.id],
+	name: 'Multi-room Sports'
 })
 
 // Activities with custom timestamps
 // Created today
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created today',
 	createdAt: new Date()
 })
 
 // Created yesterday
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created yesterday',
 	createdAt: new Date(Date.now() - 86400000)
 })
 
 // Created 2 days ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 days ago',
 	createdAt: new Date(Date.now() - 172800000)
 })
 
 // Created 1 week ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 week ago',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 month ago',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 2 months ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 months ago',
 	createdAt: new Date(Date.now() - 5184000000)
 })
 
 // Created and updated 1 year ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 year ago',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 years ago',
 	createdAt: new Date(Date.now() - 63072000000)
 })
 
 // Created 1 week ago and updated now
 const activityWithTimestamp1 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 week ago, updated now',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago and updated now
 const activityWithTimestamp2 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 month ago, updated now',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 1 year ago and updated now
 const activityWithTimestamp3 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 year ago, updated now',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago and updated now
 const activityWithTimestamp4 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 years ago, updated now',
 	createdAt: new Date(Date.now() - 63072000000)
 })
@@ -684,7 +689,7 @@ const activityWithTimestamp4 = await ActivityModel.create({
 // Updating activities
 await ActivityModel.updateMany(
 	{ _id: { $in: [activityWithTimestamp1._id, activityWithTimestamp2._id, activityWithTimestamp3._id, activityWithTimestamp4._id] } },
-	{ $set: { room: room2.id } }
+	{ $set: { rooms: [room2.id] } }
 )
 
 // Payments

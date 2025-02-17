@@ -98,6 +98,6 @@ describe('Room Model', function () {
 		await RoomModel.findByIdAndDelete(room._id)
 
 		const updatedActivity = await ActivityModel.findById(activity._id)
-		expect(updatedActivity?.roomId).to.be.undefined
+		expect(updatedActivity?.rooms).to.be.an('array').that.is.empty
 	})
 })
