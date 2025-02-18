@@ -566,15 +566,15 @@ await RoomModel.create({
 // Activities
 const activity1 = await ActivityModel.create({
 	rooms: [room1.id],
-	name: 'Billiards'
+	name: '1 room'
 })
 const activity2 = await ActivityModel.create({
 	rooms: [room1.id, room2.id, room3.id],
-	name: 'Reading'
+	name: '3 rooms'
 })
 const activity3 = await ActivityModel.create({
-	rooms: [room3.id],
-	name: 'Music'
+	rooms: [],
+	name: 'no rooms'
 })
 const activity4 = await ActivityModel.create({
 	rooms: [room4.id],
