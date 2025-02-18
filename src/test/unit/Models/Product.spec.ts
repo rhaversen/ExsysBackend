@@ -844,7 +844,7 @@ describe('Product Model', function () {
 
 		beforeEach(async function () {
 			const payment = await PaymentModel.create({})
-			const room = await RoomModel.create({ name: 'Test Room' })
+			const room = await RoomModel.create({ name: 'Test Room', description: 'Test Description' })
 			const activity = await ActivityModel.create({ 
 				name: 'Test Activity',
 				roomId: room.id 
