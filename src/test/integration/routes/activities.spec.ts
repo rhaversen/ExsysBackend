@@ -402,7 +402,7 @@ describe('Activities routes', function () {
 
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body).to.have.property('rooms', testActivityFields1.rooms)
+			expect(response.body.rooms[0]._id).to.equal(testActivityFields1.rooms[0])
 		})
 
 		it('should allow updating to current rooms', async function () {
