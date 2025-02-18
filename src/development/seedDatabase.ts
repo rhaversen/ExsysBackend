@@ -569,7 +569,7 @@ const activity1 = await ActivityModel.create({
 	name: 'Billiards'
 })
 const activity2 = await ActivityModel.create({
-	rooms: [room2.id],
+	rooms: [room1.id, room2.id, room3.id],
 	name: 'Reading'
 })
 const activity3 = await ActivityModel.create({
@@ -754,6 +754,7 @@ await KioskModel.create({
 await OrderModel.create({
 	paymentId: payment1.id,
 	activityId: activity1.id,
+	roomId: room1.id,
 	kioskId: kiosk1.id,
 	products: [{
 		id: product1.id,
@@ -767,6 +768,7 @@ await OrderModel.create({
 await OrderModel.create({
 	paymentId: payment2.id,
 	activityId: activity2.id,
+	roomId: room2.id,
 	kioskId: kiosk1.id,
 	products: [{
 		id: product2.id,
@@ -783,6 +785,7 @@ await OrderModel.create({
 await OrderModel.create({
 	paymentId: payment3.id,
 	activityId: activity3.id,
+	roomId: room3.id,
 	kioskId: kiosk1.id,
 	products: [{
 		id: product3.id,
@@ -803,6 +806,7 @@ await OrderModel.create({
 	paymentId: payment4.id,
 	activityId: activity4.id,
 	kioskId: kiosk1.id,
+	roomId: room4.id,
 	products: [{
 		id: product1.id,
 		quantity: 1
