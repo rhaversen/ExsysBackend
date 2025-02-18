@@ -706,78 +706,13 @@ const payment4 = await PaymentModel.create({
 	paymentStatus: 'pending'
 })
 
-// Orders
-await OrderModel.create({
-	paymentId: payment1.id,
-	activityId: activity1.id,
-	products: [{
-		id: product1.id,
-		quantity: 1
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}]
-})
-await OrderModel.create({
-	paymentId: payment2.id,
-	activityId: activity2.id,
-	products: [{
-		id: product2.id,
-		quantity: 2
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}, {
-		id: option2.id,
-		quantity: 2
-	}]
-})
-await OrderModel.create({
-	paymentId: payment3.id,
-	activityId: activity3.id,
-	products: [{
-		id: product3.id,
-		quantity: 3
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}, {
-		id: option2.id,
-		quantity: 2
-	}, {
-		id: option3.id,
-		quantity: 3
-	}]
-})
-await OrderModel.create({
-	paymentId: payment4.id,
-	activityId: activity4.id,
-	products: [{
-		id: product1.id,
-		quantity: 1
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}]
-})
-
-// Admins
-await AdminModel.create({
-	name: 'Admin',
-	password: 'password'
-})
-
 // Readers
 const reader1 = await ReaderModel.create({ apiReferenceId: '12345' })
 const reader2 = await ReaderModel.create({ apiReferenceId: '54321' })
 const reader3 = await ReaderModel.create({ apiReferenceId: '67890' })
 
 // Kiosks
-await KioskModel.create({
+const kiosk1 = await KioskModel.create({
 	name: 'Kiosk without activities',
 	kioskTag: '00000',
 	password: 'password'
@@ -813,6 +748,75 @@ await KioskModel.create({
 	kioskTag: '22223',
 	password: 'password',
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+})
+
+// Orders
+await OrderModel.create({
+	paymentId: payment1.id,
+	activityId: activity1.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product1.id,
+		quantity: 1
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}]
+})
+await OrderModel.create({
+	paymentId: payment2.id,
+	activityId: activity2.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product2.id,
+		quantity: 2
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}, {
+		id: option2.id,
+		quantity: 2
+	}]
+})
+await OrderModel.create({
+	paymentId: payment3.id,
+	activityId: activity3.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product3.id,
+		quantity: 3
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}, {
+		id: option2.id,
+		quantity: 2
+	}, {
+		id: option3.id,
+		quantity: 3
+	}]
+})
+await OrderModel.create({
+	paymentId: payment4.id,
+	activityId: activity4.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product1.id,
+		quantity: 1
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}]
+})
+
+// Admins
+await AdminModel.create({
+	name: 'Admin',
+	password: 'password'
 })
 
 logger.info('Database seeded')

@@ -362,6 +362,7 @@ describe('Orders routes', function () {
 
 				it('should handle products with quantity 1 and products with undefined quantity', async function () {
 					await agent.post('/api/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
@@ -588,6 +589,7 @@ describe('Orders routes', function () {
 
 				it('should handle options with quantity 1 and options with undefined quantity', async function () {
 					await agent.post('/api/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
 						products: [{
 							id: testProduct1.id,
