@@ -5,7 +5,7 @@ import { type Document, model, Schema } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import RoomModel from './Room.js'
+import RoomModel, { IRoom } from './Room.js'
 import KioskModel from './Kiosk.js'
 
 // Environment variables
@@ -18,7 +18,7 @@ import KioskModel from './Kiosk.js'
 export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	roomId: Schema.Types.ObjectId | undefined // Where the activity is dining
+	rooms: Schema.Types.ObjectId[] | IRoom[] // Where the activity can dine
 	name: string
 
 	// Timestamps
@@ -26,12 +26,17 @@ export interface IActivity extends Document {
 	updatedAt: Date
 }
 
+export interface IActivityPopulated extends IActivity {
+	rooms: IRoom[]
+}
+
 // Schema
 const activitySchema = new Schema<IActivity>({
-	roomId: {
+	rooms: [{
 		type: Schema.Types.ObjectId,
-		ref: 'Room'
-	},
+		ref: 'Room',
+		default: []
+	}],
 	name: {
 		type: Schema.Types.String,
 		required: true,
@@ -52,11 +57,16 @@ activitySchema.path('name').validate(async function (v: string) {
 	return foundActivityWithName === null || foundActivityWithName === undefined
 }, 'Navnet er allerede i brug')
 
-activitySchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
-	if (v === null || v === undefined) return true
-	const foundRoom = await RoomModel.findOne({ _id: v })
-	return foundRoom !== null && foundRoom !== undefined
-}, 'Rummet findes ikke')
+activitySchema.path('rooms').validate(async function (v: Schema.Types.ObjectId[]) {
+	const foundRooms = await RoomModel.find({ _id: { $in: v } })
+	return foundRooms.length === v.length
+}, 'Et eller flere spisested findes ikke')
+
+activitySchema.path('rooms').validate(async function (v: Schema.Types.ObjectId[]) {
+	const uniqueRooms = new Set(v)
+	return uniqueRooms.size === v.length
+}, 'Spisestederne skal være unikke')
+
 
 // Pre-save middleware
 activitySchema.pre('save', async function (next) {

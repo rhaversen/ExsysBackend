@@ -17,6 +17,7 @@ import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import OrderModel from '../../../app/models/Order.js'
 import PaymentModel from '../../../app/models/Payment.js'
 import ActivityModel from '../../../app/models/Activity.js'
+import RoomModel from '../../../app/models/Room.js'
 
 // Setup test environment
 import '../../testSetup.js'
@@ -839,12 +840,18 @@ describe('Product Model', function () {
 	describe('Delete', function () {
 		let paymentId: Types.ObjectId
 		let activityId: Types.ObjectId
+		let roomId: Types.ObjectId
 
 		beforeEach(async function () {
 			const payment = await PaymentModel.create({})
-			const activity = await ActivityModel.create({ name: 'Test Activity' })
+			const room = await RoomModel.create({ name: 'Test Room', description: 'Test Description' })
+			const activity = await ActivityModel.create({ 
+				name: 'Test Activity',
+				roomId: room.id 
+			})
 			paymentId = payment.id
 			activityId = activity.id
+			roomId = room.id
 		})
 
 		describe('Pre-delete middleware', function () {
@@ -861,7 +868,8 @@ describe('Product Model', function () {
 						quantity: 1
 					}],
 					paymentId,
-					activityId
+					activityId,
+					roomId
 				})
 
 				await product1.deleteOne()
@@ -880,7 +888,8 @@ describe('Product Model', function () {
 						quantity: 1
 					}],
 					paymentId,
-					activityId
+					activityId,
+					roomId
 				})
 
 				await product1.deleteOne()
@@ -909,7 +918,8 @@ describe('Product Model', function () {
 						quantity: 1
 					}],
 					paymentId,
-					activityId
+					activityId,
+					roomId
 				})
 
 				await ProductModel.deleteMany({ name: { $ne: 'Test Product 2' } })
@@ -932,7 +942,8 @@ describe('Product Model', function () {
 						quantity: 1
 					}],
 					paymentId,
-					activityId
+					activityId,
+					roomId
 				})
 
 				await ProductModel.deleteMany({})

@@ -132,11 +132,11 @@ describe('Kiosks routes', function () {
 
 				const testActivity1 = await ActivityModel.create({
 					name: 'Activity 1',
-					roomId: testRoom1.id
+					rooms: [testRoom1.id]
 				})
 				const testActivity2 = await ActivityModel.create({
 					name: 'Activity 2',
-					roomId: testRoom2.id
+					rooms: [testRoom2.id]
 				})
 
 				const testReader = await ReaderModel.create({
@@ -185,9 +185,15 @@ describe('Kiosks routes', function () {
 				expect(response.body.kioskTag).to.exist
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('activities')
-				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
-				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
-				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
+				// Check activity IDs match
+				expect(response.body.activities.map((activity: IActivity) => activity._id))
+					.to.have.members(testKioskFields.activities)
+				// Check activity names match
+				expect(response.body.activities.map((activity: IActivity) => activity.name))
+					.to.have.members(['Activity 1', 'Activity 2'])
+				// Check each activity's rooms array
+				expect(response.body.activities[0].rooms).to.have.members([testRoom1.id.toString()])
+				expect(response.body.activities[1].rooms).to.have.members([testRoom2.id.toString()])
 				expect(response.body.readerId).to.have.property('_id', testKioskFields.readerId)
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
@@ -224,11 +230,11 @@ describe('Kiosks routes', function () {
 
 				const testActivity1 = await ActivityModel.create({
 					name: 'Activity 1',
-					roomId: testRoom1.id
+					rooms: [testRoom1.id]
 				})
 				const testActivity2 = await ActivityModel.create({
 					name: 'Activity 2',
-					roomId: testRoom2.id
+					rooms: [testRoom2.id]
 				})
 
 				const testReader = await ReaderModel.create({
@@ -292,9 +298,15 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
 				expect(response.body).to.have.property('activities')
-				expect(response.body.activities.map((activity: IActivity) => activity._id)).to.have.members(testKioskFields.activities)
-				expect(response.body.activities.map((activity: IActivity) => activity.name)).to.have.members(['Activity 1', 'Activity 2'])
-				expect(response.body.activities.map((activity: IActivity) => activity.roomId)).to.have.members([testRoom1.id.toString(), testRoom2.id.toString()])
+				// Check activity IDs match
+				expect(response.body.activities.map((activity: IActivity) => activity._id))
+					.to.have.members(testKioskFields.activities)
+				// Check activity names match
+				expect(response.body.activities.map((activity: IActivity) => activity.name))
+					.to.have.members(['Activity 1', 'Activity 2'])
+				// Check each activity's rooms array
+				expect(response.body.activities[0].rooms).to.have.members([testRoom1.id.toString()])
+				expect(response.body.activities[1].rooms).to.have.members([testRoom2.id.toString()])
 				expect(response.body.readerId).to.have.property('_id', testKioskFields.readerId)
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
@@ -331,11 +343,11 @@ describe('Kiosks routes', function () {
 
 			const testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				roomId: testRoom1.id
+				rooms: [testRoom1.id]
 			})
 			const testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				roomId: testRoom2.id
+				rooms: [testRoom2.id]
 			})
 
 			const testReader = await ReaderModel.create({
@@ -431,11 +443,11 @@ describe('Kiosks routes', function () {
 
 			const testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				roomId: testRoom1.id
+				rooms: [testRoom1.id]
 			})
 			const testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				roomId: testRoom2.id
+				rooms: [testRoom2.id]
 			})
 
 			const testReader1 = await ReaderModel.create({
@@ -550,11 +562,11 @@ describe('Kiosks routes', function () {
 
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				roomId: testRoom1.id
+				rooms: [testRoom1.id]
 			})
 			testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				roomId: testRoom2.id
+				rooms: [testRoom2.id]
 			})
 
 			const testReader1 = await ReaderModel.create({
@@ -776,7 +788,7 @@ describe('Kiosks routes', function () {
 			})
 			const testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				roomId: testRoom1.id
+				rooms: [testRoom1.id]
 			})
 			const testReader = await ReaderModel.create({
 				apiReferenceId: 'test',
@@ -851,11 +863,11 @@ describe('Kiosks routes', function () {
 
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				roomId: testRoom1.id
+				rooms: [testRoom1.id]
 			})
 			testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				roomId: testRoom2.id
+				rooms: [testRoom2.id]
 			})
 
 			const testReader = await ReaderModel.create({

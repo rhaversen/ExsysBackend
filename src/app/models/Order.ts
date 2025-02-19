@@ -9,6 +9,7 @@ import OptionModel, { type IOption } from './Option.js'
 import ProductModel, { type IProduct } from './Product.js'
 import ActivityModel from './Activity.js'
 import PaymentModel, { type IPayment } from './Payment.js'
+import RoomModel from './Room.js'
 
 // Environment variables
 
@@ -21,6 +22,7 @@ export interface IOrder extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
 	activityId: Schema.Types.ObjectId // The activity the order is for
+	roomId: Schema.Types.ObjectId // The room the order is for
 	products: Array<{
 		id: Schema.Types.ObjectId
 		quantity: number
@@ -44,6 +46,7 @@ export interface IOrderPopulatedPaymentId extends IOrder {
 export interface IOrderWithNamesPopulatedPaymentId {
 	_id: Schema.Types.ObjectId
 	activityId: Schema.Types.ObjectId
+	roomId: Schema.Types.ObjectId
 	products: Array<{
 		id: { _id: IProduct['_id'], name: string }
 		quantity: number
@@ -94,6 +97,11 @@ const orderSchema = new Schema({
 		ref: 'Activity',
 		required: [true, 'Aktivitet er påkrævet']
 	},
+	roomId: {
+		type: Schema.Types.ObjectId,
+		required: [true, 'Rum er påkrævet'],
+		ref: 'Room'
+	},
 	products: {
 		_id: false,
 		type: [productsSubSchema],
@@ -125,6 +133,11 @@ orderSchema.path('activityId').validate(async function (v: Schema.Types.ObjectId
 	const activity = await ActivityModel.findById(v)
 	return activity !== null && activity !== undefined
 }, 'Aktiviteten eksisterer ikke')
+
+orderSchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
+	const room = await RoomModel.findById(v)
+	return room !== null && room !== undefined
+}, 'Rummet eksisterer ikke')
 
 orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.id))

@@ -103,6 +103,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 
 	const {
 		activityId,
+		roomId,
 		kioskId,
 		products,
 		options,
@@ -124,6 +125,18 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 	// Check if the kioskId is a string
 	if (typeof kioskId !== 'string') {
 		res.status(400).json({ error: 'Mangler kioskId' })
+		return
+	}
+
+	// Check if the activityId is a string
+	if (typeof activityId !== 'string') {
+		res.status(400).json({ error: 'Mangler activityId' })
+		return
+	}
+
+	// Check if the roomId is a string
+	if (typeof roomId !== 'string') {
+		res.status(400).json({ error: 'Mangler roomId' })
 		return
 	}
 
@@ -172,6 +185,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		// Create the order
 		const newOrder = await OrderModel.create({
 			activityId,
+			roomId,
 			products: combinedProducts,
 			options: combinedOptions,
 			paymentId

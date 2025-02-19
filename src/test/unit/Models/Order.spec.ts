@@ -34,6 +34,7 @@ describe('Order Model', function () {
 		paymentId: Types.ObjectId
 		kioskId: Types.ObjectId
 		activityId: Types.ObjectId
+		roomId: Types.ObjectId
 		products: Array<{
 			id: Types.ObjectId
 			quantity: number
@@ -97,6 +98,7 @@ describe('Order Model', function () {
 			paymentId: testPayment.id,
 			kioskId: testKiosk.id,
 			activityId: testActivity.id,
+			roomId: testRoom.id,
 			products: [{
 				id: testProduct.id,
 				quantity: 1
@@ -479,6 +481,34 @@ describe('Order Model', function () {
 						quantity: 1
 					}
 				]
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should require a room', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				roomId: undefined
+			})
+		} catch (err) {
+			// The promise was rejected as expected
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
+	})
+
+	it('should not allow a room that does not exist', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				roomId: new Types.ObjectId()
 			})
 		} catch (err) {
 			// The promise was rejected as expected

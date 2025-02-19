@@ -29,7 +29,7 @@ const router = Router()
  * @access Private
  * @middleware isAdmin
  * @param {string} req.body.name - The name of the activity.
- * @param {string} req.body.roomId - The ID of the room the activity belongs to.
+ * @param {string[]} req.body.rooms - The rooms the activity can dine in.
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The newly created activity.
  */
@@ -72,7 +72,7 @@ router.get('/',
  * @middleware isAdmin
  * @param {string} req.params.id - The ID of the activity to be patched.
  * @param {string} [req.body.name] - The new name of the activity (optional).
- * @param {string} [req.body.roomId] - The ID of the room the activity belongs to (optional).
+ * @param {string[]} [req.body.rooms] - The new rooms the activity can dine in (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated activity.
  */
