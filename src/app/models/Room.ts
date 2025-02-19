@@ -66,8 +66,8 @@ roomSchema.pre(['deleteOne', 'findOneAndDelete'], async function (next) {
 	const doc = await this.model.findOne(this.getQuery())
 	if (doc !== null && doc !== undefined) {
 		logger.silly('Removing room from activities with ID:', doc._id)
-		// Set roomId to undefined by using $unset
-		await ActivityModel.updateMany({ roomId: doc._id }, { $unset: { roomId: '' } })
+		// Remove the rooms from the list using $pull
+		await ActivityModel.updateMany({ rooms: doc._id }, { $pull: { rooms: doc._id } })
 	}
 	next()
 })
@@ -78,8 +78,8 @@ roomSchema.pre('deleteMany', async function (next) {
 	const docIds = docs.map(doc => doc._id)
 	if (docIds.length > 0) {
 		logger.silly('Removing room from activities with IDs:', docIds)
-		// Set roomId to undefined by using $unset
-		await ActivityModel.updateMany({ roomId: { $in: docIds } }, { $unset: { roomId: '' } })
+		// Remove rooms from the list using $pull with $in
+		await ActivityModel.updateMany({ rooms: { $in: docIds } }, { $pull: { rooms: { $in: docIds } } })
 	}
 	next()
 })

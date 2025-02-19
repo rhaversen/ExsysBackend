@@ -21,11 +21,11 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		roomId: req.body.roomId
+		rooms: req.body.rooms
 	}
 
 	try {
-		const newActivity = await (await ActivityModel.create(allowedFields)).populate('roomId')
+		const newActivity = await (await ActivityModel.create(allowedFields)).populate('rooms')
 		res.status(201).json(newActivity)
 
 		emitActivityPosted(newActivity)
@@ -42,7 +42,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 	logger.silly('Getting activity')
 
 	try {
-		const activity = await ActivityModel.findById(req.params.id).populate('roomId')
+		const activity = await ActivityModel.findById(req.params.id).populate('rooms')
 
 		if (activity === null || activity === undefined) {
 			res.status(404).json({ error: 'Aktivitet ikke fundet' })
@@ -63,7 +63,7 @@ export async function getActivities (req: Request, res: Response, next: NextFunc
 	logger.silly('Getting activities')
 
 	try {
-		const activities = await ActivityModel.find({}).populate('roomId')
+		const activities = await ActivityModel.find({}).populate('rooms')
 		res.status(200).json(activities)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -90,13 +90,13 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 
 		// Manually set each field from allowed fields if it's present in the request body
 		if (req.body.name !== undefined) activity.name = req.body.name
-		if (req.body.roomId !== undefined) activity.roomId = req.body.roomId
+		if (req.body.rooms !== undefined) activity.rooms = req.body.rooms
 
 		// Validate and save the updated document
 		await activity.validate()
 		await activity.save({ session })
 
-		await activity.populate('roomId')
+		await activity.populate('rooms')
 
 		await session.commitTransaction()
 		res.status(200).json(activity)
