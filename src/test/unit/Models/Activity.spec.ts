@@ -11,19 +11,19 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 // Own modules
-import ActivityModel from '../../../app/models/Activity.js'
+import ActivityModel, { IActivity, IActivityPopulated } from '../../../app/models/Activity.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
 // Setup test environment
 import '../../testSetup.js'
 import KioskModel from '../../../app/models/Kiosk.js'
-import mongoose from 'mongoose'
+import mongoose, { PopulatedDoc } from 'mongoose'
 
 describe('Activity Model', function () {
 	let testRoom: IRoom
 	let testActivityField: {
 		name: string
-		roomId: string
+		rooms: string[]
 	}
 
 	beforeEach(async function () {
@@ -34,7 +34,7 @@ describe('Activity Model', function () {
 
 		testActivityField = {
 			name: 'Activity 1',
-			roomId: testRoom.id.toString()
+			rooms: [testRoom.id.toString()]
 		}
 	})
 
@@ -42,8 +42,9 @@ describe('Activity Model', function () {
 		const activity = await ActivityModel.create(testActivityField)
 		expect(activity).to.exist
 		expect(activity.name).to.equal(testActivityField.name)
-		const populatedActivity = await activity?.populate('roomId')
-		expect(populatedActivity?.roomId).to.have.property('id', testActivityField.roomId)
+		const populatedActivity = await activity?.populate('rooms') as IActivityPopulated
+		expect(populatedActivity?.rooms).to.be.an('array')
+		expect(populatedActivity?.rooms[0].id).to.equal(testActivityField.rooms[0])
 	})
 
 	it('should trim the name', async function () {
@@ -81,12 +82,20 @@ describe('Activity Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should create an activity without a roomId', async function () {
+	it('should create an activity without any rooms', async function () {
 		const activity = await ActivityModel.create({
 			...testActivityField,
-			roomId: undefined
+			rooms: undefined
 		})
 		expect(activity).to.exist
+	})
+
+	it('should default to an empty array when creating an activity without any rooms', async function () {
+		const activity = await ActivityModel.create({
+			...testActivityField,
+			rooms: undefined
+		})
+		expect(activity.rooms).to.be.an('array').that.has.lengthOf(0)
 	})
 
 	it('should remove the activity from any kiosks when deleted', async function () {
@@ -103,12 +112,12 @@ describe('Activity Model', function () {
 		expect(updatedKiosk?.activities).to.be.empty
 	})
 
-	it('should not create an activity with a non-existing roomId', async function () {
+	it('should not create an activity with a non-existing roomId in rooms', async function () {
 		let errorOccurred = false
 		try {
 			await ActivityModel.create({
 				...testActivityField,
-				roomId: new mongoose.Types.ObjectId().toString()
+				rooms: [new mongoose.Types.ObjectId().toString()]
 			})
 		} catch (err) {
 			// The promise was rejected as expected

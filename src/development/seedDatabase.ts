@@ -565,118 +565,123 @@ await RoomModel.create({
 
 // Activities
 const activity1 = await ActivityModel.create({
-	roomId: room1.id,
-	name: 'Billiards'
+	rooms: [room1.id],
+	name: '1 room'
 })
 const activity2 = await ActivityModel.create({
-	roomId: room2.id,
-	name: 'Reading'
+	rooms: [room1.id, room2.id, room3.id],
+	name: '3 rooms'
 })
 const activity3 = await ActivityModel.create({
-	roomId: room3.id,
-	name: 'Music'
+	rooms: [],
+	name: 'no rooms'
 })
 const activity4 = await ActivityModel.create({
-	roomId: room4.id,
+	rooms: [room4.id],
 	name: 'Yoga'
 })
 const activity5 = await ActivityModel.create({
-	roomId: room4.id,
+	rooms: [room4.id],
 	name: 'Basket'
 })
 await ActivityModel.create({
-	roomId: room4.id,
+	rooms: [room4.id],
 	name: 'Football'
 })
 await ActivityModel.create({
-	roomId: room5.id,
+	rooms: [room5.id],
 	name: 'Cooking'
 })
 await ActivityModel.create({
+	rooms: [],
 	name: 'No Room'
+})
+await ActivityModel.create({
+	rooms: [room1.id, room2.id],
+	name: 'Multi-room Sports'
 })
 
 // Activities with custom timestamps
 // Created today
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created today',
 	createdAt: new Date()
 })
 
 // Created yesterday
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created yesterday',
 	createdAt: new Date(Date.now() - 86400000)
 })
 
 // Created 2 days ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 days ago',
 	createdAt: new Date(Date.now() - 172800000)
 })
 
 // Created 1 week ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 week ago',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 month ago',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 2 months ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 months ago',
 	createdAt: new Date(Date.now() - 5184000000)
 })
 
 // Created and updated 1 year ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 year ago',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago
 await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 years ago',
 	createdAt: new Date(Date.now() - 63072000000)
 })
 
 // Created 1 week ago and updated now
 const activityWithTimestamp1 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 week ago, updated now',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago and updated now
 const activityWithTimestamp2 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 month ago, updated now',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 1 year ago and updated now
 const activityWithTimestamp3 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 1 year ago, updated now',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago and updated now
 const activityWithTimestamp4 = await ActivityModel.create({
-	roomId: room1.id,
+	rooms: [room1.id],
 	name: 'Created 2 years ago, updated now',
 	createdAt: new Date(Date.now() - 63072000000)
 })
@@ -684,7 +689,7 @@ const activityWithTimestamp4 = await ActivityModel.create({
 // Updating activities
 await ActivityModel.updateMany(
 	{ _id: { $in: [activityWithTimestamp1._id, activityWithTimestamp2._id, activityWithTimestamp3._id, activityWithTimestamp4._id] } },
-	{ $set: { room: room2.id } }
+	{ $set: { rooms: [room2.id] } }
 )
 
 // Payments
@@ -701,78 +706,13 @@ const payment4 = await PaymentModel.create({
 	paymentStatus: 'pending'
 })
 
-// Orders
-await OrderModel.create({
-	paymentId: payment1.id,
-	activityId: activity1.id,
-	products: [{
-		id: product1.id,
-		quantity: 1
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}]
-})
-await OrderModel.create({
-	paymentId: payment2.id,
-	activityId: activity2.id,
-	products: [{
-		id: product2.id,
-		quantity: 2
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}, {
-		id: option2.id,
-		quantity: 2
-	}]
-})
-await OrderModel.create({
-	paymentId: payment3.id,
-	activityId: activity3.id,
-	products: [{
-		id: product3.id,
-		quantity: 3
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}, {
-		id: option2.id,
-		quantity: 2
-	}, {
-		id: option3.id,
-		quantity: 3
-	}]
-})
-await OrderModel.create({
-	paymentId: payment4.id,
-	activityId: activity4.id,
-	products: [{
-		id: product1.id,
-		quantity: 1
-	}],
-	options: [{
-		id: option1.id,
-		quantity: 1
-	}]
-})
-
-// Admins
-await AdminModel.create({
-	name: 'Admin',
-	password: 'password'
-})
-
 // Readers
 const reader1 = await ReaderModel.create({ apiReferenceId: '12345' })
 const reader2 = await ReaderModel.create({ apiReferenceId: '54321' })
 const reader3 = await ReaderModel.create({ apiReferenceId: '67890' })
 
 // Kiosks
-await KioskModel.create({
+const kiosk1 = await KioskModel.create({
 	name: 'Kiosk without activities',
 	kioskTag: '00000',
 	password: 'password'
@@ -808,6 +748,79 @@ await KioskModel.create({
 	kioskTag: '22223',
 	password: 'password',
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+})
+
+// Orders
+await OrderModel.create({
+	paymentId: payment1.id,
+	activityId: activity1.id,
+	roomId: room1.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product1.id,
+		quantity: 1
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}]
+})
+await OrderModel.create({
+	paymentId: payment2.id,
+	activityId: activity2.id,
+	roomId: room2.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product2.id,
+		quantity: 2
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}, {
+		id: option2.id,
+		quantity: 2
+	}]
+})
+await OrderModel.create({
+	paymentId: payment3.id,
+	activityId: activity3.id,
+	roomId: room3.id,
+	kioskId: kiosk1.id,
+	products: [{
+		id: product3.id,
+		quantity: 3
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}, {
+		id: option2.id,
+		quantity: 2
+	}, {
+		id: option3.id,
+		quantity: 3
+	}]
+})
+await OrderModel.create({
+	paymentId: payment4.id,
+	activityId: activity4.id,
+	kioskId: kiosk1.id,
+	roomId: room4.id,
+	products: [{
+		id: product1.id,
+		quantity: 1
+	}],
+	options: [{
+		id: option1.id,
+		quantity: 1
+	}]
+})
+
+// Admins
+await AdminModel.create({
+	name: 'Admin',
+	password: 'password'
 })
 
 logger.info('Database seeded')

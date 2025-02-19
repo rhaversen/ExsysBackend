@@ -94,6 +94,7 @@ describe('Orders routes', function () {
 			const response = await agent.post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -112,6 +113,7 @@ describe('Orders routes', function () {
 			const response = await agent.post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -130,6 +132,7 @@ describe('Orders routes', function () {
 			await agent.post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -143,6 +146,7 @@ describe('Orders routes', function () {
 
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
+			expect(order?.roomId.toString()).to.equal(testRoom.id)
 			expect(order?.activityId.toString()).to.equal(testActivity.id)
 			expect(order?.products[0].id.toString()).to.equal(testProduct1.id)
 			expect(order?.products[0].quantity).to.equal(1)
@@ -156,6 +160,7 @@ describe('Orders routes', function () {
 			const res = await agent.post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -167,7 +172,8 @@ describe('Orders routes', function () {
 				checkoutMethod: 'later'
 			}).set('Cookie', sessionCookie)
 			expect(res.body).to.exist
-			expect(res.body.activityId.toString()).to.equal(testActivity.id)
+			expect(res.body.roomId).to.equal(testRoom.id)
+			expect(res.body.activityId).to.equal(testActivity.id)
 			expect(res.body.products[0].id).to.equal(testProduct1.id)
 			expect(res.body.products[0].quantity).to.equal(1)
 			expect(res.body.options?.[0].id).to.equal(testOption1.id)
@@ -181,6 +187,7 @@ describe('Orders routes', function () {
 			await agent.post('/api/v1/orders').send({
 				activityId: testActivity.id,
 				kioskId: testKiosk.id,
+				roomId: testRoom.id,
 				products: [{
 					id: testProduct1.id,
 					quantity: 1
@@ -194,6 +201,7 @@ describe('Orders routes', function () {
 		it('should handle orders with undefined products', async function () {
 			await agent.post('/api/v1/orders').send({
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				kioskId: testKiosk.id,
 				options: [{
 					id: testOption1.id,
@@ -210,6 +218,7 @@ describe('Orders routes', function () {
 
 			await agent.post('/api/v1/orders').send({
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				kioskId: testKiosk.id,
 				options: [{
 					id: testOption1.id,
@@ -220,6 +229,35 @@ describe('Orders routes', function () {
 			}).set('Cookie', sessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order?.id.toString()).to.not.equal(updatedId)
+		})
+
+		it('should require a roomId', async function () {
+			const res = await agent.post('/api/v1/orders').send({
+				kioskId: testKiosk.id,
+				activityId: testActivity.id,
+				products: [{
+					id: testProduct1.id,
+					quantity: 1
+				}],
+				checkoutMethod: 'later'
+			}).set('Cookie', sessionCookie)
+			expect(res).to.have.status(400)
+			expect(res.body.error).to.exist
+		})
+
+		it('should not allow a non-existent roomId', async function () {
+			const res = await agent.post('/api/v1/orders').send({
+				kioskId: testKiosk.id,
+				activityId: testActivity.id,
+				roomId: new mongoose.Types.ObjectId().toString(),
+				products: [{
+					id: testProduct1.id,
+					quantity: 1
+				}],
+				checkoutMethod: 'later'
+			}).set('Cookie', sessionCookie)
+			expect(res).to.have.status(400)
+			expect(res.body.error).to.exist
 		})
 
 		describe('Quantity validation', function () {
@@ -247,6 +285,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 0
@@ -265,6 +304,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 0
@@ -283,6 +323,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -301,6 +342,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 2
@@ -325,6 +367,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -345,6 +388,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -362,7 +406,9 @@ describe('Orders routes', function () {
 
 				it('should handle products with quantity 1 and products with undefined quantity', async function () {
 					await agent.post('/api/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -391,6 +437,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -413,6 +460,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -431,6 +479,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -449,6 +498,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -471,6 +521,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -493,6 +544,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -515,6 +567,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -543,6 +596,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -567,6 +621,7 @@ describe('Orders routes', function () {
 					await agent.post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -588,7 +643,9 @@ describe('Orders routes', function () {
 
 				it('should handle options with quantity 1 and options with undefined quantity', async function () {
 					await agent.post('/api/v1/orders').send({
+						kioskId: testKiosk.id,
 						activityId: testActivity.id,
+						roomId: testRoom.id,
 						products: [{
 							id: testProduct1.id,
 							quantity: 1
@@ -614,6 +671,7 @@ describe('Orders routes', function () {
 					skipCheckout: false,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -633,6 +691,7 @@ describe('Orders routes', function () {
 					skipCheckout: false,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -653,6 +712,7 @@ describe('Orders routes', function () {
 					skipCheckout: false,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -672,6 +732,7 @@ describe('Orders routes', function () {
 					skipCheckout: false,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -692,6 +753,7 @@ describe('Orders routes', function () {
 					skipCheckout: false,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -712,6 +774,7 @@ describe('Orders routes', function () {
 					skipCheckout: false,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -734,6 +797,7 @@ describe('Orders routes', function () {
 					skipCheckout: true,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -753,6 +817,7 @@ describe('Orders routes', function () {
 					skipCheckout: true,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -773,6 +838,7 @@ describe('Orders routes', function () {
 					skipCheckout: true,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -792,6 +858,7 @@ describe('Orders routes', function () {
 					skipCheckout: true,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -812,6 +879,7 @@ describe('Orders routes', function () {
 					skipCheckout: true,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -832,6 +900,7 @@ describe('Orders routes', function () {
 					skipCheckout: true,
 					kioskId: testKiosk.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					products: [{
 						id: testProduct1.id,
 						quantity: 1
@@ -977,6 +1046,7 @@ describe('Orders routes', function () {
 
 			await OrderModel.create({
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				paymentId: testPayment1.id,
 				kioskId: testKiosk.id,
 				products: [{
@@ -992,6 +1062,7 @@ describe('Orders routes', function () {
 			await OrderModel.create({
 				paymentId: testPayment2.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct2.id,
@@ -1057,6 +1128,7 @@ describe('Orders routes', function () {
 				await OrderModel.create({
 					paymentId: testPayment1.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct3.id,
@@ -1071,6 +1143,7 @@ describe('Orders routes', function () {
 				await OrderModel.create({
 					paymentId: testPayment2.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct4.id,
@@ -1122,6 +1195,7 @@ describe('Orders routes', function () {
 				await OrderModel.create({
 					paymentId: testPayment1.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct3.id,
@@ -1136,6 +1210,7 @@ describe('Orders routes', function () {
 				await OrderModel.create({
 					paymentId: testPayment2.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct4.id,
@@ -1291,6 +1366,7 @@ describe('Orders routes', function () {
 				await OrderModel.create({
 					paymentId: testPayment1.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct3.id,
@@ -1305,6 +1381,7 @@ describe('Orders routes', function () {
 				await OrderModel.create({
 					paymentId: testPayment2.id,
 					activityId: testActivity.id,
+					roomId: testRoom.id,
 					kioskId: testKiosk.id,
 					products: [{
 						id: testProduct4.id,
@@ -1392,6 +1469,7 @@ describe('Orders routes', function () {
 			order1 = await OrderModel.create({
 				paymentId: testPayment.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
@@ -1406,6 +1484,7 @@ describe('Orders routes', function () {
 			order2 = await OrderModel.create({
 				paymentId: testPayment.id,
 				activityId: testActivity.id,
+				roomId: testRoom.id,
 				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
