@@ -18,6 +18,7 @@ export interface IConfigs extends Document {
 	kioskInactivityTimeoutMs: number
 	kioskInactivityTimeoutWarningMs: number
 	kioskOrderConfirmationTimeoutMs: number
+	kioskIsOpen: boolean
 
 	// Timestamps
 	createdAt: Date
@@ -29,7 +30,8 @@ export interface IConfigsFrontend {
 	configs: {
 		kioskInactivityTimeoutMs: number
 		kioskInactivityTimeoutWarningMs: number
-		kioskOrderConfirmationTimeoutMs: number	
+		kioskOrderConfirmationTimeoutMs: number
+		kioskIsOpen: boolean
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -51,6 +53,10 @@ const configsSchema = new Schema<IConfigs>({
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
 		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund'],
+	},
+	kioskIsOpen: {
+		type: Schema.Types.Boolean,
+		default: true,
 	}
 }, {
 	timestamps: true
