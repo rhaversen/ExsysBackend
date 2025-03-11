@@ -93,3 +93,19 @@ export function emitSocketEvent<T> (
 		logger.error(`Failed to emit ${eventName}:`, error)
 	}
 }
+
+export function broadcastEvent(
+	eventName: string,
+	successLog: string
+): boolean {
+	const io = getSocket()
+
+	try {
+		io.emit(eventName)
+		logger.silly(successLog)
+		return true
+	} catch (error) {
+		logger.error(`Failed to emit ${eventName}:`, error)
+		return false
+	}
+}
