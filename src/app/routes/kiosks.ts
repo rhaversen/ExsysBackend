@@ -35,6 +35,7 @@ const router = Router()
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
  * @param {string} req.body.password - The password of the kiosk.
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The newly created kiosk.
  */
@@ -94,6 +95,7 @@ router.get('/',
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
  * @param {string} [req.body.password] - The password of the kiosk (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated kiosk.
  */
