@@ -21,7 +21,9 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		rooms: req.body.rooms
+		rooms: req.body.rooms,
+		disabledProducts: req.body.disabledProducts,
+		disabledRooms: req.body.disabledRooms
 	}
 
 	try {
@@ -91,6 +93,8 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 		// Manually set each field from allowed fields if it's present in the request body
 		if (req.body.name !== undefined) activity.name = req.body.name
 		if (req.body.rooms !== undefined) activity.rooms = req.body.rooms
+		if (req.body.disabledProducts !== undefined) activity.disabledProducts = req.body.disabledProducts
+		if (req.body.disabledRooms !== undefined) activity.disabledRooms = req.body.disabledRooms
 
 		// Validate and save the updated document
 		await activity.validate()
