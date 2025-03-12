@@ -24,7 +24,8 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		kioskTag: req.body.kioskTag,
 		readerId: req.body.readerId,
 		password: req.body.password,
-		activities: req.body.activities
+		activities: req.body.activities,
+		disabledActivities: req.body.disabledActivities
 	}
 
 	try {
@@ -35,6 +36,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 			readerId: newKiosk.readerId,
 			kioskTag: newKiosk.kioskTag,
 			activities: newKiosk.activities,
+			disabledActivities: newKiosk.disabledActivities,
 			createdAt: newKiosk.createdAt,
 			updatedAt: newKiosk.updatedAt
 		}
@@ -50,6 +52,17 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	}
 }
 
+const transformKiosk = (kiosk: IKiosk) => ({
+	_id: kiosk.id,
+	name: kiosk.name,
+	readerId: kiosk.readerId,
+	kioskTag: kiosk.kioskTag,
+	activities: kiosk.activities,
+	disabledActivities: kiosk.disabledActivities,
+	createdAt: kiosk.createdAt,
+	updatedAt: kiosk.updatedAt
+})
+
 export async function getMe (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Getting me kiosk')
 
@@ -63,15 +76,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 
 		await (await kiosk.populate('activities')).populate('readerId')
 
-		res.status(200).json({
-			_id: kiosk._id,
-			name: kiosk.name,
-			readerId: kiosk.readerId,
-			kioskTag: kiosk.kioskTag,
-			activities: kiosk.activities,
-			createdAt: kiosk.createdAt,
-			updatedAt: kiosk.updatedAt
-		})
+		res.status(200).json(transformKiosk(kiosk))
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -92,15 +97,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 			return
 		}
 
-		res.status(200).json({
-			_id: kiosk._id,
-			name: kiosk.name,
-			kioskTag: kiosk.kioskTag,
-			readerId: kiosk.readerId,
-			activities: kiosk.activities,
-			createdAt: kiosk.createdAt,
-			updatedAt: kiosk.updatedAt
-		})
+		res.status(200).json(transformKiosk(kiosk))
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -116,15 +113,7 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 	try {
 		const kiosks = await KioskModel.find({}).populate('activities').populate('readerId')
 		res.status(200).json(
-			kiosks.map(kiosk => ({
-				_id: kiosk._id,
-				name: kiosk.name,
-				readerId: kiosk.readerId,
-				kioskTag: kiosk.kioskTag,
-				activities: kiosk.activities,
-				createdAt: kiosk.createdAt,
-				updatedAt: kiosk.updatedAt
-			}))
+			kiosks.map(kiosk => transformKiosk(kiosk))
 		)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -155,6 +144,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		if (req.body.readerId !== undefined) kiosk.readerId = req.body.readerId
 		if (req.body.password !== undefined) kiosk.password = req.body.password
 		if (req.body.activities !== undefined) kiosk.activities = req.body.activities
+		if (req.body.disabledActivities !== undefined) kiosk.disabledActivities = req.body.disabledActivities
 
 		// Validate and save the updated document
 		await kiosk.validate()
@@ -164,15 +154,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 
 		await session.commitTransaction()
 
-		const transformedKiosk = {
-			_id: kiosk.id,
-			name: kiosk.name,
-			readerId: kiosk.readerId,
-			kioskTag: kiosk.kioskTag,
-			activities: kiosk.activities,
-			createdAt: kiosk.createdAt,
-			updatedAt: kiosk.updatedAt
-		}
+		const transformedKiosk = transformKiosk(kiosk)
 		res.status(200).json(transformedKiosk)
 
 		emitKioskUpdated(transformedKiosk)
