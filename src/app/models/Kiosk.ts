@@ -31,6 +31,7 @@ export interface IKiosk extends Document {
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] | [] // Activities the kiosk is responsible for
+	disabledActivities: Schema.Types.ObjectId[] | [] // Activities that are disabled for this kiosk
 	readerId: Schema.Types.ObjectId | undefined // The pay station the kiosk is connected to
 
 	// Timestamps
@@ -47,6 +48,7 @@ export interface IKioskFrontend {
 	name: string
 	kioskTag: string
 	activities: Schema.Types.ObjectId[] | string[]
+	disabledActivities: Schema.Types.ObjectId[] | string[]
 	readerId: Schema.Types.ObjectId | string[] | undefined
 	createdAt: Date
 	updatedAt: Date
@@ -77,6 +79,11 @@ const kioskSchema = new Schema<IKiosk>({
 		ref: 'Reader'
 	},
 	activities: {
+		type: [Schema.Types.ObjectId],
+		ref: 'Activity',
+		default: []
+	},
+	disabledActivities: {
 		type: [Schema.Types.ObjectId],
 		ref: 'Activity',
 		default: []
@@ -126,6 +133,16 @@ kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) 
 	})
 	return foundKioskWithReader === null || foundKioskWithReader === undefined
 }, 'Kortlæser er allerede tildelt en kiosk')
+
+kioskSchema.path('disabledActivities').validate(async function (v: Schema.Types.ObjectId[]) {
+	for (const activity of v) {
+		const foundActivity = await ActivityModel.findOne({ _id: activity })
+		if (foundActivity === null || foundActivity === undefined) {
+			return false
+		}
+	}
+	return true
+}, 'En eller flere deaktiverede aktiviteter findes ikke')
 
 // Pre-save middleware
 kioskSchema.pre('save', async function (next) {

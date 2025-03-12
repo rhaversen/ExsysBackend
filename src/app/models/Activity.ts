@@ -7,6 +7,7 @@ import { type Document, model, Schema } from 'mongoose'
 import logger from '../utils/logger.js'
 import RoomModel, { IRoom } from './Room.js'
 import KioskModel from './Kiosk.js'
+import ProductModel, { IProduct } from './Product.js'
 
 // Environment variables
 
@@ -19,6 +20,8 @@ export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
 	rooms: Schema.Types.ObjectId[] | IRoom[] // Where the activity can dine
+	disabledProducts: Schema.Types.ObjectId[] | IProduct[] // Products that are disabled for this activity
+	disabledRooms: Schema.Types.ObjectId[] | IRoom[] // Rooms that are disabled for this activity
 	name: string
 
 	// Timestamps
@@ -28,6 +31,7 @@ export interface IActivity extends Document {
 
 export interface IActivityPopulated extends IActivity {
 	rooms: IRoom[]
+	disabledProducts: IProduct[]
 }
 
 // Schema
@@ -43,7 +47,17 @@ const activitySchema = new Schema<IActivity>({
 		trim: true,
 		unique: true,
 		maxlength: [50, 'Navn kan højest være 50 tegn']
-	}
+	},
+	disabledProducts: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Product',
+		default: []
+	}],
+	disabledRooms: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Room',
+		default: []
+	}]
 }, {
 	timestamps: true
 })
@@ -67,6 +81,25 @@ activitySchema.path('rooms').validate(async function (v: Schema.Types.ObjectId[]
 	return uniqueRooms.size === v.length
 }, 'Spisestederne skal være unikke')
 
+activitySchema.path('disabledProducts').validate(async function (v: Schema.Types.ObjectId[]) {
+	const foundProducts = await ProductModel.find({ _id: { $in: v } })
+	return foundProducts.length === v.length
+}, 'Et eller flere produkter findes ikke')
+
+activitySchema.path('disabledProducts').validate(async function (v: Schema.Types.ObjectId[]) {
+	const uniqueProducts = new Set(v)
+	return uniqueProducts.size === v.length
+}, 'Produkterne skal være unikke')
+
+activitySchema.path('disabledRooms').validate(async function (v: Schema.Types.ObjectId[]) {
+	const foundRooms = await RoomModel.find({ _id: { $in: v } })
+	return foundRooms.length === v.length
+}, 'Et eller flere deaktiverede spisesteder findes ikke')
+
+activitySchema.path('disabledRooms').validate(async function (v: Schema.Types.ObjectId[]) {
+	const uniqueRooms = new Set(v)
+	return uniqueRooms.size === v.length
+}, 'De deaktiverede spisesteder skal være unikke')
 
 // Pre-save middleware
 activitySchema.pre('save', async function (next) {
