@@ -30,7 +30,7 @@ export interface IKiosk extends Document {
 	name: string // Name of the kiosk
 	kioskTag: string // Unique identifier generated with nanoid
 	password: string // Hashed password
-	activities: Schema.Types.ObjectId[] | [] // Activities the kiosk is responsible for
+	activities: Schema.Types.ObjectId[] | [] // Promoted activities for this kiosk
 	disabledActivities: Schema.Types.ObjectId[] | [] // Activities that are disabled for this kiosk
 	readerId: Schema.Types.ObjectId | undefined // The pay station the kiosk is connected to
 
