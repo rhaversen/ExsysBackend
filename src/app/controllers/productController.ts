@@ -24,7 +24,8 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 		price: req.body.price,
 		imageURL: req.body.imageURL,
 		orderWindow: req.body.orderWindow,
-		options: req.body.options
+		options: req.body.options,
+		isActive: req.body.isActive
 	}
 
 	try {
@@ -76,6 +77,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		if (req.body.imageURL !== undefined) product.imageURL = req.body.imageURL
 		if (req.body.orderWindow !== undefined) product.orderWindow = req.body.orderWindow
 		if (req.body.options !== undefined) product.options = req.body.options
+		if (req.body.isActive !== undefined) product.isActive = req.body.isActive
 
 		// Validate and save the updated document
 		await product.validate()
