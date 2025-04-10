@@ -19,7 +19,7 @@ import ProductModel, { IProduct } from './Product.js'
 export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	rooms: Schema.Types.ObjectId[] | IRoom[] // Where the activity can dine
+	rooms: Schema.Types.ObjectId[] | IRoom[] // Rooms which are promoted for this activity
 	disabledProducts: Schema.Types.ObjectId[] | IProduct[] // Products that are disabled for this activity
 	disabledRooms: Schema.Types.ObjectId[] | IRoom[] // Rooms that are disabled for this activity
 	name: string
