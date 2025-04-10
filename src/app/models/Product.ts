@@ -21,6 +21,7 @@ export interface IProduct extends Document {
 	name: string
 	price: number
 	imageURL?: string
+	isActive: boolean
 	orderWindow: {
 		from: {
 			hour: number
@@ -99,6 +100,10 @@ const productSchema = new Schema<IProduct>({
 		type: Schema.Types.String,
 		trim: true,
 		maxlength: [200, 'Billede URL må maks være 200 tegn lang']
+	},
+	isActive: {
+		type: Schema.Types.Boolean,
+		default: true
 	},
 	options: [{
 		type: Schema.Types.ObjectId,
