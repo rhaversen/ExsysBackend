@@ -835,6 +835,35 @@ const admin3 = await AdminModel.create({
 	password: 'support123'
 })
 
+// Create an admin with incorrect user agent for testing
+const adminWithWrongUserAgent = await AdminModel.create({
+	name: 'adminWithWrongUserAgent',
+	password: 'testpassword'
+})
+
+// Create session for admin with wrong user agent
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: adminWithWrongUserAgent.id
+		},
+		ipAddress: '192.168.1.210',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: 'userAgent', // Incorrect user agent for testing
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
 // Sessions for different devices with specific user agents
 const userAgents = [
 	'Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
@@ -1072,37 +1101,28 @@ await SessionModel.create({
 })
 
 // Create sessions for kiosks
-// Kiosk 1 - single session
-await SessionModel.create({
-	_id: randomUUID(),
-	session: JSON.stringify({
-		cookie: {
-			originalMaxAge: 86400000,
-			expires: new Date(Date.now() + 86400000),
-			secure: true,
-			httpOnly: true,
-			path: '/'
-		},
-		passport: {
-			user: kiosk1.id
-		},
-		ipAddress: '192.168.1.50',
-		loginTime: new Date(Date.now() - 86400000), // 1 day ago
-		lastActivity: new Date(),
-		userAgent: 'Kiosk/1.0',
-		type: 'kiosk'
-	}),
-	expires: new Date(Date.now() + 86400000)
-})
-
-// Kiosk with multiple sessions (simulating a kiosk that was restarted or logged in multiple times)
-const kioskWithMultipleSessions = await KioskModel.create({
-	name: 'Kiosk with multiple sessions',
+// Create two different kiosks with two sessions each and one with a single session
+// Create two kiosks with same name but incremented number (two sessions each)
+const kioskWithTwoSessionsA = await KioskModel.create({
+	name: 'Kiosk with multiple sessions 1',
 	kioskTag: '33333',
 	password: 'password'
 })
 
-// First session for this kiosk (older)
+const kioskWithTwoSessionsB = await KioskModel.create({
+	name: 'Kiosk with multiple sessions 2',
+	kioskTag: '44444',
+	password: 'password'
+})
+
+// Kiosk with just one session
+const kioskWithOneSession = await KioskModel.create({
+	name: 'Kiosk with single session',
+	kioskTag: '55555',
+	password: 'password'
+})
+
+// Create a single session for the one-session kiosk
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1114,18 +1134,18 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: kioskWithMultipleSessions.id
+			user: kioskWithOneSession.id
 		},
-		ipAddress: '192.168.1.51',
-		loginTime: new Date(Date.now() - 172800000), // 2 days ago
-		lastActivity: new Date(Date.now() - 86400000), // 1 day ago
-		userAgent: 'Kiosk/1.0',
+		ipAddress: '192.168.1.53',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Second session for this kiosk (newer)
+// First session for kioskWithTwoSessionsA (older)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1137,12 +1157,81 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: kioskWithMultipleSessions.id
+			user: kioskWithTwoSessionsA.id
+		},
+		ipAddress: '192.168.1.51',
+		loginTime: new Date(Date.now() - 172800000), // 2 days ago
+		lastActivity: new Date(Date.now() - 86400000), // 1 day ago
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Second session for kioskWithTwoSessionsA (newer)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kioskWithTwoSessionsA.id
 		},
 		ipAddress: '192.168.1.51',
 		loginTime: new Date(),
 		lastActivity: new Date(),
-		userAgent: 'Kiosk/1.0',
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// First session for kioskWithTwoSessionsB (older)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kioskWithTwoSessionsB.id
+		},
+		ipAddress: '192.168.1.52',
+		loginTime: new Date(Date.now() - 172800000), // 2 days ago
+		lastActivity: new Date(Date.now() - 86400000), // 1 day ago
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Second session for kioskWithTwoSessionsB (newer)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kioskWithTwoSessionsB.id
+		},
+		ipAddress: '192.168.1.52',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
 	expires: new Date(Date.now() + 86400000)
