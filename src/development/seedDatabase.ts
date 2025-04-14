@@ -752,6 +752,29 @@ await KioskModel.create({
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 
+// New kiosks with different closedUntil/manualClosed combinations
+await KioskModel.create({
+	name: 'Kiosk manualClosed',
+	kioskTag: '77777',
+	password: 'password',
+	manualClosed: true,
+	closedUntil: null
+})
+await KioskModel.create({
+	name: 'Kiosk closedUntil',
+	kioskTag: '88888',
+	password: 'password',
+	manualClosed: false,
+	closedUntil: new Date(Date.now() + 3600000) // 1 hour in the future
+})
+await KioskModel.create({
+	name: 'Kiosk manualClosed and closedUntil',
+	kioskTag: '99999',
+	password: 'password',
+	manualClosed: true,
+	closedUntil: new Date(Date.now() + 7200000) // 2 hours in the future
+})
+
 // Orders
 await OrderModel.create({
 	paymentId: payment1.id,
