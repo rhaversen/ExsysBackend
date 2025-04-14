@@ -840,7 +840,8 @@ const userAgents = [
 	'Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
 	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15',
-	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1'
+	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
+	'Mozilla/5.0 (iPad; CPU OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/134.0.6998.33 Mobile/15E148 Safari/604.1'
 ]
 
 // Create session for iPhone user
@@ -952,7 +953,7 @@ await SessionModel.create({
 		ipAddress: '192.168.1.200',
 		loginTime: new Date(),
 		lastActivity: new Date(),
-		userAgent: userAgents[1],
+		userAgent: userAgents[4],
 		type: 'admin'
 	}),
 	expires: new Date(Date.now() + 86400000)
@@ -997,7 +998,7 @@ await SessionModel.create({
 		ipAddress: '192.168.1.202',
 		loginTime: new Date(),
 		lastActivity: new Date(),
-		userAgent: userAgents[2],
+		userAgent: userAgents[1],
 		type: 'admin'
 	}),
 	expires: new Date(Date.now() + 86400000)
@@ -1020,7 +1021,7 @@ await SessionModel.create({
 		ipAddress: '192.168.1.203',
 		loginTime: new Date(Date.now() - 43200000), // 12 hours ago
 		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
-		userAgent: userAgents[0],
+		userAgent: userAgents[2],
 		type: 'admin'
 	}),
 	expires: new Date(Date.now() + 86400000)
@@ -1042,7 +1043,7 @@ await SessionModel.create({
 		ipAddress: '192.168.1.204',
 		loginTime: new Date(Date.now() - 7200000), // 2 hours ago
 		lastActivity: new Date(Date.now() - 1800000), // 30 minutes ago
-		userAgent: userAgents[1],
+		userAgent: userAgents[3],
 		type: 'admin'
 	}),
 	expires: new Date(Date.now() + 86400000)
@@ -1064,7 +1065,7 @@ await SessionModel.create({
 		ipAddress: '192.168.1.205',
 		loginTime: new Date(),
 		lastActivity: new Date(),
-		userAgent: userAgents[2],
+		userAgent: userAgents[4],
 		type: 'admin'
 	}),
 	expires: new Date(Date.now() + 86400000)
