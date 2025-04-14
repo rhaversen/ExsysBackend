@@ -12,7 +12,9 @@ import PaymentModel from '../app/models/Payment.js'
 import ProductModel from '../app/models/Product.js'
 import ReaderModel from '../app/models/Reader.js'
 import RoomModel from '../app/models/Room.js'
+import SessionModel from '../app/models/Session.js'
 import logger from '../app/utils/logger.js'
+import { randomUUID } from 'crypto'
 
 logger.info('Seeding database')
 
@@ -818,9 +820,331 @@ await OrderModel.create({
 })
 
 // Admins
-await AdminModel.create({
+const admin1 = await AdminModel.create({
 	name: 'Admin',
 	password: 'password'
+})
+
+const admin2 = await AdminModel.create({
+	name: 'SuperAdmin',
+	password: 'password123'
+})
+
+const admin3 = await AdminModel.create({
+	name: 'SupportAdmin',
+	password: 'support123'
+})
+
+// Sessions for different devices with specific user agents
+const userAgents = [
+	'Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
+	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
+	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15',
+	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1'
+]
+
+// Create session for iPhone user
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: 'regular-user-1'
+		},
+		ipAddress: '192.168.1.100',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[0],
+		type: 'user'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create session for Windows Chrome user
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: 'regular-user-2'
+		},
+		ipAddress: '192.168.1.101',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[1],
+		type: 'user'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create session for Mac Safari user
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: 'regular-user-3'
+		},
+		ipAddress: '192.168.1.102',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[2],
+		type: 'user'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create session for Mac Mobile Safari user
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: 'regular-user-4'
+		},
+		ipAddress: '192.168.1.103',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[3],
+		type: 'user'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create multiple sessions for Admin1 (1 session)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: admin1.id
+		},
+		ipAddress: '192.168.1.200',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[1],
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create multiple sessions for Admin2 (2 sessions - different devices)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: admin2.id
+		},
+		ipAddress: '192.168.1.201',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[0],
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: admin2.id
+		},
+		ipAddress: '192.168.1.202',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[2],
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create multiple sessions for Admin3 (3 sessions - different devices)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: admin3.id
+		},
+		ipAddress: '192.168.1.203',
+		loginTime: new Date(Date.now() - 43200000), // 12 hours ago
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
+		userAgent: userAgents[0],
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: admin3.id
+		},
+		ipAddress: '192.168.1.204',
+		loginTime: new Date(Date.now() - 7200000), // 2 hours ago
+		lastActivity: new Date(Date.now() - 1800000), // 30 minutes ago
+		userAgent: userAgents[1],
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: admin3.id
+		},
+		ipAddress: '192.168.1.205',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: userAgents[2],
+		type: 'admin'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Create sessions for kiosks
+// Kiosk 1 - single session
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk1.id
+		},
+		ipAddress: '192.168.1.50',
+		loginTime: new Date(Date.now() - 86400000), // 1 day ago
+		lastActivity: new Date(),
+		userAgent: 'Kiosk/1.0',
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Kiosk with multiple sessions (simulating a kiosk that was restarted or logged in multiple times)
+const kioskWithMultipleSessions = await KioskModel.create({
+	name: 'Kiosk with multiple sessions',
+	kioskTag: '33333',
+	password: 'password'
+})
+
+// First session for this kiosk (older)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kioskWithMultipleSessions.id
+		},
+		ipAddress: '192.168.1.51',
+		loginTime: new Date(Date.now() - 172800000), // 2 days ago
+		lastActivity: new Date(Date.now() - 86400000), // 1 day ago
+		userAgent: 'Kiosk/1.0',
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Second session for this kiosk (newer)
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kioskWithMultipleSessions.id
+		},
+		ipAddress: '192.168.1.51',
+		loginTime: new Date(),
+		lastActivity: new Date(),
+		userAgent: 'Kiosk/1.0',
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
 })
 
 logger.info('Database seeded')
