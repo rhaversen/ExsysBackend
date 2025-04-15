@@ -765,14 +765,14 @@ await KioskModel.create({
 	kioskTag: '88888',
 	password: 'password',
 	manualClosed: false,
-	closedUntil: new Date(Date.now() + 3600000) // 1 hour in the future
+	closedUntil: new Date(Date.now() + 3600000*2) // 2 hours in the future
 })
 await KioskModel.create({
 	name: 'Kiosk manualClosed and closedUntil',
 	kioskTag: '99999',
 	password: 'password',
 	manualClosed: true,
-	closedUntil: new Date(Date.now() + 7200000) // 2 hours in the future
+	closedUntil: new Date(Date.now() + 3600000*3) // 3 hours in the future
 })
 
 // Orders
