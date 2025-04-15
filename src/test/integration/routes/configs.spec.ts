@@ -70,15 +70,13 @@ describe('Configs routes', function () {
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', 60000)
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', 10000)
 			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', 10000)
-			expect(response.body.configs).to.have.property('kioskIsOpen', true)
 		})
 
 		it('should return existing configs when they exist', async function () {
 			const testConfigs = {
 				kioskInactivityTimeoutMs: 30000,
 				kioskInactivityTimeoutWarningMs: 5000,
-				kioskOrderConfirmationTimeoutMs: 15000,
-				kioskIsOpen: false
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 			await ConfigsModel.create(testConfigs)
 
@@ -87,7 +85,6 @@ describe('Configs routes', function () {
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', testConfigs.kioskInactivityTimeoutMs)
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', testConfigs.kioskInactivityTimeoutWarningMs)
 			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', testConfigs.kioskOrderConfirmationTimeoutMs)
-			expect(response.body.configs).to.have.property('kioskIsOpen', testConfigs.kioskIsOpen)
 		})
 
 		it('should return same config document when called multiple times', async function () {
@@ -132,8 +129,7 @@ describe('Configs routes', function () {
 			const updatedConfigs = {
 				kioskInactivityTimeoutMs: 30000,
 				kioskInactivityTimeoutWarningMs: 5000,
-				kioskOrderConfirmationTimeoutMs: 15000,
-				kioskIsOpen: false
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 
 			const response = await agent
@@ -144,15 +140,13 @@ describe('Configs routes', function () {
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', updatedConfigs.kioskInactivityTimeoutMs)
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', updatedConfigs.kioskInactivityTimeoutWarningMs)
 			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
-			expect(response.body.configs).to.have.property('kioskIsOpen', updatedConfigs.kioskIsOpen)
 		})
 
 		it('should save the configs to the database', async function () {
 			const updatedConfigs = {
 				kioskInactivityTimeoutMs: 30000,
 				kioskInactivityTimeoutWarningMs: 5000,
-				kioskOrderConfirmationTimeoutMs: 15000,
-				kioskIsOpen: false
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 
 			await agent
@@ -165,7 +159,6 @@ describe('Configs routes', function () {
 			expect(savedConfigs).to.have.property('kioskInactivityTimeoutMs', updatedConfigs.kioskInactivityTimeoutMs)
 			expect(savedConfigs).to.have.property('kioskInactivityTimeoutWarningMs', updatedConfigs.kioskInactivityTimeoutWarningMs)
 			expect(savedConfigs).to.have.property('kioskOrderConfirmationTimeoutMs', updatedConfigs.kioskOrderConfirmationTimeoutMs)
-			expect(savedConfigs).to.have.property('kioskIsOpen', updatedConfigs.kioskIsOpen)
 		})
 
 		it('should allow partial updates', async function () {
@@ -181,7 +174,6 @@ describe('Configs routes', function () {
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', partialUpdate.kioskInactivityTimeoutMs)
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutWarningMs', 10000) // default value
 			expect(response.body.configs).to.have.property('kioskOrderConfirmationTimeoutMs', 10000) // default value
-			expect(response.body.configs).to.have.property('kioskIsOpen', true) // default value
 		})
 
 		it('should validate minimum values', async function () {
@@ -214,8 +206,7 @@ describe('Configs routes', function () {
 			const initialUpdate = {
 				kioskInactivityTimeoutMs: 30000,
 				kioskInactivityTimeoutWarningMs: 5000,
-				kioskOrderConfirmationTimeoutMs: 15000,
-				kioskIsOpen: false
+				kioskOrderConfirmationTimeoutMs: 15000
 			}
 			await agent
 				.patch('/api/v1/configs')
@@ -231,8 +222,7 @@ describe('Configs routes', function () {
 			expect(response.body.configs).to.include({
 				kioskInactivityTimeoutMs: 40000,
 				kioskInactivityTimeoutWarningMs: 5000,
-				kioskOrderConfirmationTimeoutMs: 15000,
-				kioskIsOpen: false
+				kioskOrderConfirmationTimeoutMs: 15000
 			})
 		})
 	})
