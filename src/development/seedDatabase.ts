@@ -20,6 +20,15 @@ logger.info('Seeding database')
 
 const sampleImageURL = 'https://dummyimage.com/200x200/ffffff/000000.png&text=Sample+Image+200x200'
 
+// Sessions for different devices with specific user agents
+const userAgents = [
+	'Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
+	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
+	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15',
+	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
+	'Mozilla/5.0 (iPad; CPU OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/134.0.6998.33 Mobile/15E148 Safari/604.1'
+]
+
 // Products for every hour of the day
 await ProductModel.create({
 	name: '0 Cake',
@@ -719,60 +728,382 @@ const kiosk1 = await KioskModel.create({
 	kioskTag: '00000',
 	password: 'password'
 })
-await KioskModel.create({
+// Session for kiosk1
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk1.id
+		},
+		ipAddress: '192.168.1.10',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kiosk2 = await KioskModel.create({
 	name: 'Kiosk wihtout activities and reader',
 	readerId: reader1.id,
 	kioskTag: '00001',
 	password: 'password'
 })
-await KioskModel.create({
+// Session for kiosk2
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk2.id
+		},
+		ipAddress: '192.168.1.11',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kiosk3 = await KioskModel.create({
 	name: 'Kiosk with one activity',
 	kioskTag: '11111',
 	password: 'password',
 	activities: [activity1.id]
 })
-await KioskModel.create({
+// Session for kiosk3
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk3.id
+		},
+		ipAddress: '192.168.1.12',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kiosk4 = await KioskModel.create({
 	name: 'Kiosk with one activity and reader',
 	readerId: reader2.id,
 	kioskTag: '11112',
 	password: 'password',
 	activities: [activity2.id]
 })
-await KioskModel.create({
+// Session for kiosk4
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk4.id
+		},
+		ipAddress: '192.168.1.13',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kiosk5 = await KioskModel.create({
 	name: 'Kiosk with activities',
 	kioskTag: '22222',
 	password: 'password',
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
-await KioskModel.create({
+// Session for kiosk5
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk5.id
+		},
+		ipAddress: '192.168.1.14',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kiosk6 = await KioskModel.create({
 	name: 'Kiosk with activities and reader',
 	readerId: reader3.id,
 	kioskTag: '22223',
 	password: 'password',
 	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
+// Session for kiosk6
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kiosk6.id
+		},
+		ipAddress: '192.168.1.15',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
 
 // New kiosks with different closedUntil/manualClosed combinations
-await KioskModel.create({
+const kioskManualClosed = await KioskModel.create({
 	name: 'Kiosk manualClosed',
 	kioskTag: '77777',
 	password: 'password',
 	manualClosed: true,
 	closedUntil: null
 })
-await KioskModel.create({
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskManualClosed.id },
+		ipAddress: '192.168.1.16',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kioskClosedUntil = await KioskModel.create({
 	name: 'Kiosk closedUntil',
 	kioskTag: '88888',
 	password: 'password',
 	manualClosed: false,
-	closedUntil: new Date(Date.now() + 3600000*2) // 2 hours in the future
+	closedUntil: new Date(Date.now() + 3600000*2)
 })
-await KioskModel.create({
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskClosedUntil.id },
+		ipAddress: '192.168.1.17',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kioskManualClosedAndClosedUntil = await KioskModel.create({
 	name: 'Kiosk manualClosed and closedUntil',
 	kioskTag: '99999',
 	password: 'password',
 	manualClosed: true,
-	closedUntil: new Date(Date.now() + 3600000*3) // 3 hours in the future
+	closedUntil: new Date(Date.now() + 3600000*3)
+})
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskManualClosedAndClosedUntil.id },
+		ipAddress: '192.168.1.18',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Kiosks for sessions with different user agents
+const kioskUserAgent1 = await KioskModel.create({
+	name: 'Kiosk iPhone',
+	kioskTag: '99990',
+	password: 'password'
+})
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskUserAgent1.id },
+		ipAddress: '192.168.1.60',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[0],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kioskUserAgent2 = await KioskModel.create({
+	name: 'Kiosk Windows Chrome',
+	kioskTag: '99991',
+	password: 'password'
+})
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskUserAgent2.id },
+		ipAddress: '192.168.1.61',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[1],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kioskUserAgent3 = await KioskModel.create({
+	name: 'Kiosk Mac Safari',
+	kioskTag: '99992',
+	password: 'password'
+})
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskUserAgent3.id },
+		ipAddress: '192.168.1.62',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[2],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kioskUserAgent4 = await KioskModel.create({
+	name: 'Kiosk Mac Mobile Safari',
+	kioskTag: '99993',
+	password: 'password'
+})
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskUserAgent4.id },
+		ipAddress: '192.168.1.63',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[3],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+const kioskUserAgent5 = await KioskModel.create({
+	name: 'Kiosk iPad Chrome',
+	kioskTag: '99994',
+	password: 'password'
+})
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: { user: kioskUserAgent5.id },
+		ipAddress: '192.168.1.64',
+		loginTime: new Date(),
+		lastActivity: new Date(Date.now() - 3600000),
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
 })
 
 // Orders
@@ -843,24 +1174,24 @@ await OrderModel.create({
 })
 
 // Admins
-const admin1 = await AdminModel.create({
+const admin = await AdminModel.create({
 	name: 'Admin',
 	password: 'password'
 })
 
-const admin2 = await AdminModel.create({
-	name: 'SuperAdmin',
+const adminWith2Sessions = await AdminModel.create({
+	name: 'Admin With 2 Sessions',
 	password: 'password123'
 })
 
-const admin3 = await AdminModel.create({
-	name: 'SupportAdmin',
+const adminWith3Sessions = await AdminModel.create({
+	name: 'Admin With 3 Sessions',
 	password: 'support123'
 })
 
 // Create an admin with incorrect user agent for testing
 const adminWithWrongUserAgent = await AdminModel.create({
-	name: 'adminWithWrongUserAgent',
+	name: 'Admin With Wrong User Agent',
 	password: 'testpassword'
 })
 
@@ -887,16 +1218,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Sessions for different devices with specific user agents
-const userAgents = [
-	'Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
-	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15',
-	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1',
-	'Mozilla/5.0 (iPad; CPU OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/134.0.6998.33 Mobile/15E148 Safari/604.1'
-]
-
-// Create session for iPhone user
+// Create session for admin (1 session)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -908,99 +1230,7 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: 'regular-user-1'
-		},
-		ipAddress: '192.168.1.100',
-		loginTime: new Date(),
-		lastActivity: new Date(),
-		userAgent: userAgents[0],
-		type: 'user'
-	}),
-	expires: new Date(Date.now() + 86400000)
-})
-
-// Create session for Windows Chrome user
-await SessionModel.create({
-	_id: randomUUID(),
-	session: JSON.stringify({
-		cookie: {
-			originalMaxAge: 86400000,
-			expires: new Date(Date.now() + 86400000),
-			secure: true,
-			httpOnly: true,
-			path: '/'
-		},
-		passport: {
-			user: 'regular-user-2'
-		},
-		ipAddress: '192.168.1.101',
-		loginTime: new Date(),
-		lastActivity: new Date(),
-		userAgent: userAgents[1],
-		type: 'user'
-	}),
-	expires: new Date(Date.now() + 86400000)
-})
-
-// Create session for Mac Safari user
-await SessionModel.create({
-	_id: randomUUID(),
-	session: JSON.stringify({
-		cookie: {
-			originalMaxAge: 86400000,
-			expires: new Date(Date.now() + 86400000),
-			secure: true,
-			httpOnly: true,
-			path: '/'
-		},
-		passport: {
-			user: 'regular-user-3'
-		},
-		ipAddress: '192.168.1.102',
-		loginTime: new Date(),
-		lastActivity: new Date(),
-		userAgent: userAgents[2],
-		type: 'user'
-	}),
-	expires: new Date(Date.now() + 86400000)
-})
-
-// Create session for Mac Mobile Safari user
-await SessionModel.create({
-	_id: randomUUID(),
-	session: JSON.stringify({
-		cookie: {
-			originalMaxAge: 86400000,
-			expires: new Date(Date.now() + 86400000),
-			secure: true,
-			httpOnly: true,
-			path: '/'
-		},
-		passport: {
-			user: 'regular-user-4'
-		},
-		ipAddress: '192.168.1.103',
-		loginTime: new Date(),
-		lastActivity: new Date(),
-		userAgent: userAgents[3],
-		type: 'user'
-	}),
-	expires: new Date(Date.now() + 86400000)
-})
-
-// Create multiple sessions for Admin1 (1 session)
-await SessionModel.create({
-	_id: randomUUID(),
-	session: JSON.stringify({
-		cookie: {
-			originalMaxAge: 86400000,
-			expires: new Date(Date.now() + 86400000),
-			secure: true,
-			httpOnly: true,
-			path: '/'
-		},
-		passport: {
-			user: admin1.id
+			user: admin.id
 		},
 		ipAddress: '192.168.1.200',
 		loginTime: new Date(),
@@ -1011,7 +1241,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Create multiple sessions for Admin2 (2 sessions - different devices)
+// Create multiple sessions for admin (2 sessions - different devices)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1023,7 +1253,7 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: admin2.id
+			user: adminWith2Sessions.id
 		},
 		ipAddress: '192.168.1.201',
 		loginTime: new Date(),
@@ -1045,7 +1275,7 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: admin2.id
+			user: adminWith2Sessions.id
 		},
 		ipAddress: '192.168.1.202',
 		loginTime: new Date(),
@@ -1056,7 +1286,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Create multiple sessions for Admin3 (3 sessions - different devices)
+// Create multiple sessions for admin (3 sessions - different devices)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1068,7 +1298,7 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: admin3.id
+			user: adminWith3Sessions.id
 		},
 		ipAddress: '192.168.1.203',
 		loginTime: new Date(Date.now() - 43200000), // 12 hours ago
@@ -1090,7 +1320,7 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: admin3.id
+			user: adminWith3Sessions.id
 		},
 		ipAddress: '192.168.1.204',
 		loginTime: new Date(Date.now() - 7200000), // 2 hours ago
@@ -1112,7 +1342,7 @@ await SessionModel.create({
 			path: '/'
 		},
 		passport: {
-			user: admin3.id
+			user: adminWith3Sessions.id
 		},
 		ipAddress: '192.168.1.205',
 		loginTime: new Date(),
@@ -1123,9 +1353,6 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Create sessions for kiosks
-// Create two different kiosks with two sessions each and one with a single session
-// Create two kiosks with same name but incremented number (two sessions each)
 const kioskWithTwoSessionsA = await KioskModel.create({
 	name: 'Kiosk with multiple sessions 1',
 	kioskTag: '33333',
@@ -1138,10 +1365,45 @@ const kioskWithTwoSessionsB = await KioskModel.create({
 	password: 'password'
 })
 
-// Kiosk with just one session
 const kioskWithOneSession = await KioskModel.create({
 	name: 'Kiosk with single session',
 	kioskTag: '55555',
+	password: 'password'
+})
+
+// Add kiosk with session last activity 48 hours ago
+const kioskWithOldSession = await KioskModel.create({
+	name: 'Kiosk with old session',
+	kioskTag: '66666',
+	password: 'password'
+})
+
+await SessionModel.create({
+	_id: randomUUID(),
+	session: JSON.stringify({
+		cookie: {
+			originalMaxAge: 86400000,
+			expires: new Date(Date.now() + 86400000),
+			secure: true,
+			httpOnly: true,
+			path: '/'
+		},
+		passport: {
+			user: kioskWithOldSession.id
+		},
+		ipAddress: '192.168.1.54',
+		loginTime: new Date(Date.now() - 172800000), // 2 days ago
+		lastActivity: new Date(Date.now() - 172800000), // 2 days ago (48 hours)
+		userAgent: userAgents[4],
+		type: 'kiosk'
+	}),
+	expires: new Date(Date.now() + 86400000)
+})
+
+// Add kiosk with no sessions
+await KioskModel.create({
+	name: 'Kiosk with no session',
+	kioskTag: '77776',
 	password: 'password'
 })
 
@@ -1161,14 +1423,14 @@ await SessionModel.create({
 		},
 		ipAddress: '192.168.1.53',
 		loginTime: new Date(),
-		lastActivity: new Date(),
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
 		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
 	expires: new Date(Date.now() + 86400000)
 })
 
-// First session for kioskWithTwoSessionsA (older)
+// Create two sessions for the first kiosk (older session first)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1184,14 +1446,13 @@ await SessionModel.create({
 		},
 		ipAddress: '192.168.1.51',
 		loginTime: new Date(Date.now() - 172800000), // 2 days ago
-		lastActivity: new Date(Date.now() - 86400000), // 1 day ago
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
 		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Second session for kioskWithTwoSessionsA (newer)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1207,14 +1468,14 @@ await SessionModel.create({
 		},
 		ipAddress: '192.168.1.51',
 		loginTime: new Date(),
-		lastActivity: new Date(),
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
 		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
 	expires: new Date(Date.now() + 86400000)
 })
 
-// First session for kioskWithTwoSessionsB (older)
+// Create two sessions for the second kiosk (newer session first)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1230,14 +1491,13 @@ await SessionModel.create({
 		},
 		ipAddress: '192.168.1.52',
 		loginTime: new Date(Date.now() - 172800000), // 2 days ago
-		lastActivity: new Date(Date.now() - 86400000), // 1 day ago
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
 		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
 	expires: new Date(Date.now() + 86400000)
 })
 
-// Second session for kioskWithTwoSessionsB (newer)
 await SessionModel.create({
 	_id: randomUUID(),
 	session: JSON.stringify({
@@ -1253,7 +1513,7 @@ await SessionModel.create({
 		},
 		ipAddress: '192.168.1.52',
 		loginTime: new Date(),
-		lastActivity: new Date(),
+		lastActivity: new Date(Date.now() - 3600000), // 1 hour ago
 		userAgent: userAgents[4],
 		type: 'kiosk'
 	}),
