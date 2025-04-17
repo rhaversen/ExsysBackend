@@ -28,7 +28,7 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
 import { type ISession } from './models/Session.js'
-import { transformSession } from './utils/sessionUtils.js'
+import { getIPAddress, transformSession } from './utils/sessionUtils.js'
 import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Business logic routes
@@ -118,10 +118,12 @@ configurePassport(passport) // Use passportConfig
 const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfig)
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
-// Middleware to update last activity on each request
+// Middleware to update session on each request
 app.use((req, res, next) => {
 	if (req.isAuthenticated() && req.session !== undefined) {
+		req.session.ipAddress = getIPAddress(req)
 		req.session.lastActivity = new Date()
+		req.session.userAgent = req.headers['user-agent']
 
 		const sessionDoc: ISession = {
 			_id: req.sessionID,
@@ -200,7 +202,7 @@ process.on('uncaughtException', (err): void => {
 })
 
 // Shutdown function
-export async function shutDown (): Promise<void> {
+export async function shutDown(): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')

@@ -3,6 +3,7 @@
 // Third-party libraries
 import passport from 'passport'
 import { type NextFunction, type Request, type Response } from 'express'
+import { publicIpv4 } from 'public-ip'
 
 // Own modules
 import config from '../utils/setupConfig.js'
@@ -11,7 +12,7 @@ import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
 import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 import { type ISession } from '../models/Session.js'
-import { transformSession } from '../utils/sessionUtils.js'
+import { getIPAddress, transformSession } from '../utils/sessionUtils.js'
 
 // Environment variables
 
@@ -21,6 +22,7 @@ const {
 } = config
 
 // Destructuring and global variables
+const serverIp = await publicIpv4() // Get the server's public IP address
 
 // Extend the Session interface to include ipAddress
 declare module 'express-session' {
@@ -69,7 +71,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = req.ip ?? 'Ukendt IP'
+			req.session.ipAddress = getIPAddress(req)
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'admin'
@@ -142,7 +144,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = req.ip ?? 'Ukendt IP'
+			req.session.ipAddress = getIPAddress(req)
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'kiosk'
