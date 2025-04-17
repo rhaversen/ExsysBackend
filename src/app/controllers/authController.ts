@@ -3,6 +3,7 @@
 // Third-party libraries
 import passport from 'passport'
 import { type NextFunction, type Request, type Response } from 'express'
+import { publicIpv4 } from 'public-ip'
 
 // Own modules
 import config from '../utils/setupConfig.js'
@@ -21,6 +22,7 @@ const {
 } = config
 
 // Destructuring and global variables
+const serverIp = await publicIpv4() // Get the server's public IP address
 
 // Extend the Session interface to include ipAddress
 declare module 'express-session' {
@@ -69,10 +71,19 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = req.ip ?? 'Ukendt IP'
+			
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'admin'
+
+			// If the request is from localhost or a private IP, set the session IP address to the server's IP
+			if (req.ip === undefined ) {
+				req.session.ipAddress = 'Ukendt IP'
+			} else if(req.ip === '::1' || req.ip === '127.0. 0.1' || req.ip?.includes('192.168')) {
+				req.session.ipAddress = serverIp
+			} else {
+				req.session.ipAddress = req.ip
+			}
 
 			// Set maxAge for persistent sessions if requested
 			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
