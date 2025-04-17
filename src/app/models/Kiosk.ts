@@ -33,6 +33,8 @@ export interface IKiosk extends Document {
 	activities: Schema.Types.ObjectId[] | [] // Promoted activities for this kiosk
 	disabledActivities: Schema.Types.ObjectId[] | [] // Activities that are disabled for this kiosk
 	readerId: Schema.Types.ObjectId | undefined // The pay station the kiosk is connected to
+	manualClosed: boolean; // true: closed until manually reopened, false: use closedUntil date if set
+	closedUntil: Date | null; // null: open, Date: closed until that date (when manualClosed is false)
 
 	// Timestamps
 	createdAt: Date
@@ -50,6 +52,8 @@ export interface IKioskFrontend {
 	activities: Schema.Types.ObjectId[] | string[]
 	disabledActivities: Schema.Types.ObjectId[] | string[]
 	readerId: Schema.Types.ObjectId | string[] | undefined
+	manualClosed: boolean;
+	closedUntil: Date | null;
 	createdAt: Date
 	updatedAt: Date
 }
@@ -87,6 +91,14 @@ const kioskSchema = new Schema<IKiosk>({
 		type: [Schema.Types.ObjectId],
 		ref: 'Activity',
 		default: []
+	},
+	manualClosed: {
+		type: Boolean,
+		default: false
+	},
+	closedUntil: {
+		type: Schema.Types.Date,
+		default: null
 	}
 }, {
 	timestamps: true

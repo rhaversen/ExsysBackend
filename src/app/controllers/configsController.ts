@@ -35,8 +35,7 @@ export async function getConfigs(req: Request, res: Response, next: NextFunction
 			configs: {
 				kioskInactivityTimeoutMs: configs.kioskInactivityTimeoutMs,
 				kioskInactivityTimeoutWarningMs: configs.kioskInactivityTimeoutWarningMs,
-				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs,
-				kioskIsOpen: configs.kioskIsOpen
+				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs
 			},
 			createdAt: configs.createdAt,
 			updatedAt: configs.updatedAt
@@ -65,7 +64,6 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 		if (req.body.kioskInactivityTimeoutMs !== undefined) configs.kioskInactivityTimeoutMs = req.body.kioskInactivityTimeoutMs
 		if (req.body.kioskInactivityTimeoutWarningMs !== undefined) configs.kioskInactivityTimeoutWarningMs = req.body.kioskInactivityTimeoutWarningMs
 		if (req.body.kioskOrderConfirmationTimeoutMs !== undefined) configs.kioskOrderConfirmationTimeoutMs = req.body.kioskOrderConfirmationTimeoutMs
-		if (req.body.kioskIsOpen !== undefined) configs.kioskIsOpen = req.body.kioskIsOpen
 
 		// Validate and save the updated document
 		await configs.validate()
@@ -78,8 +76,7 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 			configs: {
 				kioskInactivityTimeoutMs: savedConfigs.kioskInactivityTimeoutMs,
 				kioskInactivityTimeoutWarningMs: savedConfigs.kioskInactivityTimeoutWarningMs,
-				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs,
-				kioskIsOpen: savedConfigs.kioskIsOpen
+				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs
 			},
 			createdAt: savedConfigs.createdAt,
 			updatedAt: savedConfigs.updatedAt
