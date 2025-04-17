@@ -25,21 +25,14 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		readerId: req.body.readerId,
 		password: req.body.password,
 		activities: req.body.activities,
-		disabledActivities: req.body.disabledActivities
+		disabledActivities: req.body.disabledActivities,
+		manualClosed: req.body.manualClosed,
+		closedUntil: req.body.closedUntil
 	}
 
 	try {
 		const newKiosk = await (await (await KioskModel.create(allowedFields)).populate('activities')).populate('readerId')
-		const transformedKiosk = {
-			_id: newKiosk.id,
-			name: newKiosk.name,
-			readerId: newKiosk.readerId,
-			kioskTag: newKiosk.kioskTag,
-			activities: newKiosk.activities,
-			disabledActivities: newKiosk.disabledActivities,
-			createdAt: newKiosk.createdAt,
-			updatedAt: newKiosk.updatedAt
-		}
+		const transformedKiosk = transformKiosk(newKiosk)
 		res.status(201).json(transformedKiosk)
 
 		emitKioskCreated(transformedKiosk)
@@ -59,6 +52,8 @@ const transformKiosk = (kiosk: IKiosk) => ({
 	kioskTag: kiosk.kioskTag,
 	activities: kiosk.activities,
 	disabledActivities: kiosk.disabledActivities,
+	manualClosed: kiosk.manualClosed,
+	closedUntil: kiosk.closedUntil,
 	createdAt: kiosk.createdAt,
 	updatedAt: kiosk.updatedAt
 })
@@ -145,6 +140,8 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		if (req.body.password !== undefined) kiosk.password = req.body.password
 		if (req.body.activities !== undefined) kiosk.activities = req.body.activities
 		if (req.body.disabledActivities !== undefined) kiosk.disabledActivities = req.body.disabledActivities
+		if (req.body.closedUntil !== undefined) kiosk.closedUntil = req.body.closedUntil
+		if (req.body.manualClosed !== undefined) kiosk.manualClosed = req.body.manualClosed
 
 		// Validate and save the updated document
 		await kiosk.validate()

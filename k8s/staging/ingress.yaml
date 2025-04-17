@@ -15,6 +15,8 @@ metadata:
         # Sticky sessions based on cookies
         nginx.ingress.kubernetes.io/affinity: "cookie"
         nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+        nginx.ingress.kubernetes.io/session-cookie-same-site: "Lax"
+        nginx.ingress.kubernetes.io/session-cookie-secure: "true"
 spec:
     ingressClassName: nginx
     tls:
