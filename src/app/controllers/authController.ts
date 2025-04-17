@@ -12,7 +12,7 @@ import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
 import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 import { type ISession } from '../models/Session.js'
-import { transformSession } from '../utils/sessionUtils.js'
+import { getIPAddress, transformSession } from '../utils/sessionUtils.js'
 
 // Environment variables
 
@@ -71,19 +71,10 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			
+			req.session.ipAddress = getIPAddress(req)
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'admin'
-
-			// If the request is from localhost or a private IP, set the session IP address to the server's IP
-			if (req.ip === undefined ) {
-				req.session.ipAddress = 'Ukendt IP'
-			} else if(req.ip === '::1' || req.ip === '127.0. 0.1' || req.ip?.includes('192.168')) {
-				req.session.ipAddress = serverIp
-			} else {
-				req.session.ipAddress = req.ip
-			}
 
 			// Set maxAge for persistent sessions if requested
 			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
@@ -153,7 +144,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = req.ip ?? 'Ukendt IP'
+			req.session.ipAddress = getIPAddress(req)
 			req.session.loginTime = new Date()
 			req.session.userAgent = req.headers['user-agent']
 			req.session.type = 'kiosk'

@@ -19,7 +19,6 @@ import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import MongoStore from 'connect-mongo'
 import * as Sentry from '@sentry/node'
-import { publicIpv4 } from 'public-ip'
 
 // Own modules
 import databaseConnector from './utils/databaseConnector.js'
@@ -29,7 +28,7 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
 import { type ISession } from './models/Session.js'
-import { transformSession } from './utils/sessionUtils.js'
+import { getIPAddress, transformSession } from './utils/sessionUtils.js'
 import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Business logic routes
@@ -67,7 +66,6 @@ const {
 // Destructuring and global variables
 const app = express() // Create an Express application
 const server = createServer(app) // Create an HTTP server
-const serverIp = await publicIpv4() // Get the server's public IP address
 
 // Logging environment
 logger.info(`Node environment: ${NODE_ENV}`)
@@ -123,15 +121,7 @@ const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 // Middleware to update session on each request
 app.use((req, res, next) => {
 	if (req.isAuthenticated() && req.session !== undefined) {
-		// If the request is from localhost or a private IP, set the session IP address to the server's IP
-		if (req.ip === undefined ) {
-			req.session.ipAddress = 'Ukendt IP'
-		} else if(req.ip === '::1' || req.ip === '127.0. 0.1' || req.ip?.includes('192.168')) {
-			req.session.ipAddress = serverIp
-		} else {
-			req.session.ipAddress = req.ip
-		}
-
+		req.session.ipAddress = getIPAddress(req)
 		req.session.lastActivity = new Date()
 		req.session.userAgent = req.headers['user-agent']
 
@@ -212,7 +202,7 @@ process.on('uncaughtException', (err): void => {
 })
 
 // Shutdown function
-export async function shutDown (): Promise<void> {
+export async function shutDown(): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
