@@ -1520,4 +1520,77 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
+// --- Generate hundreds of random orders for testing ---
+const allProducts = await ProductModel.find({})
+const allOptions = await OptionModel.find({})
+const allActivities = await ActivityModel.find({})
+const allRooms = await RoomModel.find({})
+const allKiosks = await KioskModel.find({})
+const allPayments = await PaymentModel.find({})
+
+function getRandom(arr: any[], min = 1, max = 1) {
+	const count = Math.floor(Math.random() * (max - min + 1)) + min
+	const shuffled = arr.slice().sort(() => 0.5 - Math.random())
+	return shuffled.slice(0, Math.min(count, arr.length))
+}
+
+function randomDate(start: Date, end: Date) {
+	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
+}
+
+const now = new Date()
+const monthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
+
+// Only use products with orderWindow from 00:00 to 23:59
+const allDayProducts = allProducts.filter(p =>
+	p.orderWindow &&
+	p.orderWindow.from &&
+	p.orderWindow.to &&
+	p.orderWindow.from.hour === 0 &&
+	p.orderWindow.from.minute === 0 &&
+	p.orderWindow.to.hour === 23 &&
+	p.orderWindow.to.minute === 59
+)
+
+for (let i = 0; i < 300; i++) {
+	const products = getRandom(allDayProducts, 1, 3).map(p => ({
+		id: p._id,
+		quantity: Math.floor(Math.random() * 5) + 1
+	}))
+	const options = getRandom(allOptions, 0, 2).map(o => ({
+		id: o._id,
+		quantity: Math.floor(Math.random() * 3) + 1
+	}))
+	const activity = getRandom(allActivities)[0]
+	const room = getRandom(allRooms)[0]
+	const kiosk = getRandom(allKiosks)[0]
+	const payment = getRandom(allPayments)[0]
+	const createdAt = randomDate(monthsAgo, now)
+	const updatedAt = randomDate(createdAt, now)
+
+	let status: 'pending' | 'confirmed' | 'delivered'
+	const randomStatus = Math.random()
+	if (randomStatus < 0.05) { // ~5% chance for pending
+		status = 'pending'
+	} else if (randomStatus < 0.10) { // ~5% chance for confirmed
+		status = 'confirmed'
+	} else { // ~90% chance for delivered
+		status = 'delivered'
+	}
+
+	await OrderModel.create({
+		paymentId: payment._id,
+		activityId: activity._id,
+		roomId: room._id,
+		kioskId: kiosk._id,
+		products,
+		options: options.length > 0 ? options : undefined,
+		status,
+		createdAt,
+		updatedAt
+	})
+}
+
+logger.info('Random orders seeded')
+
 logger.info('Database seeded')
