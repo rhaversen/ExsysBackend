@@ -174,9 +174,9 @@ describe('Orders routes', function () {
 			expect(res.body).to.exist
 			expect(res.body.roomId).to.equal(testRoom.id)
 			expect(res.body.activityId).to.equal(testActivity.id)
-			expect(res.body.products[0].id).to.equal(testProduct1.id)
+			expect(res.body.products[0]._id).to.equal(testProduct1.id)
 			expect(res.body.products[0].quantity).to.equal(1)
-			expect(res.body.options?.[0].id).to.equal(testOption1.id)
+			expect(res.body.options?.[0]._id).to.equal(testOption1.id)
 			expect(res.body.options?.[0].quantity).to.equal(1)
 			expect(res.body).to.have.property('createdAt')
 			expect(res.body).to.have.property('updatedAt')
