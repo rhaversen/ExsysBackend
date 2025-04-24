@@ -164,8 +164,8 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 	}
 
 	const now = new Date()
-	const nowHour = now.getUTCHours()
-	const nowMinute = now.getUTCMinutes()
+	const nowHour = now.getHours()
+	const nowMinute = now.getMinutes()
 
 	const from = product.orderWindow.from
 	const to = product.orderWindow.to
