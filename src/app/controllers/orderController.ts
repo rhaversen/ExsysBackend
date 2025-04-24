@@ -41,6 +41,7 @@ export function transformOrder(order: IOrderPopulated): IOrderFrontend {
 		options,
 		activityId: order.activityId,
 		roomId: order.roomId,
+		kioskId: order.kioskId,
 		status: order.status ?? 'pending',
 		paymentId: order.paymentId.id,
 		paymentStatus: order.paymentId.paymentStatus,
@@ -210,6 +211,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		const newOrder = await OrderModel.create({
 			activityId,
 			roomId,
+			kioskId,
 			products: combinedProducts,
 			options: combinedOptions,
 			paymentId: payment.id,
