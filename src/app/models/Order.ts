@@ -7,9 +7,9 @@ import { type Document, model, Schema } from 'mongoose'
 import logger from '../utils/logger.js'
 import OptionModel, { type IOption } from './Option.js'
 import ProductModel, { type IProduct } from './Product.js'
-import ActivityModel from './Activity.js'
+import ActivityModel, { IActivity } from './Activity.js'
 import PaymentModel, { type IPayment } from './Payment.js'
-import RoomModel from './Room.js'
+import RoomModel, { IRoom } from './Room.js'
 
 // Environment variables
 
@@ -39,27 +39,25 @@ export interface IOrder extends Document {
 	updatedAt: Date
 }
 
-export interface IOrderPopulatedPaymentId extends IOrder {
+// Unified type for an order with populated fields
+export type IOrderPopulated = Omit<IOrder, 'paymentId' | 'products' | 'options'> & {
 	paymentId: IPayment
+	products: Array<{ id: IProduct & { name: string }; quantity: number }>
+	options?: Array<{ id: IOption & { name: string }; quantity: number }>
 }
 
-export interface IOrderWithNamesPopulatedPaymentId {
-	_id: Schema.Types.ObjectId
-	activityId: Schema.Types.ObjectId
-	roomId: Schema.Types.ObjectId
-	products: Array<{
-		id: { _id: IProduct['_id'], name: string }
-		quantity: number
-	}>
-	options?: Array<{
-		id: { _id: IOption['_id'], name: string }
-		quantity: number
-	}>
-	status?: 'pending' | 'confirmed' | 'delivered'
-	paymentId: IPayment
-	createdAt: Date
-	updatedAt: Date
-	toObject: any
+export interface IOrderFrontend {
+	_id: string
+	products: Array<{ _id: IProduct['_id'], name: string, quantity: number }>
+	options: Array<{ _id: IOption['_id'], name: string, quantity: number }>
+	activityId: IActivity['_id']
+	roomId: IRoom['_id']
+	status: 'pending' | 'confirmed' | 'delivered'
+	paymentId: string
+	paymentStatus: IPayment['paymentStatus']
+	checkoutMethod: 'sumUp' | 'later'
+	createdAt: string
+	updatedAt: string
 }
 
 // Sub-schema for products

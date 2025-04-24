@@ -8,8 +8,9 @@ import mongoose from 'mongoose'
 import logger from '../utils/logger.js'
 import PaymentModel from '../models/Payment.js'
 import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
-import OrderModel from '../models/Order.js'
+import OrderModel, { IOrderPopulated } from '../models/Order.js'
 import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
+import { transformOrder } from './orderController.js'
 
 // Environment variables
 
@@ -64,7 +65,27 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 		const order = await OrderModel.findOne({ paymentId: payment.id })
 		if (order !== null) {
 			await emitPaymentStatusUpdate(payment, order)
-			await emitPaidOrderPosted(order)
+			// Populate the necessary fields for transformation
+			await order.populate([
+				{
+					path: 'paymentId',
+					select: 'paymentStatus clientTransactionId'
+				},
+				{
+					path: 'products.id',
+					select: 'name'
+				},
+				{
+					path: 'options.id',
+					select: 'name'
+				}
+			])
+			
+			// Cast to the populated type
+			const populatedOrder = order as unknown as IOrderPopulated
+			
+			const transformedOrder = transformOrder(populatedOrder)
+			await emitPaidOrderPosted(transformedOrder)
 		} else {
 			logger.warn(`No orders found for paymentId ${payment.id}`)
 		}
