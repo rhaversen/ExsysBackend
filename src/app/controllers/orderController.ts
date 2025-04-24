@@ -5,12 +5,12 @@ import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
 // Own modules
-import OrderModel, { type IOrderPopulatedPaymentId, type IOrderWithNamesPopulatedPaymentId } from '../models/Order.js'
+import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Order.js'
 import logger from '../utils/logger.js'
 import KioskModel from '../models/Kiosk.js'
 import { createReaderCheckout } from '../services/apiServices.js'
 import ReaderModel from '../models/Reader.js'
-import PaymentModel from '../models/Payment.js'
+import PaymentModel, { IPayment } from '../models/Payment.js'
 import ProductModel from '../models/Product.js'
 import OptionModel from '../models/Option.js'
 import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
@@ -24,6 +24,30 @@ import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
 interface OrderItem {
 	id: string
 	quantity: number
+}
+
+export function transformOrder(order: IOrderPopulated): IOrderFrontend {
+	const products = order.products
+		.filter(item => item.id != null)
+		.map(item => ({ _id: item.id._id, name: item.id.name, quantity: item.quantity }))
+
+	const options = (order.options ?? [])
+		.filter(item => item.id != null)
+		.map(item => ({ _id: item.id._id, name: item.id.name, quantity: item.quantity }))
+
+	return {
+		_id: order._id.toString(),
+		products,
+		options,
+		activityId: order.activityId,
+		roomId: order.roomId,
+		status: order.status ?? 'pending',
+		paymentId: order.paymentId.id,
+		paymentStatus: order.paymentId.paymentStatus,
+		checkoutMethod: order.paymentId.clientTransactionId == null ? 'later' : 'sumUp',
+		createdAt: order.createdAt.toISOString(),
+		updatedAt: order.updatedAt.toISOString()
+	}
 }
 
 export function combineItemsById (items: OrderItem[]): OrderItem[] {
@@ -65,7 +89,7 @@ export function isOrderItemList (items: any[]): items is OrderItem[] {
 	})
 }
 
-async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<string | undefined> {
+async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<IPayment | undefined> {
 	// Find the reader associated with the kiosk
 	const kiosk = await KioskModel.findById(kioskId)
 	const reader = await ReaderModel.findById(kiosk?.readerId)
@@ -88,14 +112,14 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 		clientTransactionId,
 		status: 'pending'
 	})
-	return newPayment.id
+	return newPayment
 }
 
-async function createLaterCheckout (): Promise<string> {
+async function createLaterCheckout (): Promise<IPayment> {
 	const newPayment = await PaymentModel.create({
 		paymentStatus: 'successful'
 	})
-	return newPayment.id
+	return newPayment
 }
 
 export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -158,19 +182,19 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		// Count the subtotal of the order
 		const subtotal = await countSubtotalOfOrder(combinedProducts, combinedOptions)
 
-		let paymentId: string | undefined
+		let payment: IPayment | undefined
 
 		switch (checkoutMethod) {
 			case 'sumUp':
-				paymentId = await createSumUpCheckout(kioskId, subtotal)
-				if (paymentId === null || paymentId === undefined) {
+				payment = await createSumUpCheckout(kioskId, subtotal)
+				if (payment === null || payment === undefined) {
 					res.status(500).json({ error: 'Kunne ikke oprette checkout' })
 					return
 				}
 				break
 
 			case 'later':
-				paymentId = await createLaterCheckout()
+				payment = await createLaterCheckout()
 				break
 
 			case 'mobilePay':
@@ -188,15 +212,32 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 			roomId,
 			products: combinedProducts,
 			options: combinedOptions,
-			paymentId
+			paymentId: payment.id,
 		})
 
-		// Respond with the new order
-		res.status(201).json(newOrder)
+		// Populate the necessary fields for transformation
+		await newOrder.populate([
+			{
+				path: 'paymentId',
+				select: 'paymentStatus clientTransactionId'
+			},
+			{
+				path: 'products.id',
+				select: 'name'
+			},
+			{
+				path: 'options.id',
+				select: 'name'
+			}
+		])
 
-		// Emit the order if it is paid
+		// Cast to the populated type
+		const populatedOrder = newOrder as unknown as IOrderPopulated
+		// Transform and respond
+		const transformedOrder = transformOrder(populatedOrder)
+		res.status(201).json(transformedOrder)
 		if (checkoutMethod === 'later') {
-			await emitPaidOrderPosted(newOrder)
+			await emitPaidOrderPosted(transformedOrder)
 		}
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -213,7 +254,7 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 	const orderId = req.params.id
 
 	try {
-		const order = await OrderModel.findById(orderId).populate('paymentId') as IOrderPopulatedPaymentId | null
+		const order = await OrderModel.findById(orderId).populate('paymentId') as IOrderPopulated | null
 		if (order === null) {
 			res.status(404).json({ error: 'Ordre ikke fundet' })
 			return
@@ -286,34 +327,13 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 				path: 'options.id',
 				select: 'name'
 			})
-			.exec()) as unknown as IOrderWithNamesPopulatedPaymentId[] | null
+			.exec()) as unknown as IOrderPopulated[] | null
 
-		const transformedOrders = orders?.filter(order =>
-			// Filter out orders with paymentStatus that is not in the query
+		// Filter and transform orders
+		const filteredOrders = orders?.filter(order =>
 			paymentStatus === undefined || (order.paymentId?.paymentStatus !== null && paymentStatus.split(',').includes(order.paymentId.paymentStatus))
-		).map(order => {
-			// Transform the products to only include the id, name, and quantity, and filter out products without an id
-			const transformedProducts = order.products.filter(product => product.id != null).map(product => ({
-				_id: product.id._id,
-				name: product.id.name,
-				quantity: product.quantity
-			}))
-
-			// Optionally transform the options to only include the id, name, and quantity, and filter out options without an id
-			const transformedOptions = order.options?.filter(option => option.id != null).map(option => ({
-				_id: option.id._id,
-				name: option.id.name,
-				quantity: option.quantity
-			}))
-
-			// Return the order with the transformed products and options, and without the paymentId
-			return {
-				...order.toObject(),
-				products: transformedProducts,
-				options: transformedOptions,
-				paymentId: undefined
-			}
-		})
+		)
+		const transformedOrders = filteredOrders?.map(order => transformOrder(order))
 
 		res.status(200).json(transformedOrders)
 	} catch (error) {
