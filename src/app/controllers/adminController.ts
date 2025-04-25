@@ -70,6 +70,32 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 	}
 }
 
+export async function getMe (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.silly('Getting me admin')
+
+	try {
+		const admin = req.user as IAdmin | undefined
+
+		if (admin === null || admin === undefined) {
+			res.status(404).json({ error: 'Admin ikke fundet' })
+			return
+		}
+		const transformedAdmin = {
+			_id: admin.id,
+			name: admin.name,
+			createdAt: admin.createdAt,
+			updatedAt: admin.updatedAt
+		}
+		res.status(200).json(transformedAdmin)
+	} catch (error) {
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
 export async function patchAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching admin')
 

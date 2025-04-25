@@ -18,6 +18,7 @@ import OrderModel from '../../../app/models/Order.js'
 import PaymentModel from '../../../app/models/Payment.js'
 import ActivityModel from '../../../app/models/Activity.js'
 import RoomModel from '../../../app/models/Room.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 
 // Setup test environment
 import '../../testSetup.js'
@@ -841,6 +842,7 @@ describe('Product Model', function () {
 		let paymentId: Types.ObjectId
 		let activityId: Types.ObjectId
 		let roomId: Types.ObjectId
+		let kioskId: Types.ObjectId
 
 		beforeEach(async function () {
 			const payment = await PaymentModel.create({})
@@ -849,9 +851,14 @@ describe('Product Model', function () {
 				name: 'Test Activity',
 				roomId: room.id 
 			})
+			const kiosk = await KioskModel.create({
+				name: 'Test Kiosk',
+				password: 'Test Password'
+			})
 			paymentId = payment.id
 			activityId = activity.id
 			roomId = room.id
+			kioskId = kiosk.id
 		})
 
 		describe('Pre-delete middleware', function () {
@@ -867,6 +874,7 @@ describe('Product Model', function () {
 						id: product2.id,
 						quantity: 1
 					}],
+					kioskId,
 					paymentId,
 					activityId,
 					roomId
@@ -887,6 +895,7 @@ describe('Product Model', function () {
 						id: product1.id,
 						quantity: 1
 					}],
+					kioskId,
 					paymentId,
 					activityId,
 					roomId
@@ -917,6 +926,7 @@ describe('Product Model', function () {
 						id: product3.id,
 						quantity: 1
 					}],
+					kioskId,
 					paymentId,
 					activityId,
 					roomId
@@ -941,6 +951,7 @@ describe('Product Model', function () {
 						id: product2.id,
 						quantity: 1
 					}],
+					kioskId,
 					paymentId,
 					activityId,
 					roomId
