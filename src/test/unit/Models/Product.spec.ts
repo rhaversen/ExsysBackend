@@ -951,6 +951,7 @@ describe('Product Model', function () {
 						id: product2.id,
 						quantity: 1
 					}],
+					kioskId,
 					paymentId,
 					activityId,
 					roomId
