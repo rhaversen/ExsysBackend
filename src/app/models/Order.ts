@@ -10,6 +10,7 @@ import ProductModel, { type IProduct } from './Product.js'
 import ActivityModel, { IActivity } from './Activity.js'
 import PaymentModel, { type IPayment } from './Payment.js'
 import RoomModel, { IRoom } from './Room.js'
+import KioskModel, { IKiosk } from './Kiosk.js'
 
 // Environment variables
 
@@ -23,6 +24,7 @@ export interface IOrder extends Document {
 	_id: Schema.Types.ObjectId
 	activityId: Schema.Types.ObjectId // The activity the order is for
 	roomId: Schema.Types.ObjectId // The room the order is for
+	kioskId: Schema.Types.ObjectId // The kiosk the order is for
 	products: Array<{
 		id: Schema.Types.ObjectId
 		quantity: number
@@ -41,7 +43,7 @@ export interface IOrder extends Document {
 
 // Unified type for an order with populated fields
 export type IOrderPopulated = Omit<IOrder, 'paymentId' | 'products' | 'options'> & {
-	paymentId: IPayment
+	paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | '_id' | 'id'>
 	products: Array<{ id: IProduct & { name: string }; quantity: number }>
 	options?: Array<{ id: IOption & { name: string }; quantity: number }>
 }
@@ -52,6 +54,7 @@ export interface IOrderFrontend {
 	options: Array<{ _id: IOption['_id'], name: string, quantity: number }>
 	activityId: IActivity['_id']
 	roomId: IRoom['_id']
+	kioskId: IKiosk['_id']
 	status: 'pending' | 'confirmed' | 'delivered'
 	paymentId: string
 	paymentStatus: IPayment['paymentStatus']
@@ -100,6 +103,11 @@ const orderSchema = new Schema({
 		required: [true, 'Rum er påkrævet'],
 		ref: 'Room'
 	},
+	kioskId: {
+		type: Schema.Types.ObjectId,
+		required: [true, 'Kiosk er påkrævet'],
+		ref: 'Kiosk'
+	},
 	products: {
 		_id: false,
 		type: [productsSubSchema],
@@ -136,6 +144,11 @@ orderSchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
 	const room = await RoomModel.findById(v)
 	return room !== null && room !== undefined
 }, 'Rummet eksisterer ikke')
+
+orderSchema.path('kioskId').validate(async function (v: Schema.Types.ObjectId) {
+	const kiosk = await KioskModel.findById(v)
+	return kiosk !== null && kiosk !== undefined
+}, 'Kiosken eksisterer ikke')
 
 orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.id))
