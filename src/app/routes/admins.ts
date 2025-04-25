@@ -12,7 +12,8 @@ import {
 	createAdmin,
 	deleteAdmin,
 	getAdmins,
-	patchAdmin
+	patchAdmin,
+	getMe
 } from '../controllers/adminController.js'
 
 // Environment variables
@@ -48,6 +49,19 @@ router.post('/',
 router.get('/',
 	isAdmin,
 	asyncErrorHandler(getAdmins)
+)
+
+/**
+ * @route GET /api/v1/admins/me
+ * @description Get the currently logged-in admin.
+ * @access Private
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The admin.
+ */
+router.get('/me',
+	isAdmin,
+	asyncErrorHandler(getMe)
 )
 
 /**
