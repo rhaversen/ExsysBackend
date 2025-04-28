@@ -201,6 +201,76 @@ describe('Configs routes', function () {
 			expect(response.body).to.not.have.property('invalidField')
 		})
 
+		it('should not allow duplicate disabled weekdays', async function () {
+			const invalidConfigs = {
+				disabledWeekdays: [0, 1, 1] // Duplicate weekday (1=Tuesday)
+			}
+
+			const response = await agent
+				.patch('/api/v1/configs')
+				.send(invalidConfigs)
+				.set('Cookie', adminSessionCookie)
+
+			expect(response).to.have.status(400)
+			expect(response.body).to.have.property('error')
+		})
+
+		it('should allow empty disabled weekdays', async function () {
+			const validConfigs = {
+				disabledWeekdays: [] // No weekdays disabled
+			}
+
+			const response = await agent
+				.patch('/api/v1/configs')
+				.send(validConfigs)
+				.set('Cookie', adminSessionCookie)
+
+			expect(response).to.have.status(200)
+			expect(response.body.configs.disabledWeekdays).to.be.an('array').that.is.empty
+		})
+
+		it('should allow valid disabled weekdays', async function () {
+			const validConfigs = {
+				disabledWeekdays: [0, 1, 2] // Monday, Tuesday, Wednesday
+			}
+
+			const response = await agent
+				.patch('/api/v1/configs')
+				.send(validConfigs)
+				.set('Cookie', adminSessionCookie)
+
+			expect(response).to.have.status(200)
+			expect(response.body.configs.disabledWeekdays).to.deep.equal(validConfigs.disabledWeekdays)
+		})
+
+		it('should not allow disabled weekdays outside the range 0-6', async function () {
+			const invalidConfigs = {
+				disabledWeekdays: [0, 1, 7] // 7 is out of range
+			}
+
+			const response = await agent
+				.patch('/api/v1/configs')
+				.send(invalidConfigs)
+				.set('Cookie', adminSessionCookie)
+
+			expect(response).to.have.status(400)
+			expect(response.body).to.have.property('error')
+		})
+
+		it('should not allow disabled weekdays with more than 7 entries', async function () {
+			const invalidConfigs = {
+				disabledWeekdays: [0, 1, 2, 3, 4, 5, 6, 7] // More than 7 entries
+			}
+
+			const response = await agent
+				.patch('/api/v1/configs')
+				.send(invalidConfigs)
+				.set('Cookie', adminSessionCookie)
+
+			expect(response).to.have.status(400)
+			expect(response.body).to.have.property('error')
+		})
+
 		it('should preserve other fields when updating partially', async function () {
 			// First set all fields
 			const initialUpdate = {
