@@ -40,6 +40,7 @@ router.get('/',
  * @param {string} [req.body.kioskInactivityTimeoutMs] - The inactivity timeout of the kiosk (optional).
  * @param {string} [req.body.kioskInactivityTimeoutWarningMs] - The inactivity timeout warning of the kiosk (optional).
  * @param {string} [req.body.kioskOrderConfirmationTimeoutMs] - The order confirmation timeout of the kiosk (optional).
+ * @param {number[]} [req.body.disabledWeekdays] - The disabled weekdays of the kiosk, 0=Monday, 6=Sunday (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated configs.
  */
