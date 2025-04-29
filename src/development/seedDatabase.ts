@@ -898,13 +898,13 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-// New kiosks with different closedUntil/manualClosed combinations
-const kioskManualClosed = await KioskModel.create({
-	name: 'Kiosk manualClosed',
+// New kiosks with different deactivatedUntil/deactivated combinations
+const kioskdeactivated = await KioskModel.create({
+	name: 'Kiosk deactivated',
 	kioskTag: '77777',
 	password: 'password',
-	manualClosed: true,
-	closedUntil: null
+	deactivated: true,
+	deactivatedUntil: null
 })
 await SessionModel.create({
 	_id: randomUUID(),
@@ -916,7 +916,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskManualClosed.id },
+		passport: { user: kioskdeactivated.id },
 		ipAddress: '192.168.1.16',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -926,12 +926,12 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-const kioskClosedUntil = await KioskModel.create({
-	name: 'Kiosk closedUntil',
+const kioskdeactivatedUntil = await KioskModel.create({
+	name: 'Kiosk deactivatedUntil',
 	kioskTag: '88888',
 	password: 'password',
-	manualClosed: false,
-	closedUntil: new Date(Date.now() + 3600000*2)
+	deactivated: false,
+	deactivatedUntil: new Date(Date.now() + 3600000*2)
 })
 await SessionModel.create({
 	_id: randomUUID(),
@@ -943,7 +943,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskClosedUntil.id },
+		passport: { user: kioskdeactivatedUntil.id },
 		ipAddress: '192.168.1.17',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -953,12 +953,12 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-const kioskManualClosedAndClosedUntil = await KioskModel.create({
-	name: 'Kiosk manualClosed and closedUntil',
+const kioskdeactivatedAnddeactivatedUntil = await KioskModel.create({
+	name: 'Kiosk deactivated and deactivatedUntil',
 	kioskTag: '99999',
 	password: 'password',
-	manualClosed: true,
-	closedUntil: new Date(Date.now() + 3600000*3)
+	deactivated: true,
+	deactivatedUntil: new Date(Date.now() + 3600000*3)
 })
 await SessionModel.create({
 	_id: randomUUID(),
@@ -970,7 +970,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskManualClosedAndClosedUntil.id },
+		passport: { user: kioskdeactivatedAnddeactivatedUntil.id },
 		ipAddress: '192.168.1.18',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
