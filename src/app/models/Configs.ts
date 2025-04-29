@@ -18,6 +18,7 @@ export interface IConfigs extends Document {
 	kioskInactivityTimeoutMs: number
 	kioskInactivityTimeoutWarningMs: number
 	kioskOrderConfirmationTimeoutMs: number
+	disabledWeekdays: number[] // 0=Monday, 6=Sunday
 
 	// Timestamps
 	createdAt: Date
@@ -30,6 +31,7 @@ export interface IConfigsFrontend {
 		kioskInactivityTimeoutMs: number
 		kioskInactivityTimeoutWarningMs: number
 		kioskOrderConfirmationTimeoutMs: number
+		disabledWeekdays: number[] // 0=Monday, 6=Sunday
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -51,6 +53,22 @@ const configsSchema = new Schema<IConfigs>({
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
 		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund'],
+	},
+	disabledWeekdays: {
+		type: [Schema.Types.Number],
+		default: [], // No days disabled by default
+		validate: [{
+			validator: (arr: number[]) => arr.every(n => n >= 0 && n <= 6),
+			message: 'Deaktiverede ugedage skal være mellem 0 og 6 (0=Mandag, 6=Søndag)'
+		},
+		{
+			validator: (arr: number[]) => arr.length <= 7,
+			message: 'Der kan ikke være mere end 7 deaktiverede ugedage'
+		},
+		{
+			validator: (arr: number[]) => new Set(arr).size === arr.length,
+			message: 'Deaktiverede ugedage skal være unikke'
+		}]
 	}
 }, {
 	timestamps: true

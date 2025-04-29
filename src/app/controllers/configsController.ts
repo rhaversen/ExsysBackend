@@ -35,7 +35,8 @@ export async function getConfigs(req: Request, res: Response, next: NextFunction
 			configs: {
 				kioskInactivityTimeoutMs: configs.kioskInactivityTimeoutMs,
 				kioskInactivityTimeoutWarningMs: configs.kioskInactivityTimeoutWarningMs,
-				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs
+				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs,
+				disabledWeekdays: configs.disabledWeekdays
 			},
 			createdAt: configs.createdAt,
 			updatedAt: configs.updatedAt
@@ -64,6 +65,7 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 		if (req.body.kioskInactivityTimeoutMs !== undefined) configs.kioskInactivityTimeoutMs = req.body.kioskInactivityTimeoutMs
 		if (req.body.kioskInactivityTimeoutWarningMs !== undefined) configs.kioskInactivityTimeoutWarningMs = req.body.kioskInactivityTimeoutWarningMs
 		if (req.body.kioskOrderConfirmationTimeoutMs !== undefined) configs.kioskOrderConfirmationTimeoutMs = req.body.kioskOrderConfirmationTimeoutMs
+		if (req.body.disabledWeekdays !== undefined) configs.disabledWeekdays = req.body.disabledWeekdays
 
 		// Validate and save the updated document
 		await configs.validate()
@@ -76,7 +78,8 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 			configs: {
 				kioskInactivityTimeoutMs: savedConfigs.kioskInactivityTimeoutMs,
 				kioskInactivityTimeoutWarningMs: savedConfigs.kioskInactivityTimeoutWarningMs,
-				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs
+				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs,
+				disabledWeekdays: savedConfigs.disabledWeekdays
 			},
 			createdAt: savedConfigs.createdAt,
 			updatedAt: savedConfigs.updatedAt
