@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import ConfigsModel from '../models/Configs.js'
+import ConfigsModel, { type IConfigs } from '../models/Configs.js'
 import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 // Environment variables
@@ -15,7 +15,7 @@ import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 // Destructuring and global variables
 
-async function getOrCreateConfigs() {
+export async function getOrCreateConfigs(): Promise<IConfigs> {
 	const configs = await ConfigsModel.findOne()
 	if (configs === null || configs === undefined) {
 		const newConfigs = await ConfigsModel.create({})
@@ -36,7 +36,8 @@ export async function getConfigs(req: Request, res: Response, next: NextFunction
 				kioskInactivityTimeoutMs: configs.kioskInactivityTimeoutMs,
 				kioskInactivityTimeoutWarningMs: configs.kioskInactivityTimeoutWarningMs,
 				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs,
-				disabledWeekdays: configs.disabledWeekdays
+				disabledWeekdays: configs.disabledWeekdays,
+				kioskPassword: configs.kioskPassword
 			},
 			createdAt: configs.createdAt,
 			updatedAt: configs.updatedAt
@@ -66,6 +67,7 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 		if (req.body.kioskInactivityTimeoutWarningMs !== undefined) configs.kioskInactivityTimeoutWarningMs = req.body.kioskInactivityTimeoutWarningMs
 		if (req.body.kioskOrderConfirmationTimeoutMs !== undefined) configs.kioskOrderConfirmationTimeoutMs = req.body.kioskOrderConfirmationTimeoutMs
 		if (req.body.disabledWeekdays !== undefined) configs.disabledWeekdays = req.body.disabledWeekdays
+		if (req.body.kioskPassword !== undefined) configs.kioskPassword = req.body.kioskPassword
 
 		// Validate and save the updated document
 		await configs.validate()
@@ -79,7 +81,8 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 				kioskInactivityTimeoutMs: savedConfigs.kioskInactivityTimeoutMs,
 				kioskInactivityTimeoutWarningMs: savedConfigs.kioskInactivityTimeoutWarningMs,
 				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs,
-				disabledWeekdays: savedConfigs.disabledWeekdays
+				disabledWeekdays: savedConfigs.disabledWeekdays,
+				kioskPassword: savedConfigs.kioskPassword
 			},
 			createdAt: savedConfigs.createdAt,
 			updatedAt: savedConfigs.updatedAt

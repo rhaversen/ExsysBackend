@@ -3,20 +3,15 @@
 // Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
-import { compare, hash } from 'bcrypt'
 
 // Own modules
 import logger from '../utils/logger.js'
-import config from '../utils/setupConfig.js'
 import ReaderModel from './Reader.js'
 import ActivityModel from './Activity.js'
 
 // Environment variables
 
 // Config variables
-const {
-	bcryptSaltRounds
-} = config
 
 // Destructuring and global variables
 const nanoidAlphabet = '123465789'
@@ -29,7 +24,6 @@ export interface IKiosk extends Document {
 	_id: Schema.Types.ObjectId
 	name: string // Name of the kiosk
 	kioskTag: string // Unique identifier generated with nanoid
-	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] | [] // Promoted activities for this kiosk
 	disabledActivities: Schema.Types.ObjectId[] | [] // Activities that are disabled for this kiosk
 	readerId: Schema.Types.ObjectId | undefined // The pay station the kiosk is connected to
@@ -41,7 +35,6 @@ export interface IKiosk extends Document {
 	updatedAt: Date
 
 	// Methods
-	comparePassword: (password: string) => Promise<boolean>
 	generateNewKioskTag: () => Promise<string>
 }
 
@@ -70,13 +63,6 @@ const kioskSchema = new Schema<IKiosk>({
 		type: Schema.Types.String,
 		unique: true,
 		trim: true
-	},
-	password: {
-		type: Schema.Types.String,
-		required: true,
-		trim: true,
-		minlength: [4, 'Password skal være mindst 4 tegn'],
-		maxlength: [100, 'Password kan højest være 100 tegn']
 	},
 	readerId: {
 		type: Schema.Types.ObjectId,
@@ -163,10 +149,6 @@ kioskSchema.pre('save', async function (next) {
 		// Set default value to accessToken
 		this.kioskTag = await generateUniqueKioskTag()
 	}
-	// Password hashing
-	if (this.isModified('password')) {
-		this.password = await hash(this.password, bcryptSaltRounds) // Using a random salt for each user
-	}
 	next()
 })
 
@@ -176,12 +158,6 @@ kioskSchema.methods.generateNewKioskTag = async function (this: IKiosk) {
 	this.kioskTag = await generateUniqueKioskTag()
 	await this.save()
 	return this.kioskTag
-}
-
-kioskSchema.methods.comparePassword = async function (this: IKiosk, password: string): Promise<boolean> {
-	logger.silly('Comparing password')
-	const isPasswordCorrect = await compare(password, this.password)
-	return isPasswordCorrect
 }
 
 async function generateUniqueKioskTag (): Promise<string> {

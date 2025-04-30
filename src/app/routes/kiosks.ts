@@ -33,7 +33,6 @@ const router = Router()
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {string} req.body.password - The password of the kiosk.
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
@@ -95,7 +94,6 @@ router.get('/',
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {string} [req.body.password] - The password of the kiosk (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).

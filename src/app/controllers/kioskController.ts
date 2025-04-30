@@ -23,7 +23,6 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		readerId: req.body.readerId,
-		password: req.body.password,
 		activities: req.body.activities,
 		disabledActivities: req.body.disabledActivities,
 		deactivated: req.body.deactivated,
@@ -137,7 +136,6 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		if (req.body.name !== undefined) kiosk.name = req.body.name
 		if (req.body.kioskTag !== undefined) kiosk.kioskTag = req.body.kioskTag
 		if (req.body.readerId !== undefined) kiosk.readerId = req.body.readerId
-		if (req.body.password !== undefined) kiosk.password = req.body.password
 		if (req.body.activities !== undefined) kiosk.activities = req.body.activities
 		if (req.body.disabledActivities !== undefined) kiosk.disabledActivities = req.body.disabledActivities
 		if (req.body.deactivatedUntil !== undefined) kiosk.deactivatedUntil = req.body.deactivatedUntil

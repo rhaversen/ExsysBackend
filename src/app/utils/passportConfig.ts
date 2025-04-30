@@ -7,6 +7,7 @@ import { type PassportStatic } from 'passport'
 // Own modules
 import AdminModel, { type IAdmin } from '../models/Admin.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
+import { getOrCreateConfigs } from '../controllers/configsController.js'
 
 // Environment variables
 
@@ -54,7 +55,11 @@ const configurePassport = (passport: PassportStatic): void => {
 					return
 				}
 
-				const isMatch = await kiosk.comparePassword(password)
+				// Fetch the unified kiosk password from Configs
+				const configs = await getOrCreateConfigs()
+
+				// Compare the provided password directly (unhashed)
+				const isMatch = password === configs.kioskPassword
 				if (!isMatch) {
 					done(null, false, { message: 'Ugyldigt kodeord' })
 					return

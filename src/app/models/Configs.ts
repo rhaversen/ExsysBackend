@@ -19,6 +19,7 @@ export interface IConfigs extends Document {
 	kioskInactivityTimeoutWarningMs: number
 	kioskOrderConfirmationTimeoutMs: number
 	disabledWeekdays: number[] // 0=Monday, 6=Sunday
+	kioskPassword: string
 
 	// Timestamps
 	createdAt: Date
@@ -32,6 +33,7 @@ export interface IConfigsFrontend {
 		kioskInactivityTimeoutWarningMs: number
 		kioskOrderConfirmationTimeoutMs: number
 		disabledWeekdays: number[] // 0=Monday, 6=Sunday
+		kioskPassword: string
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -69,6 +71,13 @@ const configsSchema = new Schema<IConfigs>({
 			validator: (arr: number[]) => new Set(arr).size === arr.length,
 			message: 'Deaktiverede ugedage skal være unikke'
 		}]
+	},
+	kioskPassword: {
+		type: Schema.Types.String,
+		trim: true,
+		default: 'Password',
+		minlength: [4, 'Adgangskode skal være mindst 4 tegn'],
+		maxlength: [100, 'Adgangskode kan højest være 100 tegn']
 	}
 }, {
 	timestamps: true
