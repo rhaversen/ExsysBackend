@@ -15,6 +15,7 @@ import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import config from '../../../app/utils/setupConfig.js'
 import ReaderModel from '../../../app/models/Reader.js'
+import { getOrCreateConfigs } from '../../../app/controllers/configsController.js' // Added import
 
 // Config
 const {
@@ -265,6 +266,10 @@ describe('Auth routes', function () {
 				readerId: testReader.id
 			})
 			await testKiosk.save()
+			// Set the global kiosk password for the test
+			const configs = await getOrCreateConfigs()
+			configs.kioskPassword = testKioskFields.password
+			await configs.save()
 		})
 
 		it('should have status 200 with valid credentials', async function () {
@@ -504,6 +509,10 @@ describe('Auth routes', function () {
 					readerId: testReader.id
 				})
 				await testKiosk.save()
+				// Set the global kiosk password for the test
+				const configs = await getOrCreateConfigs()
+				configs.kioskPassword = testKioskFields.password
+				await configs.save()
 			})
 
 			it('should have status 200', async function () {
@@ -633,6 +642,10 @@ describe('Auth routes', function () {
 					readerId: testReader.id
 				})
 				await testKiosk.save()
+				// Set the global kiosk password for the test
+				const configs = await getOrCreateConfigs()
+				configs.kioskPassword = testKioskFields.password
+				await configs.save()
 			})
 
 			it('should return 200 with a valid session', async function () {
@@ -847,6 +860,10 @@ describe('Auth routes', function () {
 					readerId: testReader.id
 				})
 				await testKiosk.save()
+				// Set the global kiosk password for the test
+				const configs = await getOrCreateConfigs()
+				configs.kioskPassword = testKioskFields.password
+				await configs.save()
 			})
 
 			it('should return 403 with a valid session', async function () {
@@ -979,6 +996,10 @@ describe('Auth routes', function () {
 					readerId: testReader.id
 				})
 				await testKiosk.save()
+				// Set the global kiosk password for the test
+				const configs = await getOrCreateConfigs()
+				configs.kioskPassword = testKioskFields.password
+				await configs.save()
 			})
 
 			it('should return 200 with a valid session', async function () {

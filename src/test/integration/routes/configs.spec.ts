@@ -14,6 +14,7 @@ import AdminModel from '../../../app/models/Admin.js'
 import KioskModel from '../../../app/models/Kiosk.js'
 import ConfigsModel from '../../../app/models/Configs.js'
 import ReaderModel from '../../../app/models/Reader.js'
+import { getOrCreateConfigs } from '../../../app/controllers/configsController.js' // Added import
 
 describe('Configs routes', function () {
 	let adminSessionCookie: string
@@ -27,9 +28,11 @@ describe('Configs routes', function () {
 		}
 		await AdminModel.create(adminFields)
 		const adminResponse = await agent.post('/api/v1/auth/login-admin-local').send(adminFields)
-		adminSessionCookie = adminResponse.headers['set-cookie']
+		// Extract the connect.sid cookie correctly
+		const adminCookies = adminResponse.headers['set-cookie'] as string[]
+		adminSessionCookie = adminCookies.find(cookie => cookie.startsWith('connect.sid=')) ?? ''
 
-		// Create and log in as kiosk
+		// Create Kiosk
 		const testReader = await ReaderModel.create({
 			apiReferenceId: 'test',
 			readerTag: '12345'
@@ -41,11 +44,20 @@ describe('Configs routes', function () {
 			readerId: testReader.id
 		}
 		await KioskModel.create(kioskFields)
+
+		// Set the global kiosk password *before* kiosk login
+		const configs = await getOrCreateConfigs()
+		configs.kioskPassword = kioskFields.password
+		await configs.save()
+
+		// Log in as kiosk
 		const kioskResponse = await agent.post('/api/v1/auth/login-kiosk-local').send({
 			kioskTag: kioskFields.kioskTag,
 			password: kioskFields.password
 		})
-		kioskSessionCookie = kioskResponse.headers['set-cookie']
+		// Extract the connect.sid cookie correctly
+		const kioskCookies = kioskResponse.headers['set-cookie'] as string[]
+		kioskSessionCookie = kioskCookies.find(cookie => cookie.startsWith('connect.sid=')) ?? ''
 	})
 
 	describe('GET /v1/configs', function () {
@@ -78,8 +90,13 @@ describe('Configs routes', function () {
 				kioskInactivityTimeoutWarningMs: 5000,
 				kioskOrderConfirmationTimeoutMs: 15000
 			}
-			await ConfigsModel.create(testConfigs)
+			// Use PATCH to update the singleton config document
+			await agent
+				.patch('/api/v1/configs')
+				.send(testConfigs)
+				.set('Cookie', adminSessionCookie)
 
+			// Use GET to fetch the updated configs
 			const response = await agent.get('/api/v1/configs').set('Cookie', adminSessionCookie)
 
 			expect(response.body.configs).to.have.property('kioskInactivityTimeoutMs', testConfigs.kioskInactivityTimeoutMs)
