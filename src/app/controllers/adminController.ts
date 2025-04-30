@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import AdminModel, { type IAdmin } from '../models/Admin.js'
+import AdminModel, { type IAdmin, type IAdminFrontend } from '../models/Admin.js'
 import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSockets/adminHandlers.js'
 
 // Environment variables
@@ -14,6 +14,17 @@ import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSock
 // Config variables
 
 // Destructuring and global variables
+
+export function transformAdmin (
+	adminDoc: IAdmin
+): IAdminFrontend {
+	return {
+		_id: adminDoc.id,
+		name: adminDoc.name,
+		createdAt: adminDoc.createdAt,
+		updatedAt: adminDoc.updatedAt
+	}
+}
 
 export async function createAdmin (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating admin')
@@ -30,12 +41,7 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 			password,
 			name
 		})
-		const transformedAdmin = {
-			_id: newAdmin.id,
-			name: newAdmin.name,
-			createdAt: newAdmin.createdAt,
-			updatedAt: newAdmin.updatedAt
-		}
+		const transformedAdmin = transformAdmin(newAdmin)
 		res.status(201).json(transformedAdmin)
 
 		emitAdminCreated(transformedAdmin)
@@ -54,12 +60,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 	try {
 		const admins = await AdminModel.find({})
 		res.status(200).json(
-			admins.map(admin => ({
-				_id: admin.id,
-				name: admin.name,
-				createdAt: admin.createdAt,
-				updatedAt: admin.updatedAt
-			}))
+			admins.map((adminDoc) => transformAdmin(adminDoc))
 		)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -80,12 +81,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 			res.status(404).json({ error: 'Admin ikke fundet' })
 			return
 		}
-		const transformedAdmin = {
-			_id: admin.id,
-			name: admin.name,
-			createdAt: admin.createdAt,
-			updatedAt: admin.updatedAt
-		}
+		const transformedAdmin = transformAdmin(admin)
 		res.status(200).json(transformedAdmin)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -121,12 +117,7 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 
 		await session.commitTransaction()
 
-		const transformedAdmin = {
-			_id: admin.id,
-			name: admin.name,
-			createdAt: admin.createdAt,
-			updatedAt: admin.updatedAt
-		}
+		const transformedAdmin = transformAdmin(admin)
 		res.status(200).json(transformedAdmin)
 
 		emitAdminUpdated(transformedAdmin)

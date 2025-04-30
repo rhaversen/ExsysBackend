@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import ConfigsModel, { type IConfigs } from '../models/Configs.js'
+import ConfigsModel, { type IConfigs, type IConfigsFrontend } from '../models/Configs.js'
 import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 // Environment variables
@@ -14,6 +14,23 @@ import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 // Config variables
 
 // Destructuring and global variables
+
+export function transformConfigs(
+	configsDoc: IConfigs
+): IConfigsFrontend {
+	return {
+		_id: configsDoc.id,
+		configs: {
+			kioskInactivityTimeoutMs: configsDoc.kioskInactivityTimeoutMs,
+			kioskInactivityTimeoutWarningMs: configsDoc.kioskInactivityTimeoutWarningMs,
+			kioskOrderConfirmationTimeoutMs: configsDoc.kioskOrderConfirmationTimeoutMs,
+			disabledWeekdays: configsDoc.disabledWeekdays,
+			kioskPassword: configsDoc.kioskPassword
+		},
+		createdAt: configsDoc.createdAt,
+		updatedAt: configsDoc.updatedAt
+	}
+}
 
 export async function getOrCreateConfigs(): Promise<IConfigs> {
 	const configs = await ConfigsModel.findOne()
@@ -30,18 +47,7 @@ export async function getConfigs(req: Request, res: Response, next: NextFunction
 	try {
 		const configs = await getOrCreateConfigs()
 
-		const transformedConfigs = {
-			_id: configs.id,
-			configs: {
-				kioskInactivityTimeoutMs: configs.kioskInactivityTimeoutMs,
-				kioskInactivityTimeoutWarningMs: configs.kioskInactivityTimeoutWarningMs,
-				kioskOrderConfirmationTimeoutMs: configs.kioskOrderConfirmationTimeoutMs,
-				disabledWeekdays: configs.disabledWeekdays,
-				kioskPassword: configs.kioskPassword
-			},
-			createdAt: configs.createdAt,
-			updatedAt: configs.updatedAt
-		}
+		const transformedConfigs = transformConfigs(configs)
 
 		res.status(200).json(transformedConfigs)
 	} catch (error) {
@@ -75,18 +81,7 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 
-		const transformedConfigs = {
-			_id: savedConfigs.id,
-			configs: {
-				kioskInactivityTimeoutMs: savedConfigs.kioskInactivityTimeoutMs,
-				kioskInactivityTimeoutWarningMs: savedConfigs.kioskInactivityTimeoutWarningMs,
-				kioskOrderConfirmationTimeoutMs: savedConfigs.kioskOrderConfirmationTimeoutMs,
-				disabledWeekdays: savedConfigs.disabledWeekdays,
-				kioskPassword: savedConfigs.kioskPassword
-			},
-			createdAt: savedConfigs.createdAt,
-			updatedAt: savedConfigs.updatedAt
-		}
+		const transformedConfigs = transformConfigs(savedConfigs)
 
 		res.status(200).json(transformedConfigs)
 

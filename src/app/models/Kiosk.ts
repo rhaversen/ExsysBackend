@@ -6,8 +6,8 @@ import { customAlphabet } from 'nanoid'
 
 // Own modules
 import logger from '../utils/logger.js'
-import ReaderModel from './Reader.js'
-import ActivityModel from './Activity.js'
+import ReaderModel, { IReader } from './Reader.js'
+import ActivityModel, { IActivity } from './Activity.js'
 
 // Environment variables
 
@@ -42,11 +42,11 @@ export interface IKioskFrontend {
 	_id: string
 	name: string
 	kioskTag: string
-	activities: Schema.Types.ObjectId[] | string[]
-	disabledActivities: Schema.Types.ObjectId[] | string[]
-	readerId: Schema.Types.ObjectId | string[] | undefined
-	deactivated: boolean;
-	deactivatedUntil: Date | null;
+	activities: IActivity[]
+	disabledActivities: Schema.Types.ObjectId[]
+	readerId: IReader | null
+	deactivated: boolean
+	deactivatedUntil: Date | null
 	createdAt: Date
 	updatedAt: Date
 }

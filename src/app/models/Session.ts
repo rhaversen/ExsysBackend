@@ -2,6 +2,8 @@
 
 // Third-party libraries
 import { model, Schema } from 'mongoose'
+import { IAdmin } from './Admin'
+import { IKiosk } from './Kiosk'
 
 // Own modules
 
@@ -11,12 +13,26 @@ import { model, Schema } from 'mongoose'
 
 // Destructuring and global variables
 
+// Interfaces
 export interface ISession {
 	_id: string
 	session: string
 	expires: Date | null
 }
 
+export interface ISessionFrontend {
+	_id: string
+	sessionExpires: Date | null
+	stayLoggedIn: boolean
+	type: 'admin' | 'kiosk' | 'unknown'
+	userId: IAdmin['_id'] | IKiosk['_id'] | null
+	ipAddress: string
+	loginTime: Date
+	lastActivity: Date
+	userAgent: string
+}
+
+// Schema
 const SessionSchema = new Schema(
 	{
 		_id: {

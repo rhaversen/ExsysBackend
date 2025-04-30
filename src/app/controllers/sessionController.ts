@@ -4,9 +4,8 @@
 import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
-import Session from '../models/Session.js'
+import Session, { type ISession, type ISessionFrontend } from '../models/Session.js'
 import { emitSessionDeleted } from '../webSockets/sessionHandlers.js'
-import { transformSession } from '../utils/sessionUtils.js'
 
 // Environment variables
 
@@ -25,11 +24,32 @@ export interface ParsedSessionData {
 	passport?: {
 		user: any
 	}
-	ipAddress?: string
-	loginTime?: Date
-	lastActivity?: Date
-	userAgent?: string
-	type?: string
+	ipAddress: string
+	loginTime: Date
+	lastActivity: Date
+	userAgent: string
+	type?: 'admin' | 'kiosk'
+}
+
+export function transformSession (
+	sessionDoc: ISession
+): ISessionFrontend {
+	const sessionData = JSON.parse(sessionDoc.session) as ParsedSessionData
+	const userId = sessionData?.passport?.user?.toString() ?? null
+
+	const stayLoggedIn = sessionData.cookie.originalMaxAge !== null
+
+	return {
+		_id: sessionDoc._id,
+		sessionExpires: stayLoggedIn ? sessionDoc.expires : null,
+		stayLoggedIn,
+		type: sessionData.type ?? 'unknown',
+		userId,
+		ipAddress: sessionData.ipAddress,
+		loginTime: sessionData.loginTime,
+		lastActivity: sessionData.lastActivity,
+		userAgent: sessionData.userAgent
+	}
 }
 
 export async function getSessions (req: Request, res: Response, next: NextFunction): Promise<void> {

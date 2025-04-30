@@ -6,14 +6,40 @@ import mongoose from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import KioskModel, { type IKiosk } from '../models/Kiosk.js'
+import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
 import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
+import { IActivity } from '../models/Activity.js'
+import { IReader } from '../models/Reader.js'
 
 // Environment variables
 
 // Config variables
 
 // Destructuring and global variables
+
+// Make transformKiosk async and handle population internally
+export async function transformKiosk (
+	kiosk: IKiosk
+): Promise<IKioskFrontend> {
+	// Populate activities and readerId
+	const populatedKiosk = await kiosk.populate<{ activities: IActivity[], readerId: IReader | null }>([
+		{ path: 'activities' },
+		{ path: 'readerId' }
+	])
+
+	return {
+		_id: populatedKiosk.id,
+		name: populatedKiosk.name,
+		readerId: populatedKiosk.readerId,
+		kioskTag: populatedKiosk.kioskTag,
+		activities: populatedKiosk.activities,
+		disabledActivities: populatedKiosk.disabledActivities,
+		deactivated: populatedKiosk.deactivated,
+		deactivatedUntil: populatedKiosk.deactivatedUntil,
+		createdAt: populatedKiosk.createdAt,
+		updatedAt: populatedKiosk.updatedAt
+	}
+}
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating kiosk')
@@ -30,8 +56,11 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
-		const newKiosk = await (await (await KioskModel.create(allowedFields)).populate('activities')).populate('readerId')
-		const transformedKiosk = transformKiosk(newKiosk)
+		const newKiosk = await KioskModel.create(allowedFields)
+		// Remove population here
+
+		// Await the async transform function
+		const transformedKiosk = await transformKiosk(newKiosk)
 		res.status(201).json(transformedKiosk)
 
 		emitKioskCreated(transformedKiosk)
@@ -44,33 +73,27 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 	}
 }
 
-const transformKiosk = (kiosk: IKiosk) => ({
-	_id: kiosk.id,
-	name: kiosk.name,
-	readerId: kiosk.readerId,
-	kioskTag: kiosk.kioskTag,
-	activities: kiosk.activities,
-	disabledActivities: kiosk.disabledActivities,
-	deactivated: kiosk.deactivated,
-	deactivatedUntil: kiosk.deactivatedUntil,
-	createdAt: kiosk.createdAt,
-	updatedAt: kiosk.updatedAt
-})
-
 export async function getMe (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Getting me kiosk')
 
 	try {
-		const kiosk = req.user as IKiosk | undefined
+		const kioskUser = req.user as IKiosk | undefined
 
-		if (kiosk === null || kiosk === undefined) {
+		if (kioskUser === null || kioskUser === undefined) {
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
-		await (await kiosk.populate('activities')).populate('readerId')
+		// Find the kiosk but remove population here
+		const kiosk = await KioskModel.findById(kioskUser._id).exec()
 
-		res.status(200).json(transformKiosk(kiosk))
+		if (!kiosk) {
+			res.status(404).json({ error: 'Kiosk ikke fundet' })
+			return
+		}
+
+		// Await the async transform function
+		res.status(200).json(await transformKiosk(kiosk))
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -84,14 +107,16 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 	logger.silly('Getting kiosk')
 
 	try {
-		const kiosk = await KioskModel.findById(req.params.id).populate('activities').populate('readerId')
+		// Find the kiosk but remove population here
+		const kiosk = await KioskModel.findById(req.params.id).exec()
 
 		if (kiosk === null || kiosk === undefined) {
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
-		res.status(200).json(transformKiosk(kiosk))
+		// Await the async transform function
+		res.status(200).json(await transformKiosk(kiosk))
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -105,10 +130,14 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 	logger.silly('Getting kiosks')
 
 	try {
-		const kiosks = await KioskModel.find({}).populate('activities').populate('readerId')
-		res.status(200).json(
-			kiosks.map(kiosk => transformKiosk(kiosk))
+		// Find kiosks but remove population here
+		const kiosks = await KioskModel.find({}).exec()
+
+		// Await the transformation for each kiosk
+		const transformedKiosks = await Promise.all(
+			kiosks.map(async (kiosk) => await transformKiosk(kiosk))
 		)
+		res.status(200).json(transformedKiosks)
 	} catch (error) {
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
@@ -145,11 +174,18 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		await kiosk.validate()
 		await kiosk.save({ session })
 
-		await (await kiosk.populate('activities')).populate('readerId')
+		// Re-fetch the document *without* population here to pass to transform
+		const updatedKiosk = await KioskModel.findById(kiosk._id).session(session).exec()
+
+		if (!updatedKiosk) {
+			await session.abortTransaction()
+			throw new Error('Failed to re-fetch updated kiosk')
+		}
 
 		await session.commitTransaction()
 
-		const transformedKiosk = transformKiosk(kiosk)
+		// Await the async transform function
+		const transformedKiosk = await transformKiosk(updatedKiosk)
 		res.status(200).json(transformedKiosk)
 
 		emitKioskUpdated(transformedKiosk)

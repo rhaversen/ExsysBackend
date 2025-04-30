@@ -5,7 +5,7 @@ import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
 // Own modules
-import ReaderModel from '../models/Reader.js'
+import ReaderModel, { type IReader, type IReaderFrontend } from '../models/Reader.js'
 import logger from '../utils/logger.js'
 import { pairReader, unpairReader } from '../services/apiServices.js'
 import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webSockets/readerHandlers.js'
@@ -15,6 +15,17 @@ import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webS
 // Config variables
 
 // Destructuring and global variables
+
+export function transformReader (
+	readerDoc: IReader
+): IReaderFrontend {
+	return {
+		_id: readerDoc.id,
+		readerTag: readerDoc.readerTag,
+		createdAt: readerDoc.createdAt,
+		updatedAt: readerDoc.updatedAt
+	}
+}
 
 export async function createReader (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating reader')
@@ -43,12 +54,7 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 			readerTag
 		})
 
-		const transformedReader = {
-			_id: newReader.id,
-			readerTag: newReader.readerTag,
-			createdAt: newReader.createdAt,
-			updatedAt: newReader.updatedAt
-		}
+		const transformedReader = transformReader(newReader)
 
 		res.status(201).json(transformedReader)
 
@@ -101,12 +107,7 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 
-		const transformedReader = {
-			_id: reader.id,
-			readerTag: reader.readerTag,
-			createdAt: reader.createdAt,
-			updatedAt: reader.updatedAt
-		}
+		const transformedReader = transformReader(reader)
 
 		res.status(200).json(transformedReader)
 

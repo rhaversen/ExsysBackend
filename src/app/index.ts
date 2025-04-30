@@ -28,8 +28,9 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { initSocket } from './utils/socket.js'
 import { type ISession } from './models/Session.js'
-import { getIPAddress, transformSession } from './utils/sessionUtils.js'
+import { getIPAddress } from './utils/sessionUtils.js'
 import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
+import { transformSession } from './controllers/sessionController.js'
 
 // Business logic routes
 import orderRoutes from './routes/orders.js'

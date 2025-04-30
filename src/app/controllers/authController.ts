@@ -11,7 +11,10 @@ import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
 import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 import { type ISession } from '../models/Session.js'
-import { getIPAddress, transformSession } from '../utils/sessionUtils.js'
+import { getIPAddress } from '../utils/sessionUtils.js'
+import { transformSession } from './sessionController.js'
+import { transformAdmin } from './adminController.js'
+import { transformKiosk } from './kioskController.js'
 
 // Environment variables
 
@@ -88,17 +91,12 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 			const admin = user as IAdmin
 
-			const adminWithoutPassword = {
-				_id: admin._id,
-				name: admin.name,
-				createdAt: admin.createdAt,
-				updatedAt: admin.updatedAt,
-			}
+			const transformedAdmin = transformAdmin(admin)
 
 			logger.silly(`Admin ${admin.name} logged in`)
 			res.status(200).json({
 				auth: true,
-				user: adminWithoutPassword
+				user: transformedAdmin
 			})
 
 			emitSessionCreated(transformedSession)
@@ -159,18 +157,12 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 			const kiosk = user as IKiosk
 
-			const kioskWithoutPassword = {
-				_id: kiosk._id,
-				name: kiosk.name,
-				kioskTag: kiosk.kioskTag,
-				createdAt: kiosk.createdAt,
-				updatedAt: kiosk.updatedAt
-			}
+			const transformedKiosk = transformKiosk(kiosk)
 
 			logger.silly(`Kiosk ${kiosk.kioskTag} logged in`)
 			res.status(200).json({
 				auth: true,
-				user: kioskWithoutPassword
+				user: transformedKiosk
 			})
 
 			emitSessionCreated(transformedSession)
