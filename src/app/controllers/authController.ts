@@ -3,7 +3,6 @@
 // Third-party libraries
 import passport from 'passport'
 import { type NextFunction, type Request, type Response } from 'express'
-import { publicIpv4 } from 'public-ip'
 
 // Own modules
 import config from '../utils/setupConfig.js'
@@ -22,7 +21,6 @@ const {
 } = config
 
 // Destructuring and global variables
-const serverIp = await publicIpv4() // Get the server's public IP address
 
 // Extend the Session interface to include ipAddress
 declare module 'express-session' {
