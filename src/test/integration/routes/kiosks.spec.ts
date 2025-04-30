@@ -39,7 +39,6 @@ describe('Kiosks routes', function () {
 			let testKioskFields: {
 				name: string
 				kioskTag: string
-				password: string
 				readerId: mongoose.Types.ObjectId
 			}
 
@@ -51,7 +50,6 @@ describe('Kiosks routes', function () {
 				testKioskFields = {
 					name: 'Test Kiosk',
 					kioskTag: '12345',
-					password: 'Test Password',
 					readerId: testReader.id
 				}
 			})
@@ -76,9 +74,6 @@ describe('Kiosks routes', function () {
 				expect(kiosk).to.exist
 				expect(kiosk).to.have.property('name', testKioskFields.name)
 				expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
-				expect(kiosk).to.have.property('password')
-				const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
-				expect(passwordMatch).to.be.true
 				expect(kiosk).to.have.property('createdAt')
 				expect(kiosk).to.have.property('updatedAt')
 			})
@@ -97,12 +92,6 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('_id')
 			})
 
-			it('should not return the password', async function () {
-				const response = await agent.post('/api/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
-
-				expect(response.body).to.not.have.property('password')
-			})
-
 			it('should have an empty activities array', async function () {
 				const response = await agent.post('/api/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
 
@@ -115,7 +104,6 @@ describe('Kiosks routes', function () {
 			let testRoom2: IRoom
 			let testKioskFields: {
 				name: string
-				password: string
 				activities: mongoose.Types.ObjectId[]
 				readerId: mongoose.Types.ObjectId
 			}
@@ -146,7 +134,6 @@ describe('Kiosks routes', function () {
 
 				testKioskFields = {
 					name: 'Test Kiosk',
-					password: 'Test Password',
 					activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 					readerId: testReader.id
 				}
@@ -199,12 +186,6 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
 			})
-
-			it('should not return the password', async function () {
-				const response = await agent.post('/api/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
-
-				expect(response.body).to.not.have.property('password')
-			})
 		})
 
 		describe('All fields', function () {
@@ -213,7 +194,6 @@ describe('Kiosks routes', function () {
 			let testKioskFields: {
 				name: string
 				kioskTag: string
-				password: string
 				activities: mongoose.Types.ObjectId[]
 				readerId: mongoose.Types.ObjectId
 			}
@@ -245,7 +225,6 @@ describe('Kiosks routes', function () {
 				testKioskFields = {
 					name: 'Test Kiosk',
 					kioskTag: '12345',
-					password: 'Test Password',
 					activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 					readerId: testReader.id
 				}
@@ -281,9 +260,6 @@ describe('Kiosks routes', function () {
 
 				expect(kiosk).to.exist
 				expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
-				expect(kiosk).to.have.property('password')
-				const passwordMatch = await kiosk?.comparePassword(testKioskFields.password)
-				expect(passwordMatch).to.be.true
 				expect(kiosk).to.have.property('name', testKioskFields.name)
 				const populatedKiosk = await kiosk?.populate('activities')
 				expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskFields.activities[0])
@@ -312,12 +288,6 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
 			})
-
-			it('should not return the password', async function () {
-				const response = await agent.post('/api/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
-
-				expect(response.body).to.not.have.property('password')
-			})
 		})
 	})
 
@@ -326,7 +296,6 @@ describe('Kiosks routes', function () {
 		let testKioskFields: {
 			name: string
 			kioskTag: string
-			password: string
 			activities: mongoose.Types.ObjectId[]
 			readerId: mongoose.Types.ObjectId
 		}
@@ -358,7 +327,6 @@ describe('Kiosks routes', function () {
 			testKioskFields = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader.id
 			}
@@ -389,12 +357,6 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.property('_id')
 		})
 
-		it('should not return the password', async function () {
-			const response = await agent.get(`/api/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
-
-			expect(response.body).to.not.have.property('password')
-		})
-
 		it('should populate the activities', async function () {
 			const response = await agent.get(`/api/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
 
@@ -419,14 +381,12 @@ describe('Kiosks routes', function () {
 		let testKioskFields1: {
 			name: string
 			kioskTag: string
-			password: string
 			activities: mongoose.Types.ObjectId[]
 			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
-			password: string
 			activities: mongoose.Types.ObjectId[]
 			readerId: mongoose.Types.ObjectId
 		}
@@ -462,14 +422,12 @@ describe('Kiosks routes', function () {
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString()],
 				readerId: testReader2.id
 			}
@@ -506,13 +464,6 @@ describe('Kiosks routes', function () {
 			expect(response.body.map((kiosk: IKiosk) => kiosk._id)).to.have.lengthOf(2)
 		})
 
-		it('should not return the password', async function () {
-			const response = await agent.get('/api/v1/kiosks').set('Cookie', sessionCookie)
-
-			expect(response.body[0]).to.not.have.property('password')
-			expect(response.body[1]).to.not.have.property('password')
-		})
-
 		it('should populate the activities', async function () {
 			const response = await agent.get('/api/v1/kiosks').set('Cookie', sessionCookie)
 
@@ -538,14 +489,12 @@ describe('Kiosks routes', function () {
 		let testKioskFields1: {
 			name: string
 			kioskTag: string
-			password: string
 			activities: mongoose.Types.ObjectId[]
 			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
-			password: string
 			activities: mongoose.Types.ObjectId[]
 			readerId: mongoose.Types.ObjectId
 		}
@@ -581,14 +530,12 @@ describe('Kiosks routes', function () {
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString()],
 				readerId: testReader2.id
 			}
@@ -648,17 +595,6 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.property('_id')
 		})
 
-		it('should not return the password', async function () {
-			const updatedFields = {
-				kioskTag: '45678',
-				activities: [testActivity2.id.toString()]
-			}
-
-			const response = await agent.patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
-
-			expect(response.body).to.not.have.property('password')
-		})
-
 		it('should unset the readerId when setting to null', async function () {
 			const updatedFields = {
 				readerId: null
@@ -702,19 +638,6 @@ describe('Kiosks routes', function () {
 			const kiosk = await KioskModel.findById(testKiosk1.id)
 
 			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
-		})
-
-		it('should update the password', async function () {
-			const updatedFields = {
-				password: 'New Password'
-			}
-
-			await agent.patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
-
-			const kiosk = await KioskModel.findById(testKiosk1.id)
-			expect(kiosk).to.have.property('password')
-			const passwordMatch = await kiosk?.comparePassword(updatedFields.password)
-			expect(passwordMatch).to.be.true
 		})
 
 		it('should not update other fields', async function () {
@@ -797,7 +720,6 @@ describe('Kiosks routes', function () {
 			testKiosk1 = await KioskModel.create({
 				name: 'Kiosk 1',
 				kioskTag: '12345',
-				password: 'Test Password',
 				activities: [testActivity1.id],
 				readerId: testReader.id
 			})
@@ -846,7 +768,6 @@ describe('Kiosks routes', function () {
 		let testKioskFields1: {
 			name: string
 			kioskTag: string
-			password: string
 			activities: mongoose.Types.ObjectId[]
 			readerId: mongoose.Types.ObjectId
 		}
@@ -878,7 +799,6 @@ describe('Kiosks routes', function () {
 			testKioskFields1 = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader.id
 			}
@@ -915,7 +835,6 @@ describe('Kiosks routes', function () {
 			const testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
-				password: 'Test Password',
 				activities: [testActivity1.id.toString()],
 				readerId: testReader.id
 			}

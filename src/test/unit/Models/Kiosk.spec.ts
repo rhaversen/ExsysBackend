@@ -27,7 +27,6 @@ describe('Kiosk Model', function () {
 	let testKioskField: {
 		name: string
 		kioskTag: string
-		password: string
 		activities: mongoose.Types.ObjectId[]
 		readerId: mongoose.Types.ObjectId
 	}
@@ -56,7 +55,6 @@ describe('Kiosk Model', function () {
 		testKioskField = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
-			password: 'Test Password',
 			activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 			readerId: testReader.id
 		}
@@ -67,8 +65,6 @@ describe('Kiosk Model', function () {
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal(testKioskField.kioskTag)
 		expect(kiosk).to.have.property('name', testKioskField.name)
-		expect(kiosk).to.have.property('password')
-		expect(await compare(testKioskField.password, kiosk.password)).to.be.true
 		const populatedKiosk = await kiosk?.populate('activities')
 		expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskField.activities[0])
 	})
@@ -89,15 +85,6 @@ describe('Kiosk Model', function () {
 		})
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal('12346')
-	})
-
-	it('should trim the password', async function () {
-		const admin = await KioskModel.create({
-			...testKioskField,
-			password: '  testPassword  '
-		})
-		expect(admin).to.exist
-		expect(await compare('testPassword', admin.password)).to.be.true
 	})
 
 	it('should not create a kiosk with the same tag', async function () {
@@ -221,7 +208,6 @@ describe('Kiosk Model', function () {
 		await KioskModel.create({
 			readerId: reader.id,
 			name: 'Test Kiosk 2',
-			password: 'Test Password 2'
 		})
 		try {
 			await KioskModel.create({
@@ -269,27 +255,6 @@ describe('Kiosk Model', function () {
 			kioskTag: undefined
 		})
 		expect(kiosk.kioskTag).to.exist
-	})
-
-	it('should hash the password', async function () {
-		const kiosk = await KioskModel.create({
-			...testKioskField,
-			password: 'testPassword'
-		})
-		expect(kiosk.password).to.not.equal('testPassword')
-		expect(await compare('testPassword', kiosk.password)).to.be.true
-	})
-
-	it('should compare the password', async function () {
-		const kiosk = await KioskModel.create(testKioskField)
-		const isPasswordCorrect = await kiosk.comparePassword('Test Password')
-		expect(isPasswordCorrect).to.be.true
-	})
-
-	it('should not compare an incorrect password', async function () {
-		const kiosk = await KioskModel.create(testKioskField)
-		const isPasswordCorrect = await kiosk.comparePassword('Incorrect Password')
-		expect(isPasswordCorrect).to.be.false
 	})
 
 	it('should not create a kiosk with a non existing activity', async function () {
