@@ -752,7 +752,7 @@ await SessionModel.create({
 })
 
 const kiosk2 = await KioskModel.create({
-	name: 'Kiosk wihtout activities and reader',
+	name: 'Kiosk without activities and reader',
 	readerId: reader1.id,
 	kioskTag: '00001',
 	password: 'password'
