@@ -57,7 +57,7 @@ const kioskSchema = new Schema<IKiosk>({
 		type: Schema.Types.String,
 		required: true,
 		trim: true,
-		maxlength: [50, 'Navn kan højest være 50 tegn']
+		maxLength: [50, 'Navn kan højest være 50 tegn']
 	},
 	kioskTag: {
 		type: Schema.Types.String,

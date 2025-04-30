@@ -77,7 +77,7 @@ const configsSchema = new Schema<IConfigs>({
 		trim: true,
 		default: 'Password',
 		minlength: [4, 'Adgangskode skal være mindst 4 tegn'],
-		maxlength: [100, 'Adgangskode kan højest være 100 tegn']
+		maxLength: [100, 'Adgangskode kan højest være 100 tegn']
 	}
 }, {
 	timestamps: true

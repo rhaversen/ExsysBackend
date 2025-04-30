@@ -899,7 +899,7 @@ await SessionModel.create({
 })
 
 // New kiosks with different deactivatedUntil/deactivated combinations
-const kioskdeactivated = await KioskModel.create({
+const kioskDeactivated = await KioskModel.create({
 	name: 'Kiosk deactivated',
 	kioskTag: '77777',
 	password: 'password',
@@ -916,7 +916,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskdeactivated.id },
+		passport: { user: kioskDeactivated.id },
 		ipAddress: '192.168.1.16',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -926,7 +926,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-const kioskdeactivatedUntil = await KioskModel.create({
+const kioskDeactivatedUntil = await KioskModel.create({
 	name: 'Kiosk deactivatedUntil',
 	kioskTag: '88888',
 	password: 'password',
@@ -943,7 +943,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskdeactivatedUntil.id },
+		passport: { user: kioskDeactivatedUntil.id },
 		ipAddress: '192.168.1.17',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -953,7 +953,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-const kioskdeactivatedAnddeactivatedUntil = await KioskModel.create({
+const kioskDeactivatedAndDeactivatedUntil = await KioskModel.create({
 	name: 'Kiosk deactivated and deactivatedUntil',
 	kioskTag: '99999',
 	password: 'password',
@@ -970,7 +970,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskdeactivatedAnddeactivatedUntil.id },
+		passport: { user: kioskDeactivatedAndDeactivatedUntil.id },
 		ipAddress: '192.168.1.18',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),

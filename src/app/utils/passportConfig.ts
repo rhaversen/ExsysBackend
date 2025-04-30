@@ -58,7 +58,7 @@ const configurePassport = (passport: PassportStatic): void => {
 				// Fetch the unified kiosk password from Configs
 				const configs = await getOrCreateConfigs()
 
-				// Compare the provided password directly (unhashed)
+				// Compare the provided password directly (not hashed)
 				const isMatch = password === configs.kioskPassword
 				if (!isMatch) {
 					done(null, false, { message: 'Ugyldigt kodeord' })

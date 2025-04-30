@@ -68,11 +68,11 @@ const productsSubSchema = new Schema({
 	id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
-		required: [true, 'Produkt er påkrevet']
+		required: [true, 'Produkt er påkrævet']
 	},
 	quantity: {
 		type: Schema.Types.Number,
-		required: [true, 'Mængde er påkrevet'],
+		required: [true, 'Mængde er påkrævet'],
 		min: [1, 'Mængde skal være større end 0']
 	}
 })
@@ -82,11 +82,11 @@ const optionsSubSchema = new Schema({
 	id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Option',
-		required: [true, 'Tilvalg er påkrevet']
+		required: [true, 'Tilvalg er påkrævet']
 	},
 	quantity: {
 		type: Schema.Types.Number,
-		required: [true, 'Mængde er påkrevet'],
+		required: [true, 'Mængde er påkrævet'],
 		min: [1, 'Mængde skal være større end 0']
 	}
 })

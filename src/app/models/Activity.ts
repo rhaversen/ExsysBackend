@@ -46,7 +46,7 @@ const activitySchema = new Schema<IActivity>({
 		required: true,
 		trim: true,
 		unique: true,
-		maxlength: [50, 'Navn kan højest være 50 tegn']
+		maxLength: [50, 'Navn kan højest være 50 tegn']
 	},
 	disabledProducts: [{
 		type: Schema.Types.ObjectId,
