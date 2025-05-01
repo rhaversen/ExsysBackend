@@ -40,6 +40,9 @@
 		"clean:logs": "if exist logs rmdir /s /q logs",
 		"clean:all": "npm run clean:dist && npm run clean:logs"
 	},
+	"engines": {
+		"node": ">=22.0.0"
+	},
 	"dependencies": {
 		"@logtail/node": "^0.5.2",
 		"@sentry/cli": "^2.43.0",
@@ -68,6 +71,10 @@
 		"winston": "^3.17.0"
 	},
 	"devDependencies": {
+		"@cspell/dict-da-dk": "^4.1.0",
+		"@eslint/eslintrc": "^3.3.1",
+		"@eslint/js": "^9.25.1",
+		"@stylistic/eslint-plugin": "^4.2.0",
 		"@types/bcrypt": "^5.0.2",
 		"@types/chai": "^4.3.19",
 		"@types/config": "^3.3.5",
@@ -82,15 +89,17 @@
 		"@types/passport-local": "^1.0.38",
 		"@types/sinon": "^17.0.4",
 		"@types/validator": "^13.12.3",
-		"@cspell/dict-da-dk": "^4.1.0",
-		"@stylistic/eslint-plugin": "^4.2.0",
-		"@typescript-eslint/parser": "^8.29.1",
+		"@typescript-eslint/eslint-plugin": "^8.31.0",
 		"chai": "^5.2.0",
 		"chai-http": "^4.4.0",
-		"depcheck": "^1.4.7",
 		"cspell": "^8.19.2",
-		"eslint": "^9.24.0",
-		"eslint-plugin-local-rules": "^3.0.2",
+		"depcheck": "^1.4.7",
+		"eslint": "^9.25.1",
+		"eslint-config-prettier": "^10.1.2",
+		"eslint-import-resolver-typescript": "^4.3.4",
+		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-n": "^17.17.0",
+		"eslint-plugin-promise": "^7.2.1",
 		"mocha": "^10.7.3",
 		"mongodb-memory-server": "^10.1.4",
 		"npm-check-updates": "^18.0.1",
@@ -98,6 +107,7 @@
 		"sinon": "^17.0.1",
 		"source-map-support": "^0.5.21",
 		"ts-node": "^10.9.2",
-		"typescript": "^5"
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.31.1"
 	}
 }
