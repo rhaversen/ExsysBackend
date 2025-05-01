@@ -1,21 +1,11 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
-import logger from '../utils/logger.js'
-import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
-import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 import { IActivity } from '../models/Activity.js'
+import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
 import { IReader } from '../models/Reader.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import logger from '../utils/logger.js'
+import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 // Make transformKiosk async and handle population internally
 export async function transformKiosk (
@@ -162,13 +152,13 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		}
 
 		// Set fields directly, checking for undefined to ensure not overwriting with undefined
-		if (req.body.name !== undefined) kiosk.name = req.body.name
-		if (req.body.kioskTag !== undefined) kiosk.kioskTag = req.body.kioskTag
-		if (req.body.readerId !== undefined) kiosk.readerId = req.body.readerId
-		if (req.body.activities !== undefined) kiosk.activities = req.body.activities
-		if (req.body.disabledActivities !== undefined) kiosk.disabledActivities = req.body.disabledActivities
-		if (req.body.deactivatedUntil !== undefined) kiosk.deactivatedUntil = req.body.deactivatedUntil
-		if (req.body.deactivated !== undefined) kiosk.deactivated = req.body.deactivated
+		if (req.body.name !== undefined) { kiosk.name = req.body.name }
+		if (req.body.kioskTag !== undefined) { kiosk.kioskTag = req.body.kioskTag }
+		if (req.body.readerId !== undefined) { kiosk.readerId = req.body.readerId }
+		if (req.body.activities !== undefined) { kiosk.activities = req.body.activities }
+		if (req.body.disabledActivities !== undefined) { kiosk.disabledActivities = req.body.disabledActivities }
+		if (req.body.deactivatedUntil !== undefined) { kiosk.deactivatedUntil = req.body.deactivatedUntil }
+		if (req.body.deactivated !== undefined) { kiosk.deactivated = req.body.deactivated }
 
 		// Validate and save the updated document
 		await kiosk.validate()

@@ -1,18 +1,9 @@
-// Node.js built-in modules
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
-import { Logtail } from '@logtail/node'
 
-// Third-party libraries
+import { Logtail } from '@logtail/node'
 import { createLogger, format as _format, transports as _transports } from 'winston'
 
-// Own modules
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const _filename = fileURLToPath(import.meta.url)
 const _dirname = dirname(_filename)
 const logDirectory = join(_dirname, (['production', 'staging'].includes(process.env.NODE_ENV ?? '') ? './logs/' : '../../logs/'))
@@ -70,7 +61,7 @@ const winstonLogger = createLogger({
 // Instantiate betterStackLogger only in production
 let betterStackLogger: Logtail | null = null
 
-function logToWinston (level: string, ...messages: any[]): void {
+function logToWinston (level: string, ...messages: unknown[]): void {
 	const combinedMessage = messages.join(' ')
 	switch (level) {
 		case 'error':
@@ -97,7 +88,7 @@ function logToWinston (level: string, ...messages: any[]): void {
 	}
 }
 
-async function logToBetterStack (level: string, ...messages: any[]): Promise<void> {
+async function logToBetterStack (level: string, ...messages: unknown[]): Promise<void> {
 	if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
 		return
 	}

@@ -1,19 +1,9 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
 import ProductModel from '../models/Product.js'
 import logger from '../utils/logger.js'
 import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating product')
@@ -72,12 +62,12 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		}
 
 		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.name !== undefined) product.name = req.body.name
-		if (req.body.price !== undefined) product.price = req.body.price
-		if (req.body.imageURL !== undefined) product.imageURL = req.body.imageURL
-		if (req.body.orderWindow !== undefined) product.orderWindow = req.body.orderWindow
-		if (req.body.options !== undefined) product.options = req.body.options
-		if (req.body.isActive !== undefined) product.isActive = req.body.isActive
+		if (req.body.name !== undefined) { product.name = req.body.name }
+		if (req.body.price !== undefined) { product.price = req.body.price }
+		if (req.body.imageURL !== undefined) { product.imageURL = req.body.imageURL }
+		if (req.body.orderWindow !== undefined) { product.orderWindow = req.body.orderWindow }
+		if (req.body.options !== undefined) { product.options = req.body.options }
+		if (req.body.isActive !== undefined) { product.isActive = req.body.isActive }
 
 		// Validate and save the updated document
 		await product.validate()

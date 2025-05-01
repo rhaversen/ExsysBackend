@@ -1,20 +1,17 @@
-// Node.js built-in modules
-
-// Third-party libraries
-import passport from 'passport'
 import { type NextFunction, type Request, type Response } from 'express'
+import passport from 'passport'
 
-// Own modules
-import config from '../utils/setupConfig.js'
-import logger from '../utils/logger.js'
 import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
-import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 import { type ISession } from '../models/Session.js'
+import logger from '../utils/logger.js'
 import { getIPAddress } from '../utils/sessionUtils.js'
-import { transformSession } from './sessionController.js'
+import config from '../utils/setupConfig.js'
+import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
+
 import { transformAdmin } from './adminController.js'
 import { transformKiosk } from './kioskController.js'
+import { transformSession } from './sessionController.js'
 
 // Environment variables
 

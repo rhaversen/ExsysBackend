@@ -1,19 +1,9 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
-import logger from '../utils/logger.js'
 import AdminModel, { type IAdmin, type IAdminFrontend } from '../models/Admin.js'
+import logger from '../utils/logger.js'
 import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSockets/adminHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export function transformAdmin (
 	adminDoc: IAdmin
@@ -108,8 +98,8 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 		}
 
 		// Apply changes if they exist
-		if (req.body.name !== undefined) admin.name = req.body.name
-		if (req.body.password !== undefined) admin.password = req.body.password
+		if (req.body.name !== undefined) { admin.name = req.body.name }
+		if (req.body.password !== undefined) { admin.password = req.body.password }
 
 		// Validate and save the updated document
 		await admin.validate()

@@ -1,19 +1,10 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 
-// Own modules
 import logger from '../utils/logger.js'
-import RoomModel, { IRoom } from './Room.js'
+
 import KioskModel from './Kiosk.js'
 import ProductModel, { IProduct } from './Product.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import RoomModel, { IRoom } from './Room.js'
 
 // Interfaces
 export interface IActivity extends Document {

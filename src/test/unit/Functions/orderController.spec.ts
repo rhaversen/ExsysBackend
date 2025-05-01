@@ -1,16 +1,12 @@
-/* eslint-disable local/enforce-comment-order */
- 
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
+import mongoose from 'mongoose'
 
-// Own modules
 import {
 	combineItemsById,
 	countSubtotalOfOrder,
@@ -19,9 +15,7 @@ import {
 } from '../../../app/controllers/orderController.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
-import mongoose from 'mongoose'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Order Controller Functions', function () {

@@ -1,16 +1,6 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 
-// Own modules
 import logger from '../utils/logger.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 // Interfaces
 export interface IPayment extends Document {

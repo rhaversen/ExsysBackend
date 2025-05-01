@@ -1,14 +1,12 @@
-// Node.js built-in modules
 
-// Third-party libraries
-import { Server } from 'socket.io'
-import config from './setupConfig.js'
 import { type Server as HttpServer } from 'http'
-import logger from './logger.js'
+
 import { createAdapter } from '@socket.io/redis-adapter'
 import { createClient } from 'redis'
+import { Server } from 'socket.io'
 
-// Own modules
+import logger from './logger.js'
+import config from './setupConfig.js'
 
 // Environment variables
 const redisHost = process.env.REDIS_HOST
@@ -94,7 +92,7 @@ export function emitSocketEvent<T> (
 	}
 }
 
-export function broadcastEvent(
+export function broadcastEvent (
 	eventName: string,
 	successLog: string
 ): boolean {

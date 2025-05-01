@@ -1,20 +1,14 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
+import bcrypt from 'bcrypt'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import bcrypt from 'bcrypt'
 
-// Own modules
 import AdminModel from '../../../app/models/Admin.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Admin Model', function () {
@@ -55,7 +49,7 @@ describe('Admin Model', function () {
 				...testAdminFields,
 				name: 'a'.repeat(51)
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -69,7 +63,7 @@ describe('Admin Model', function () {
 				...testAdminFields,
 				password: 'a'.repeat(101)
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -81,7 +75,7 @@ describe('Admin Model', function () {
 		try {
 			await AdminModel.create(testAdminFields)
 			await AdminModel.create(testAdminFields)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -95,7 +89,7 @@ describe('Admin Model', function () {
 				...testAdminFields,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -109,7 +103,7 @@ describe('Admin Model', function () {
 				...testAdminFields,
 				password: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

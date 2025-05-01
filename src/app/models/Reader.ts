@@ -1,18 +1,10 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
-// Own modules
 import logger from '../utils/logger.js'
+
 import KioskModel from './Kiosk.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const nanoidAlphabet = '123465789'
 const nanoidLength = 5
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
@@ -29,7 +21,6 @@ export interface IReader extends Document {
 	updatedAt: Date
 
 	// Methods
-	comparePassword: (password: string) => Promise<boolean>
 	generateNewReaderTag: () => Promise<string>
 }
 

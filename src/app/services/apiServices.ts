@@ -1,10 +1,7 @@
-// Node.js built-in modules
 
-// Third-party libraries
-import { nanoid } from 'nanoid'
 import axios from 'axios'
+import { nanoid } from 'nanoid'
 
-// Own modules
 import logger from '../utils/logger.js'
 
 // Environment variables

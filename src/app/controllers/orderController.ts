@@ -1,32 +1,22 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
-import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Order.js'
-import logger from '../utils/logger.js'
 import KioskModel from '../models/Kiosk.js'
-import { createReaderCheckout } from '../services/apiServices.js'
-import ReaderModel from '../models/Reader.js'
+import OptionModel from '../models/Option.js'
+import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Order.js'
 import PaymentModel, { IPayment } from '../models/Payment.js'
 import ProductModel from '../models/Product.js'
-import OptionModel from '../models/Option.js'
+import ReaderModel from '../models/Reader.js'
+import { createReaderCheckout } from '../services/apiServices.js'
+import logger from '../utils/logger.js'
 import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 interface OrderItem {
 	id: string
 	quantity: number
 }
 
-export function transformOrder(order: IOrderPopulated): IOrderFrontend {
+export function transformOrder (order: IOrderPopulated): IOrderFrontend {
 	const products = order.products
 		.filter(item => item.id != null)
 		.map(item => ({ _id: item.id._id, name: item.id.name, quantity: item.quantity }))
@@ -84,9 +74,9 @@ export async function countSubtotalOfOrder (products: OrderItem[], options: Orde
 	return sum
 }
 
-export function isOrderItemList (items: any[]): items is OrderItem[] {
-	return Array.isArray(items) && items.every((item: OrderItem) => {
-		return item !== null && typeof item === 'object' && typeof item.id === 'string' && typeof item.quantity === 'number' && item.quantity >= 0 && Number.isInteger(item.quantity)
+export function isOrderItemList (items: unknown[]): items is OrderItem[] {
+	return Array.isArray(items) && items.every((item: unknown): item is OrderItem => {
+		return item !== null && typeof item === 'object' && 'id' in item && typeof item.id === 'string' && 'quantity' in item && typeof item.quantity === 'number' && item.quantity >= 0 && Number.isInteger(item.quantity)
 	})
 }
 
@@ -214,7 +204,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 			kioskId,
 			products: combinedProducts,
 			options: combinedOptions,
-			paymentId: payment.id,
+			paymentId: payment.id
 		})
 
 		// Populate the necessary fields for transformation

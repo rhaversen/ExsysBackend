@@ -1,28 +1,22 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import { Types } from 'mongoose'
 import sinon from 'sinon'
 
-// Own modules
-import OrderModel, { IOrder } from '../../../app/models/Order.js'
-import ProductModel, { type IProduct } from '../../../app/models/Product.js'
-import RoomModel, { type IRoom } from '../../../app/models/Room.js'
-import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import KioskModel from '../../../app/models/Kiosk.js'
-import ReaderModel from '../../../app/models/Reader.js'
+import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import OrderModel, { IOrder } from '../../../app/models/Order.js'
 import PaymentModel from '../../../app/models/Payment.js'
+import ProductModel, { type IProduct } from '../../../app/models/Product.js'
+import ReaderModel from '../../../app/models/Reader.js'
+import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Order Model', function () {
@@ -133,7 +127,7 @@ describe('Order Model', function () {
 					quantity: 1.5
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -150,7 +144,7 @@ describe('Order Model', function () {
 					quantity: 1.5
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -172,7 +166,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				activityId: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -186,7 +180,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				activityId: new Types.ObjectId()
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -200,7 +194,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				products: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -217,7 +211,7 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -240,7 +234,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -263,7 +257,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -286,7 +280,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -303,7 +297,7 @@ describe('Order Model', function () {
 					quantity: undefined
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -320,7 +314,7 @@ describe('Order Model', function () {
 					quantity: 0
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -337,7 +331,7 @@ describe('Order Model', function () {
 					quantity: -1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -362,7 +356,7 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -385,7 +379,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -402,7 +396,7 @@ describe('Order Model', function () {
 					quantity: undefined
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -419,7 +413,7 @@ describe('Order Model', function () {
 					quantity: 0
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -436,7 +430,7 @@ describe('Order Model', function () {
 					quantity: -1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -459,7 +453,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -482,7 +476,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -496,7 +490,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				roomId: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -510,7 +504,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				roomId: new Types.ObjectId()
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -585,7 +579,7 @@ describe('Order Model', function () {
 						quantity: 1
 					}]
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -606,7 +600,7 @@ describe('Order Model', function () {
 						quantity: 1
 					}]
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -753,7 +747,7 @@ describe('Order Model', function () {
 						}
 					]
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -783,7 +777,7 @@ describe('Order Model', function () {
 				sinon.restore() // Restore the JavaScript environment's time
 				const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
 				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
-				
+
 				testOrder.status = 'confirmed'
 				await testOrder.save()
 
@@ -795,7 +789,7 @@ describe('Order Model', function () {
 				sinon.restore() // Restore the JavaScript environment's time
 				const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
 				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
-				
+
 				testOrder.status = 'delivered'
 				await testOrder.save()
 

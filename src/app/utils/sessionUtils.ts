@@ -1,16 +1,6 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import type express from 'express'
 import { publicIpv4 } from 'public-ip'
 
-// Own modules
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const serverIp = await publicIpv4() // Get the server's public IP address
 
 export const getIPAddress = (req: express.Request): string => {

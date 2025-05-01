@@ -1,18 +1,9 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 
-// Own modules
 import logger from '../utils/logger.js'
+
 import OptionModel from './Option.js'
 import OrderModel from './Order.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 // Interfaces
 export interface IProduct extends Document {

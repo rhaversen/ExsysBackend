@@ -1,15 +1,4 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
-
-// Own modules
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 // Interfaces
 export interface IConfigs extends Document {
@@ -44,17 +33,17 @@ const configsSchema = new Schema<IConfigs>({
 	kioskInactivityTimeoutMs: {
 		type: Schema.Types.Number,
 		default: 60000, // 60 seconds
-		min: [1000, 'Inaktivitets timeout skal være mindst 1 sekund'],
+		min: [1000, 'Inaktivitets timeout skal være mindst 1 sekund']
 	},
 	kioskInactivityTimeoutWarningMs: {
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
-		min: [1000, 'Inaktivitets timeout advarsel skal være mindst 1 sekund'],
+		min: [1000, 'Inaktivitets timeout advarsel skal være mindst 1 sekund']
 	},
 	kioskOrderConfirmationTimeoutMs: {
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
-		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund'],
+		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund']
 	},
 	disabledWeekdays: {
 		type: [Schema.Types.Number],

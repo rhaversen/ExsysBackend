@@ -1,21 +1,15 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
-// Own modules
+import KioskModel from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
 
-// Setup test environment
 import '../../testSetup.js'
-import KioskModel from '../../../app/models/Kiosk.js'
 
 describe('Reader Model', function () {
 	it('should create a valid reader', async function () {
@@ -32,7 +26,7 @@ describe('Reader Model', function () {
 		let errorOccurred = false
 		try {
 			await ReaderModel.create({ readerTag: '12345' })
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -75,7 +69,7 @@ describe('Reader Model', function () {
 				apiReferenceId: '12345',
 				readerTag: '65432'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -93,7 +87,7 @@ describe('Reader Model', function () {
 				apiReferenceId: '23456',
 				readerTag: '54321'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

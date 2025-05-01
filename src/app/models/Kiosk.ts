@@ -1,19 +1,11 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
-// Own modules
 import logger from '../utils/logger.js'
-import ReaderModel, { IReader } from './Reader.js'
+
 import ActivityModel, { IActivity } from './Activity.js'
+import ReaderModel, { IReader } from './Reader.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const nanoidAlphabet = '123465789'
 const nanoidLength = 5
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
@@ -108,7 +100,7 @@ kioskSchema.path('kioskTag').validate(function (v: string) {
 }, 'KioskTag kan kun indeholde tal')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
-	if (v === undefined || v === null) return true
+	if (v === undefined || v === null) { return true }
 	const foundReader = await ReaderModel.findOne({ _id: v })
 	return foundReader !== null && foundReader !== undefined
 }, 'Kortlæseren findes ikke')
@@ -124,7 +116,7 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 }, 'En eller flere aktiviteter findes ikke')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
-	if (v === undefined || v === null) return true
+	if (v === undefined || v === null) { return true }
 	const foundKioskWithReader = await KioskModel.findOne({
 		readerId: v,
 		_id: { $ne: this._id }

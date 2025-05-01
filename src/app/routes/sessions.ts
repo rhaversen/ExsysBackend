@@ -1,24 +1,13 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin } from '../middleware/authorization.js'
-
-// Controller functions
 import {
 	deleteSession,
 	getCurrentSession,
 	getSessions
 } from '../controllers/sessionController.js'
+import { isAdmin } from '../middleware/authorization.js'
+import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**

@@ -1,22 +1,13 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
-import logger from '../utils/logger.js'
-import PaymentModel from '../models/Payment.js'
-import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
 import OrderModel, { IOrderPopulated } from '../models/Order.js'
+import PaymentModel from '../models/Payment.js'
+import logger from '../utils/logger.js'
 import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
+import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
+
 import { transformOrder } from './orderController.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 interface ICreateReaderCallback extends Request {
 	body: {
@@ -80,10 +71,10 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 					select: 'name'
 				}
 			])
-			
+
 			// Cast to the populated type
 			const populatedOrder = order as unknown as IOrderPopulated
-			
+
 			const transformedOrder = transformOrder(populatedOrder)
 			await emitPaidOrderPosted(transformedOrder)
 		} else {

@@ -1,17 +1,4 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { model, Schema } from 'mongoose'
-import { IAdmin } from './Admin'
-import { IKiosk } from './Kiosk'
-
-// Own modules
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 // Interfaces
 export interface ISession {
@@ -25,7 +12,7 @@ export interface ISessionFrontend {
 	sessionExpires: Date | null
 	stayLoggedIn: boolean
 	type: 'admin' | 'kiosk' | 'unknown'
-	userId: IAdmin['_id'] | IKiosk['_id'] | null
+	userId: string | null
 	ipAddress: string
 	loginTime: Date
 	lastActivity: Date

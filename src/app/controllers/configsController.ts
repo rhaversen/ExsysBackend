@@ -1,21 +1,11 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
-import logger from '../utils/logger.js'
 import ConfigsModel, { type IConfigs, type IConfigsFrontend } from '../models/Configs.js'
+import logger from '../utils/logger.js'
 import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
-
-export function transformConfigs(
+export function transformConfigs (
 	configsDoc: IConfigs
 ): IConfigsFrontend {
 	return {
@@ -32,7 +22,7 @@ export function transformConfigs(
 	}
 }
 
-export async function getOrCreateConfigs(): Promise<IConfigs> {
+export async function getOrCreateConfigs (): Promise<IConfigs> {
 	const configs = await ConfigsModel.findOne()
 	if (configs === null || configs === undefined) {
 		const newConfigs = await ConfigsModel.create({})
@@ -41,7 +31,7 @@ export async function getOrCreateConfigs(): Promise<IConfigs> {
 	return configs
 }
 
-export async function getConfigs(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getConfigs (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Getting configs')
 
 	try {
@@ -59,7 +49,7 @@ export async function getConfigs(req: Request, res: Response, next: NextFunction
 	}
 }
 
-export async function patchConfigs(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function patchConfigs (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Patching configs')
 
 	const session = await mongoose.startSession()
@@ -69,11 +59,11 @@ export async function patchConfigs(req: Request, res: Response, next: NextFuncti
 		const configs = await getOrCreateConfigs()
 
 		// Set fields directly, checking for undefined to ensure not overwriting with undefined
-		if (req.body.kioskInactivityTimeoutMs !== undefined) configs.kioskInactivityTimeoutMs = req.body.kioskInactivityTimeoutMs
-		if (req.body.kioskInactivityTimeoutWarningMs !== undefined) configs.kioskInactivityTimeoutWarningMs = req.body.kioskInactivityTimeoutWarningMs
-		if (req.body.kioskOrderConfirmationTimeoutMs !== undefined) configs.kioskOrderConfirmationTimeoutMs = req.body.kioskOrderConfirmationTimeoutMs
-		if (req.body.disabledWeekdays !== undefined) configs.disabledWeekdays = req.body.disabledWeekdays
-		if (req.body.kioskPassword !== undefined) configs.kioskPassword = req.body.kioskPassword
+		if (req.body.kioskInactivityTimeoutMs !== undefined) { configs.kioskInactivityTimeoutMs = req.body.kioskInactivityTimeoutMs }
+		if (req.body.kioskInactivityTimeoutWarningMs !== undefined) { configs.kioskInactivityTimeoutWarningMs = req.body.kioskInactivityTimeoutWarningMs }
+		if (req.body.kioskOrderConfirmationTimeoutMs !== undefined) { configs.kioskOrderConfirmationTimeoutMs = req.body.kioskOrderConfirmationTimeoutMs }
+		if (req.body.disabledWeekdays !== undefined) { configs.disabledWeekdays = req.body.disabledWeekdays }
+		if (req.body.kioskPassword !== undefined) { configs.kioskPassword = req.body.kioskPassword }
 
 		// Validate and save the updated document
 		await configs.validate()

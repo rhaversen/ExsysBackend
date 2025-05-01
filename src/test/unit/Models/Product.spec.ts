@@ -1,26 +1,20 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import { Types } from 'mongoose'
 
-// Own modules
-import ProductModel from '../../../app/models/Product.js'
+import ActivityModel from '../../../app/models/Activity.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import OrderModel from '../../../app/models/Order.js'
 import PaymentModel from '../../../app/models/Payment.js'
-import ActivityModel from '../../../app/models/Activity.js'
+import ProductModel from '../../../app/models/Product.js'
 import RoomModel from '../../../app/models/Room.js'
-import KioskModel from '../../../app/models/Kiosk.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Product Model', function () {
@@ -162,7 +156,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				options: [new Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -176,7 +170,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				options: [new Types.ObjectId(), testOption.id]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -190,7 +184,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				options: [testOption.id, testOption.id]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -204,7 +198,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				options: [new Types.ObjectId(), testOption.id]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -218,7 +212,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				options: [testOption.id, new Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -241,7 +235,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -255,7 +249,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				price: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -269,7 +263,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				orderWindow: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -283,7 +277,7 @@ describe('Product Model', function () {
 				...testProductFields,
 				price: -1
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -307,7 +301,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -330,7 +324,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -353,7 +347,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -376,7 +370,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -399,7 +393,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -422,7 +416,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -445,7 +439,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -468,7 +462,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -511,7 +505,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -534,7 +528,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -557,7 +551,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -580,7 +574,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -603,7 +597,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -626,7 +620,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -649,7 +643,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -672,7 +666,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -695,7 +689,7 @@ describe('Product Model', function () {
 						}
 					}
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -847,9 +841,9 @@ describe('Product Model', function () {
 		beforeEach(async function () {
 			const payment = await PaymentModel.create({})
 			const room = await RoomModel.create({ name: 'Test Room', description: 'Test Description' })
-			const activity = await ActivityModel.create({ 
+			const activity = await ActivityModel.create({
 				name: 'Test Activity',
-				roomId: room.id 
+				roomId: room.id
 			})
 			const kiosk = await KioskModel.create({
 				name: 'Test Kiosk',
@@ -864,7 +858,7 @@ describe('Product Model', function () {
 		describe('Pre-delete middleware', function () {
 			it('should remove the product from orders when deleting a product', async function () {
 				const product1 = await ProductModel.create(testProductFields)
-				const product2 = await ProductModel.create({...testProductFields, name: 'Test Product 2'})
+				const product2 = await ProductModel.create({ ...testProductFields, name: 'Test Product 2' })
 
 				const order = await OrderModel.create({
 					products: [{
@@ -912,8 +906,8 @@ describe('Product Model', function () {
 		describe('Pre-delete-many middleware', function () {
 			it('should remove the products from orders when deleting multiple products', async function () {
 				const product1 = await ProductModel.create(testProductFields)
-				const product2 = await ProductModel.create({...testProductFields, name: 'Test Product 2'})
-				const product3 = await ProductModel.create({...testProductFields, name: 'Test Product 3'})
+				const product2 = await ProductModel.create({ ...testProductFields, name: 'Test Product 2' })
+				const product3 = await ProductModel.create({ ...testProductFields, name: 'Test Product 3' })
 
 				const order = await OrderModel.create({
 					products: [{
@@ -941,7 +935,7 @@ describe('Product Model', function () {
 
 			it('should remove orders with no products when deleting multiple products', async function () {
 				const product1 = await ProductModel.create(testProductFields)
-				const product2 = await ProductModel.create({...testProductFields, name: 'Test Product 2'})
+				const product2 = await ProductModel.create({ ...testProductFields, name: 'Test Product 2' })
 
 				await OrderModel.create({
 					products: [{

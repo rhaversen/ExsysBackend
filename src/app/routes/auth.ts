@@ -1,12 +1,5 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-
-// Controller functions
 import {
 	ensureAuthenticated,
 	loginAdminLocal,
@@ -14,12 +7,8 @@ import {
 	logoutLocal
 } from '../controllers/authController.js'
 import { isAdmin, isKiosk } from '../middleware/authorization.js'
+import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**

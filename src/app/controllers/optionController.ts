@@ -1,19 +1,9 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
 import OptionModel from '../models/Option.js'
 import logger from '../utils/logger.js'
 import { emitOptionCreated, emitOptionDeleted, emitOptionUpdated } from '../webSockets/optionHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating option')
@@ -70,9 +60,9 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 		}
 
 		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.name !== undefined) option.name = req.body.name
-		if (req.body.imageURL !== undefined) option.imageURL = req.body.imageURL
-		if (req.body.price !== undefined) option.price = req.body.price
+		if (req.body.name !== undefined) { option.name = req.body.name }
+		if (req.body.imageURL !== undefined) { option.imageURL = req.body.imageURL }
+		if (req.body.price !== undefined) { option.price = req.body.price }
 
 		// Validate and save the updated document
 		await option.validate()

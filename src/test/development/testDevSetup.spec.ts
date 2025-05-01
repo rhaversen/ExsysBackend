@@ -1,6 +1,3 @@
-/* eslint-disable local/enforce-comment-order */
-// Global variables
-
 before(async function () {
 	this.timeout(10000)
 	// Setting environment

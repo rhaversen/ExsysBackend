@@ -1,7 +1,8 @@
-/* eslint-disable local/enforce-comment-order */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
+import { randomUUID } from 'crypto'
 
 import ActivityModel from '../app/models/Activity.js'
 import AdminModel from '../app/models/Admin.js'
@@ -14,7 +15,6 @@ import ReaderModel from '../app/models/Reader.js'
 import RoomModel from '../app/models/Room.js'
 import SessionModel from '../app/models/Session.js'
 import logger from '../app/utils/logger.js'
-import { randomUUID } from 'crypto'
 
 logger.info('Seeding database')
 
@@ -1528,13 +1528,13 @@ const allRooms = await RoomModel.find({})
 const allKiosks = await KioskModel.find({})
 const allPayments = await PaymentModel.find({})
 
-function getRandom(arr: any[], min = 1, max = 1) {
+function getRandom<T> (arr: T[], min = 1, max = 1): T[] {
 	const count = Math.floor(Math.random() * (max - min + 1)) + min
 	const shuffled = arr.slice().sort(() => 0.5 - Math.random())
 	return shuffled.slice(0, Math.min(count, arr.length))
 }
 
-function randomDate(start: Date, end: Date) {
+function randomDate (start: Date, end: Date) {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
 }
 
@@ -1543,9 +1543,6 @@ const monthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
 
 // Only use products with orderWindow from 00:00 to 23:59
 const allDayProducts = allProducts.filter(p =>
-	p.orderWindow &&
-	p.orderWindow.from &&
-	p.orderWindow.to &&
 	p.orderWindow.from.hour === 0 &&
 	p.orderWindow.from.minute === 0 &&
 	p.orderWindow.to.hour === 23 &&

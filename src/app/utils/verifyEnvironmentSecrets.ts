@@ -1,16 +1,7 @@
-// Node.js built-in modules
 import 'process'
 
-// Third-party libraries
-
-// Own modules
 import logger from './logger.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const envSecrets = [
 	// Database
 	'DB_NAME',
@@ -66,9 +57,10 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 if (missingSecrets.length > 0) {
-	logger.error(`Missing environment secrets: ${missingSecrets.join(', ')}`)
+	const errorMessage = `Missing environment secrets: ${missingSecrets.join(', ')}`
+	logger.error(errorMessage)
 	logger.info('Exiting due to missing environment secrets')
-	process.exit(1)
+	throw new Error(errorMessage)
 }
 
 logger.info('All environment secrets are set')

@@ -1,16 +1,5 @@
-// Node.js built-in modules
-
-// Third-party libraries
-
-// Own modules
-import { emitSocketEvent } from '../utils/socket.js'
 import { type IReaderFrontend } from '../models/Reader.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import { emitSocketEvent } from '../utils/socket.js'
 
 export function emitReaderCreated (reader: IReaderFrontend): void {
 	emitSocketEvent<IReaderFrontend>(

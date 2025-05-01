@@ -4,52 +4,43 @@ import './utils/verifyEnvironmentSecrets.js'
 // Use Sentry
 import './utils/instrument.js'
 
-// Node.js built-in modules
 import { createServer } from 'node:http'
 
-// Third-party libraries
+import * as Sentry from '@sentry/node'
+import MongoStore from 'connect-mongo'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import express from 'express'
 import mongoSanitize from 'express-mongo-sanitize'
+import RateLimit from 'express-rate-limit'
+import session from 'express-session'
 import helmet from 'helmet'
 import mongoose from 'mongoose'
-import RateLimit from 'express-rate-limit'
-import cors from 'cors'
-import session from 'express-session'
-import cookieParser from 'cookie-parser'
 import passport from 'passport'
-import MongoStore from 'connect-mongo'
-import * as Sentry from '@sentry/node'
 
-// Own modules
-import databaseConnector from './utils/databaseConnector.js'
-import logger from './utils/logger.js'
-import config from './utils/setupConfig.js'
-import globalErrorHandler from './middleware/globalErrorHandler.js'
-import configurePassport from './utils/passportConfig.js'
-import { initSocket } from './utils/socket.js'
-import { type ISession } from './models/Session.js'
-import { getIPAddress } from './utils/sessionUtils.js'
-import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 import { transformSession } from './controllers/sessionController.js'
-
-// Business logic routes
+import globalErrorHandler from './middleware/globalErrorHandler.js'
+import { type ISession } from './models/Session.js'
+import activityRoutes from './routes/activities.js'
+import adminRoutes from './routes/admins.js'
+import authRoutes from './routes/auth.js'
+import configRoutes from './routes/configs.js'
+import kioskRoutes from './routes/kiosks.js'
+import optionRoutes from './routes/options.js'
 import orderRoutes from './routes/orders.js'
 import productRoutes from './routes/products.js'
-import adminRoutes from './routes/admins.js'
-import roomRoutes from './routes/rooms.js'
-import optionRoutes from './routes/options.js'
-import authRoutes from './routes/auth.js'
-import activityRoutes from './routes/activities.js'
-import kioskRoutes from './routes/kiosks.js'
-import readerRoutes from './routes/readers.js'
-import sessionRoutes from './routes/sessions.js'
-import configRoutes from './routes/configs.js'
-
-// Callback routes
 import readerCallbackRoutes from './routes/readerCallback.js'
-
-// Service routes
+import readerRoutes from './routes/readers.js'
+import roomRoutes from './routes/rooms.js'
 import serviceRoutes from './routes/service.js'
+import sessionRoutes from './routes/sessions.js'
+import databaseConnector from './utils/databaseConnector.js'
+import logger from './utils/logger.js'
+import configurePassport from './utils/passportConfig.js'
+import { getIPAddress } from './utils/sessionUtils.js'
+import config from './utils/setupConfig.js'
+import { initSocket } from './utils/socket.js'
+import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Environment variables
 const { NODE_ENV, SESSION_SECRET } = process.env as Record<string, string>
@@ -95,7 +86,7 @@ app.use(cors(corsConfig))
 
 // Create a session store
 const sessionStore = MongoStore.create({
-	client: mongoose.connection.getClient() as any, // Use the existing connection
+	client: mongoose.connection.getClient(), // Use the existing connection
 	autoRemove: 'interval', // Remove expired sessions
 	autoRemoveInterval: 1 // 1 minute
 })
@@ -175,7 +166,7 @@ server.listen(expressPort, () => {
 })
 
 // Handle unhandled rejections outside middleware
-process.on('unhandledRejection', (reason, promise): void => {
+process.on('unhandledRejection', async (reason, promise): Promise<void> => {
 	// Attempt to get a string representation of the promise
 	const promiseString = JSON.stringify(promise) !== '' ? JSON.stringify(promise) : 'a promise'
 
@@ -185,25 +176,35 @@ process.on('unhandledRejection', (reason, promise): void => {
 	// Log the detailed error message
 	logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
 
-	shutDown().catch(error => {
+	try {
+		await shutDown()
+		// Optionally re-throw the original reason after shutdown attempt if needed
+		// throw reason;
+	} catch (error) {
 		// If 'error' is an Error object, log its stack trace; otherwise, convert to string
 		const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
-		logger.error(`An error occurred during shutdown: ${errorDetail}`)
-		process.exit(1)
-	})
+		logger.error(`An error occurred during shutdown after unhandled rejection: ${errorDetail}`)
+		// Throw the shutdown error to indicate failure and satisfy lint rule
+		throw error
+	}
 })
 
 // Handle uncaught exceptions outside middleware
-process.on('uncaughtException', (err): void => {
+process.on('uncaughtException', async (err): Promise<void> => {
 	logger.error('Uncaught exception:', err)
-	shutDown().catch(error => {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1)
-	})
+	try {
+		await shutDown()
+		// Re-throw the original error after attempting shutdown
+		throw err
+	} catch (shutdownError) {
+		logger.error('An error occurred during shutdown after uncaught exception:', shutdownError)
+		// Throw the shutdown error to indicate failure and satisfy lint rule
+		throw shutdownError
+	}
 })
 
 // Shutdown function
-export async function shutDown(): Promise<void> {
+export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')

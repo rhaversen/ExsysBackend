@@ -1,23 +1,17 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
+import mongoose from 'mongoose'
 
-// Own modules
-import ActivityModel, { IActivity, IActivityPopulated } from '../../../app/models/Activity.js'
+import ActivityModel, { IActivityPopulated } from '../../../app/models/Activity.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
-import KioskModel from '../../../app/models/Kiosk.js'
-import mongoose, { PopulatedDoc } from 'mongoose'
 
 describe('Activity Model', function () {
 	let testRoom: IRoom
@@ -61,7 +55,7 @@ describe('Activity Model', function () {
 		try {
 			await ActivityModel.create(testActivityField)
 			await ActivityModel.create(testActivityField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -75,7 +69,7 @@ describe('Activity Model', function () {
 				...testActivityField,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -119,7 +113,7 @@ describe('Activity Model', function () {
 				...testActivityField,
 				rooms: [new mongoose.Types.ObjectId().toString()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

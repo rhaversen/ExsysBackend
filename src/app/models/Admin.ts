@@ -1,10 +1,6 @@
-// Node.js built-in modules
-
-// Third-party libraries
-import { type Document, model, Schema } from 'mongoose'
 import { compare, hash } from 'bcrypt'
+import { type Document, model, Schema } from 'mongoose'
 
-// Own modules
 import logger from '../utils/logger.js'
 import config from '../utils/setupConfig.js'
 

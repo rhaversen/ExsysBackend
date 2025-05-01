@@ -1,19 +1,9 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
-import logger from '../utils/logger.js'
 import RoomModel from '../models/Room.js'
+import logger from '../utils/logger.js'
 import { emitRoomCreated, emitRoomDeleted, emitRoomUpdated } from '../webSockets/roomHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.silly('Creating room')
@@ -89,8 +79,8 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 		}
 
 		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.name !== undefined) room.name = req.body.name
-		if (req.body.description !== undefined) room.description = req.body.description
+		if (req.body.name !== undefined) { room.name = req.body.name }
+		if (req.body.description !== undefined) { room.description = req.body.description }
 
 		// Validate and save the updated document
 		await room.validate()

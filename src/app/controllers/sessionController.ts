@@ -1,28 +1,18 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 
-// Own modules
 import Session, { type ISession, type ISessionFrontend } from '../models/Session.js'
 import { emitSessionDeleted } from '../webSockets/sessionHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export interface ParsedSessionData {
 	cookie: {
 		originalMaxAge: number | null
-		expires: any
-		secure: any
-		httpOnly: any
-		path: any
+		expires: string
+		secure: string
+		httpOnly: string
+		path: string
 	}
 	passport?: {
-		user: any
+		user: string
 	}
 	ipAddress: string
 	loginTime: Date

@@ -1,21 +1,14 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
-// Own modules
-import RoomModel from '../../../app/models/Room.js'
-
-// Setup test environment
-import '../../testSetup.js'
 import ActivityModel from '../../../app/models/Activity.js'
+import RoomModel from '../../../app/models/Room.js'
+import '../../testSetup.js'
 
 describe('Room Model', function () {
 	const testRoomField = {
@@ -53,7 +46,7 @@ describe('Room Model', function () {
 		try {
 			await RoomModel.create(testRoomField)
 			await RoomModel.create(testRoomField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -67,7 +60,7 @@ describe('Room Model', function () {
 				...testRoomField,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -81,7 +74,7 @@ describe('Room Model', function () {
 				...testRoomField,
 				description: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

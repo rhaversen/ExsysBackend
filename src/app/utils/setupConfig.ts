@@ -1,20 +1,11 @@
-// Node.js built-in modules
-
-// Third-party libraries
-import { type Options as RateLimitOptions } from 'express-rate-limit'
-import { type ConnectOptions } from 'mongoose'
+import config from 'config'
 import { type CorsOptions } from 'cors'
 import { type CookieOptions } from 'express'
-import config from 'config'
+import { type Options as RateLimitOptions } from 'express-rate-limit'
+import { type ConnectOptions } from 'mongoose'
 
-// Own modules
 import logger from './logger.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const configString = JSON.stringify(config.util.toObject(config), null, 4)
 
 // Log the configs used

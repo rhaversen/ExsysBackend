@@ -1,13 +1,5 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-
-// Controller functions
 import {
 	createRoom,
 	deleteRoom,
@@ -15,12 +7,9 @@ import {
 	getRooms,
 	patchRoom
 } from '../controllers/roomController.js'
+import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
+import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**

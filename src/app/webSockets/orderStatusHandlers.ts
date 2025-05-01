@@ -1,17 +1,6 @@
-// Node.js built-in modules
-
-// Third-party libraries
-
-// Own modules
+import { IOrderFrontend } from '../models/Order.js'
 import logger from '../utils/logger.js'
 import { emitSocketEvent } from '../utils/socket.js'
-import { IOrderFrontend } from '../models/Order.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export async function emitPaidOrderPosted (order: IOrderFrontend): Promise<void> {
 	try {

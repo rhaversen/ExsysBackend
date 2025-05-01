@@ -1,20 +1,14 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
-// Own modules
 import OptionModel from '../../../app/models/Option.js'
 import ProductModel from '../../../app/models/Product.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Option Model', function () {
@@ -83,7 +77,7 @@ describe('Option Model', function () {
 				...testOptionFields,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -97,7 +91,7 @@ describe('Option Model', function () {
 				...testOptionFields,
 				price: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -120,7 +114,7 @@ describe('Option Model', function () {
 				...testOptionFields,
 				price: -1
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -134,7 +128,7 @@ describe('Option Model', function () {
 				...testOptionFields,
 				name: 'a'.repeat(21)
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -161,10 +155,10 @@ describe('Option Model', function () {
 		describe('Pre-delete middleware', function () {
 			it('should remove the option from any products when deleted', async function () {
 				const option = await OptionModel.create(testOptionFields)
-				const product = await ProductModel.create({...testProductFields, options: [option._id]})
-		
+				const product = await ProductModel.create({ ...testProductFields, options: [option._id] })
+
 				await OptionModel.deleteOne({ _id: option._id })
-		
+
 				const updatedProduct = await ProductModel.findById(product._id)
 				expect(updatedProduct?.options).to.be.empty
 			})
@@ -172,10 +166,10 @@ describe('Option Model', function () {
 			it('should not remove other options from the product when deleting an option', async function () {
 				const option1 = await OptionModel.create(testOptionFields)
 				const option2 = await OptionModel.create(testOptionFields)
-				const product = await ProductModel.create({...testProductFields, options: [option1._id, option2._id]})
-		
+				const product = await ProductModel.create({ ...testProductFields, options: [option1._id, option2._id] })
+
 				await OptionModel.deleteOne({ _id: option1._id })
-		
+
 				const updatedProduct = await ProductModel.findById(product._id)
 				expect(updatedProduct?.options).to.have.lengthOf(1)
 			})
@@ -183,11 +177,11 @@ describe('Option Model', function () {
 			it('should remove the option from any orders when deleting a option', async function () {
 				const option = await OptionModel.create(testOptionFields)
 				const product = await ProductModel.create(testProductFields)
-		
+
 				await ProductModel.findByIdAndUpdate(product._id, { $push: { options: option._id } })
-		
+
 				await OptionModel.deleteOne({ _id: option._id })
-		
+
 				const updatedProduct = await ProductModel.findById(product._id)
 				expect(updatedProduct?.options).to.be.empty
 			})
@@ -197,10 +191,10 @@ describe('Option Model', function () {
 			it('should remove the options from any products when deleted', async function () {
 				const option1 = await OptionModel.create(testOptionFields)
 				const option2 = await OptionModel.create(testOptionFields)
-				const product = await ProductModel.create({...testProductFields, options: [option1._id, option2._id]})
-		
+				const product = await ProductModel.create({ ...testProductFields, options: [option1._id, option2._id] })
+
 				await OptionModel.deleteMany({ _id: { $in: [option1._id, option2._id] } })
-		
+
 				const updatedProduct = await ProductModel.findById(product._id)
 
 				expect(updatedProduct?.options).to.be.empty
@@ -209,10 +203,10 @@ describe('Option Model', function () {
 			it('should not remove other options from the product when deleting options', async function () {
 				const option1 = await OptionModel.create(testOptionFields)
 				const option2 = await OptionModel.create(testOptionFields)
-				const product = await ProductModel.create({...testProductFields, options: [option1._id, option2._id]})
-		
+				const product = await ProductModel.create({ ...testProductFields, options: [option1._id, option2._id] })
+
 				await OptionModel.deleteMany({ _id: option1._id })
-		
+
 				const updatedProduct = await ProductModel.findById(product._id)
 				expect(updatedProduct?.options).to.have.lengthOf(1)
 			})
@@ -221,9 +215,9 @@ describe('Option Model', function () {
 				const option1 = await OptionModel.create(testOptionFields)
 				const option2 = await OptionModel.create(testOptionFields)
 				const product = await ProductModel.create(testProductFields)
-				
+
 				await OptionModel.deleteMany({ _id: { $in: [option1._id, option2._id] } })
-		
+
 				const updatedProduct = await ProductModel.findById(product._id)
 				expect(updatedProduct?.options).to.be.empty
 			})

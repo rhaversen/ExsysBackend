@@ -1,24 +1,17 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
-import { compare } from 'bcrypt'
 
-// Own modules
-import KioskModel from '../../../app/models/Kiosk.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
-import RoomModel from '../../../app/models/Room.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
+import RoomModel from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Kiosk Model', function () {
@@ -92,7 +85,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create(testKioskField)
 			await KioskModel.create(testKioskField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -106,7 +99,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				kioskTag: '123456'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -120,7 +113,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				kioskTag: '1234'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -134,7 +127,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				kioskTag: '1234a'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -148,7 +141,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				activities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -162,7 +155,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -176,7 +169,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				readerId: new mongoose.Types.ObjectId()
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -207,14 +200,14 @@ describe('Kiosk Model', function () {
 		})
 		await KioskModel.create({
 			readerId: reader.id,
-			name: 'Test Kiosk 2',
+			name: 'Test Kiosk 2'
 		})
 		try {
 			await KioskModel.create({
 				...testKioskField,
 				readerId: reader.id
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -234,7 +227,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create(testKioskField)
 			await KioskModel.create(testKioskField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -264,7 +257,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				activities: [new mongoose.Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -278,7 +271,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				activities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

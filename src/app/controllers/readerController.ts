@@ -1,20 +1,10 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
 import ReaderModel, { type IReader, type IReaderFrontend } from '../models/Reader.js'
-import logger from '../utils/logger.js'
 import { pairReader, unpairReader } from '../services/apiServices.js'
+import logger from '../utils/logger.js'
 import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webSockets/readerHandlers.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export function transformReader (
 	readerDoc: IReader
@@ -99,7 +89,7 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 		}
 
 		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.readerTag !== undefined) reader.readerTag = req.body.readerTag
+		if (req.body.readerTag !== undefined) { reader.readerTag = req.body.readerTag }
 
 		// Validate and save the updated document
 		await reader.validate()

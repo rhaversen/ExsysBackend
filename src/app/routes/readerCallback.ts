@@ -1,19 +1,8 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
+import { updatePaymentStatus } from '../controllers/readerCallbackController.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
-// Controller functions
-import { updatePaymentStatus } from '../controllers/readerCallbackController.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**

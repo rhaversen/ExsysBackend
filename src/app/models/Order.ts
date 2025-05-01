@@ -1,22 +1,13 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 
-// Own modules
 import logger from '../utils/logger.js'
-import OptionModel, { type IOption } from './Option.js'
-import ProductModel, { type IProduct } from './Product.js'
+
 import ActivityModel, { IActivity } from './Activity.js'
-import PaymentModel, { type IPayment } from './Payment.js'
-import RoomModel, { IRoom } from './Room.js'
 import KioskModel, { IKiosk } from './Kiosk.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import OptionModel, { type IOption } from './Option.js'
+import PaymentModel, { type IPayment } from './Payment.js'
+import ProductModel, { type IProduct } from './Product.js'
+import RoomModel, { IRoom } from './Room.js'
 
 // Interfaces
 export interface IOrder extends Document {
