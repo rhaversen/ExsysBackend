@@ -7,7 +7,6 @@ import {
 	patchProduct
 } from '../controllers/productController.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -27,7 +26,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createProduct)
+	createProduct
 )
 
 /**
@@ -40,7 +39,7 @@ router.post('/',
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getProducts)
+	getProducts
 )
 
 /**
@@ -60,7 +59,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchProduct)
+	patchProduct
 )
 
 /**
@@ -74,7 +73,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteProduct)
+	deleteProduct
 )
 
 export default router

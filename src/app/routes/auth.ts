@@ -7,7 +7,6 @@ import {
 	logoutLocal
 } from '../controllers/authController.js'
 import { isAdmin, isKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -22,7 +21,7 @@ const router = Router()
  * @returns {string} res.headers['set-cookie'] - The session cookie.
  */
 router.post('/login-kiosk-local',
-	asyncErrorHandler(loginKioskLocal)
+	loginKioskLocal
 )
 
 /**
@@ -37,7 +36,7 @@ router.post('/login-kiosk-local',
  * @returns {string} res.headers['set-cookie'] - The session cookie.
  */
 router.post('/login-admin-local',
-	asyncErrorHandler(loginAdminLocal)
+	loginAdminLocal
 )
 
 /**
@@ -47,7 +46,7 @@ router.post('/login-admin-local',
  * @returns {number} res.status - The status code of the HTTP response.
  */
 router.post('/logout-local',
-	asyncErrorHandler(logoutLocal)
+	logoutLocal
 )
 
 /**

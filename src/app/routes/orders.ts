@@ -7,7 +7,6 @@ import {
 	updateOrderStatus
 } from '../controllers/orderController.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -26,7 +25,7 @@ const router = Router()
  */
 router.post('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(createOrder)
+	createOrder
 )
 
 /**
@@ -40,7 +39,7 @@ router.post('/',
  */
 router.get('/:id/paymentStatus',
 	isAdminOrKiosk,
-	asyncErrorHandler(getPaymentStatus)
+	getPaymentStatus
 )
 
 /**
@@ -57,7 +56,7 @@ router.get('/:id/paymentStatus',
  */
 router.get('/',
 	isAdmin,
-	asyncErrorHandler(getOrdersWithQuery)
+	getOrdersWithQuery
 )
 
 /**
@@ -72,7 +71,7 @@ router.get('/',
  */
 router.patch('/',
 	isAdmin,
-	asyncErrorHandler(updateOrderStatus)
+	updateOrderStatus
 )
 
 export default router

@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { updatePaymentStatus } from '../controllers/readerCallbackController.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -15,7 +14,7 @@ const router = Router()
  * @returns {Object} res.body - The updated payment status.
  */
 router.post('/',
-	asyncErrorHandler(updatePaymentStatus)
+	updatePaymentStatus
 )
 
 export default router

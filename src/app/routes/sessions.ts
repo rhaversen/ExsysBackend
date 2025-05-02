@@ -6,7 +6,6 @@ import {
 	getSessions
 } from '../controllers/sessionController.js'
 import { isAdmin } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -20,7 +19,7 @@ const router = Router()
  */
 router.get('/',
 	isAdmin,
-	asyncErrorHandler(getSessions)
+	getSessions
 )
 
 /**
@@ -33,7 +32,7 @@ router.get('/',
  */
 router.get('/current',
 	isAdmin,
-	asyncErrorHandler(getCurrentSession)
+	getCurrentSession
 )
 
 /**
@@ -46,7 +45,7 @@ router.get('/current',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteSession)
+	deleteSession
 )
 
 export default router

@@ -8,7 +8,6 @@ import {
 	patchRoom
 } from '../controllers/roomController.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -24,7 +23,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createRoom)
+	createRoom
 )
 
 /**
@@ -38,7 +37,7 @@ router.post('/',
  */
 router.get('/:id',
 	isAdminOrKiosk,
-	asyncErrorHandler(getRoom)
+	getRoom
 )
 
 /**
@@ -51,7 +50,7 @@ router.get('/:id',
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getRooms)
+	getRooms
 )
 
 /**
@@ -67,7 +66,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchRoom)
+	patchRoom
 )
 
 /**
@@ -81,7 +80,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteRoom)
+	deleteRoom
 )
 
 export default router

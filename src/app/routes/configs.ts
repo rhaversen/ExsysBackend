@@ -5,7 +5,6 @@ import {
 	patchConfigs
 } from '../controllers/configsController.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -19,7 +18,7 @@ const router = Router()
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getConfigs)
+	getConfigs
 )
 
 /**
@@ -37,7 +36,7 @@ router.get('/',
  */
 router.patch('/',
 	isAdmin,
-	asyncErrorHandler(patchConfigs)
+	patchConfigs
 )
 
 export default router

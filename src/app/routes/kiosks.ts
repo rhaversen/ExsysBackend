@@ -10,7 +10,6 @@ import {
 	patchKiosk
 } from '../controllers/kioskController.js'
 import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -31,7 +30,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createKiosk)
+	createKiosk
 )
 
 /**
@@ -44,7 +43,7 @@ router.post('/',
  */
 router.get('/me',
 	isKiosk,
-	asyncErrorHandler(getMe)
+	getMe
 )
 
 /**
@@ -58,7 +57,7 @@ router.get('/me',
  */
 router.get('/:id',
 	isAdminOrKiosk,
-	asyncErrorHandler(getKiosk)
+	getKiosk
 )
 
 /**
@@ -71,7 +70,7 @@ router.get('/:id',
  */
 router.get('/',
 	isAdmin,
-	asyncErrorHandler(getKiosks)
+	getKiosks
 )
 
 /**
@@ -92,7 +91,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchKiosk)
+	patchKiosk
 )
 
 /**
@@ -106,7 +105,7 @@ router.patch('/:id',
  */
 router.patch('/:id/kioskTag',
 	isAdmin,
-	asyncErrorHandler(createNewKioskTag)
+	createNewKioskTag
 )
 
 /**
@@ -120,7 +119,7 @@ router.patch('/:id/kioskTag',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteKiosk)
+	deleteKiosk
 )
 
 export default router

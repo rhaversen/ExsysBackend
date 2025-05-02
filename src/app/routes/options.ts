@@ -7,7 +7,6 @@ import {
 	patchOption
 } from '../controllers/optionController.js'
 import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -24,7 +23,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createOption)
+	createOption
 )
 
 /**
@@ -37,7 +36,7 @@ router.post('/',
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getOptions)
+	getOptions
 )
 
 /**
@@ -54,7 +53,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchOption)
+	patchOption
 )
 
 /**
@@ -68,7 +67,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteOption)
+	deleteOption
 )
 
 export default router

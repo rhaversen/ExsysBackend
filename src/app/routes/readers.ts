@@ -7,7 +7,6 @@ import {
 	patchReader
 } from '../controllers/readerController.js'
 import { isAdmin } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -23,7 +22,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createReader)
+	createReader
 )
 
 /**
@@ -36,7 +35,7 @@ router.post('/',
  */
 router.get('/',
 	isAdmin,
-	asyncErrorHandler(getReaders)
+	getReaders
 )
 
 /**
@@ -51,7 +50,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchReader)
+	patchReader
 )
 
 /**
@@ -65,7 +64,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteReader)
+	deleteReader
 )
 
 export default router

@@ -8,7 +8,6 @@ import {
 	getMe
 } from '../controllers/adminController.js'
 import { isAdmin } from '../middleware/authorization.js'
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 const router = Router()
 
@@ -24,7 +23,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createAdmin)
+	createAdmin
 )
 
 /**
@@ -37,7 +36,7 @@ router.post('/',
  */
 router.get('/',
 	isAdmin,
-	asyncErrorHandler(getAdmins)
+	getAdmins
 )
 
 /**
@@ -50,7 +49,7 @@ router.get('/',
  */
 router.get('/me',
 	isAdmin,
-	asyncErrorHandler(getMe)
+	getMe
 )
 
 /**
@@ -66,7 +65,7 @@ router.get('/me',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchAdmin)
+	patchAdmin
 )
 
 /**
@@ -80,7 +79,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteAdmin)
+	deleteAdmin
 )
 
 export default router
