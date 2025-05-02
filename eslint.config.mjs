@@ -62,6 +62,9 @@ export default tseslint.config(
 			'@typescript-eslint/strict-boolean-expressions': 'error',
 			'@typescript-eslint/no-unused-vars': 'warn',
 
+			// Disallow console.log
+			'no-console': ['error'],
+
 			// Import plugin rules
 			'import/first': 'error',
 			'import/order': [
