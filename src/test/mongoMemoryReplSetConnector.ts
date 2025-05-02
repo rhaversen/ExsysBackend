@@ -1,4 +1,3 @@
-
 import type MongoStore from 'connect-mongo'
 import { MongoMemoryReplSet } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
@@ -30,19 +29,11 @@ export default async function connectToInMemoryMongoDB (): Promise<void> {
 	}
 }
 
-function closeSessionStore (sessionStore: MongoStore): void {
-	// Clear the interval timer used by connect-mongo
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const cleanupTimer = (sessionStore as any)._removeExpiredSessions
-	if (typeof cleanupTimer === 'function') {
-		clearInterval(cleanupTimer as NodeJS.Timeout)
-	}
-}
-
 export async function disconnectFromInMemoryMongoDB (sessionStore: MongoStore): Promise<void> {
 	try {
 		logger.info('Closing session store...')
-		closeSessionStore(sessionStore)
+		// Explicitly close the MongoStore connection first
+		await sessionStore.close()
 		logger.info('Session store closed')
 
 		logger.info('Closing connection to in-memory MongoDB...')

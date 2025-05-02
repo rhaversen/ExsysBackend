@@ -7,7 +7,7 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 import PaymentModel from '../../../app/models/Payment.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent } from '../../testSetup.js'
 
 describe('Reader Callback routes', function () {
 	describe('POST /v1/reader-callback', function () {

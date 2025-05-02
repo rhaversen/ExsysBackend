@@ -22,7 +22,7 @@ process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'
 
 const chaiHttpObject = chai.use(chaiHttp)
 let app: { server: Server, sessionStore: MongoStore }
-let chaiAppServer: ChaiHttp.Agent
+let chaiAppAgent: ChaiHttp.Agent
 
 const cleanDatabase = async function (): Promise<void> {
 	// /////////////////////////////////////////////
@@ -53,17 +53,24 @@ before(async function () {
 })
 
 beforeEach(async function () {
-	chaiAppServer = chaiHttpObject.request(app.server).keepOpen()
+	chaiAppAgent = chaiHttpObject.request(app.server).keepOpen()
 })
 
 afterEach(async function () {
 	restore()
 	await cleanDatabase()
-	chaiAppServer.close()
+	// Close the agent and wait for the callback using a Promise
+	await new Promise<void>((resolve) => {
+		// Check if chaiAppAgent exists before attempting to close
+		chaiAppAgent.close(() => {
+			resolve()
+		})
+	})
 })
 
 after(async function () {
-	this.timeout(20000)
+	// Increase timeout to allow for potentially slow MongoDB shutdown
+	this.timeout(40000)
 	// Close the server
 	app.server.close()
 	// Disconnect from the database
@@ -72,5 +79,39 @@ after(async function () {
 	await Sentry.close()
 })
 
-const getChaiAppServer = (): ChaiHttp.Agent => chaiAppServer
-export { getChaiAppServer }
+// Define return type explicitly here to match agent created
+const getChaiAgent = (): ChaiHttp.Agent => {
+	return chaiAppAgent
+}
+
+/**
+ * Extracts the connect.sid cookie string from the Set-Cookie header.
+ * @param {string | string[] | undefined} setCookieHeader - The Set-Cookie header value(s).
+ * @returns {string} The full connect.sid cookie string, or an empty string if not found.
+ */
+export function extractConnectSid (
+	setCookieHeader: string | string[] | undefined,
+	withFlags: boolean = false
+): string {
+	if (setCookieHeader === undefined) {
+		return ''
+	}
+	const cookies = Array.isArray(setCookieHeader)
+		? setCookieHeader
+		: [setCookieHeader]
+	// find the sid entry
+	const sidCookie = cookies.find(
+		cookie => cookie.startsWith('connect.sid=')
+	)
+	if (sidCookie === null || sidCookie === undefined || sidCookie === '') {
+		return ''
+	}
+	if (withFlags) {
+		// return the full cookie string with flags
+		return sidCookie
+	}
+	// return only 'connect.sid=…' without any flags
+	return sidCookie.split(';')[0]
+}
+
+export { getChaiAgent }

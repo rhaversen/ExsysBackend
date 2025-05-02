@@ -10,7 +10,7 @@ import mongoose from 'mongoose'
 import ActivityModel, { IActivityPopulated, type IActivity } from '../../../app/models/Activity.js'
 import AdminModel from '../../../app/models/Admin.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
 
 describe('Activities routes', function () {
 	let sessionCookie: string
@@ -24,7 +24,7 @@ describe('Activities routes', function () {
 		await AdminModel.create(adminFields)
 
 		const response = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-		sessionCookie = response.headers['set-cookie']
+		sessionCookie = extractConnectSid(response.headers['set-cookie'])
 	})
 
 	describe('POST /v1/activities', function () {

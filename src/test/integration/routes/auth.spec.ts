@@ -12,7 +12,7 @@ import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
 import config from '../../../app/utils/setupConfig.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
 
 // Config
 const {
@@ -44,8 +44,9 @@ describe('Auth routes', function () {
 			// Log the admin in to get a token
 			const res = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'])
 			expect(cookie).to.be.a('string')
+			expect(cookie).to.include('connect.sid=')
 		})
 
 		it('should create a session in the database', async function () {
@@ -62,8 +63,8 @@ describe('Auth routes', function () {
 			// Log the admin in to get a token
 			const res = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
-			const encodedCookieValue = cookie.split(';')[0].split('=')[1]
+			const cookie = extractConnectSid(res.headers['set-cookie'])
+			const encodedCookieValue = cookie.split('=')[1]
 			const signedAndEncodedSessionId = encodedCookieValue.split('.')[0] as string
 			const cookieSessionId = decodeURIComponent(signedAndEncodedSessionId).substring(2)
 
@@ -103,7 +104,7 @@ describe('Auth routes', function () {
 			// Log the admin in to get a token
 			const res = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.include('HttpOnly')
 		})
 
@@ -111,7 +112,7 @@ describe('Auth routes', function () {
 			// Log the admin in to get a token
 			const res = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.include('Path=/')
 		})
 
@@ -119,7 +120,7 @@ describe('Auth routes', function () {
 			// Log the admin in to get a token
 			const res = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.not.include('Max-Age')
 		})
 
@@ -181,7 +182,7 @@ describe('Auth routes', function () {
 
 			expect(res).to.have.status(200)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.include('Expires')
 		})
 
@@ -193,7 +194,7 @@ describe('Auth routes', function () {
 
 			expect(res).to.have.status(200)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			const expiryDate = new Date(Date.now() + sessionExpiry)
 			expect(cookie).to.include(`Expires=${expiryDate.toUTCString()}`)
 		})
@@ -205,7 +206,9 @@ describe('Auth routes', function () {
 			})
 
 			expect(res).to.have.status(200)
-			expect(res.headers['set-cookie']).to.be.an('array').that.satisfies((cookies: string[]) => {
+			const setCookieHeader = res.headers['set-cookie']
+			const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader]
+			expect(cookies).to.be.an('array').that.satisfies((cookies: string[]) => {
 				return cookies.every((cookie: string) => !cookie.includes('Expires'))
 			})
 		})
@@ -280,8 +283,9 @@ describe('Auth routes', function () {
 			// Log the kiosk in to get a token
 			const res = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'])
 			expect(cookie).to.be.a('string')
+			expect(cookie).to.include('connect.sid=')
 		})
 
 		it('should create a session in the database', async function () {
@@ -298,8 +302,8 @@ describe('Auth routes', function () {
 			// Log the kiosk in to get a token
 			const res = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
-			const encodedCookieValue = cookie.split(';')[0].split('=')[1]
+			const cookie = extractConnectSid(res.headers['set-cookie'])
+			const encodedCookieValue = cookie.split('=')[1]
 			const signedAndEncodedSessionId = encodedCookieValue.split('.')[0] as string
 			const cookieSessionId = decodeURIComponent(signedAndEncodedSessionId).substring(2)
 
@@ -340,7 +344,7 @@ describe('Auth routes', function () {
 
 			expect(res).to.have.status(200)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.include('Expires')
 		})
 
@@ -352,7 +356,7 @@ describe('Auth routes', function () {
 
 			expect(res).to.have.status(200)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			const expiryDate = new Date(Date.now() + sessionExpiry)
 			expect(cookie).to.include(`Expires=${expiryDate.toUTCString()}`)
 		})
@@ -361,7 +365,7 @@ describe('Auth routes', function () {
 			// Log the kiosk in to get a token
 			const res = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.include('HttpOnly')
 		})
 
@@ -369,7 +373,7 @@ describe('Auth routes', function () {
 			// Log the kiosk in to get a token
 			const res = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
-			const cookie = res.headers['set-cookie'].find((cookie: string) => cookie.includes('connect.sid'))
+			const cookie = extractConnectSid(res.headers['set-cookie'], true)
 			expect(cookie).to.include('Path=/')
 		})
 
@@ -478,8 +482,7 @@ describe('Auth routes', function () {
 				const res = await agent().post('/api/v1/auth/logout-local')
 
 				// Check if the 'Set-Cookie' header is present and ensures the 'connect.sid' cookie is cleared
-				const cookies = res.headers['set-cookie'] ?? []
-				const sidCookie = cookies.find((cookie: string) => cookie.includes('connect.sid'))
+				const sidCookie = extractConnectSid(res.headers['set-cookie'], true)
 
 				expect(sidCookie).to.exist
 				expect(sidCookie).to.include('connect.sid=;')
@@ -515,7 +518,7 @@ describe('Auth routes', function () {
 			it('should have status 200', async function () {
 				// Log the kiosk in to get a token
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
-				const sessionCookie = loginRes.headers['set-cookie'] as string
+				const sessionCookie = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Log the kiosk out to remove the session
 				const res = await agent().post('/api/v1/auth/logout-local').set('Cookie', sessionCookie)
@@ -542,14 +545,13 @@ describe('Auth routes', function () {
 
 			it('should remove the session cookie', async function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
-				const sessionCookie = loginRes.headers['set-cookie'] as string
+				const sessionCookie = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Log the kiosk out to remove the session
 				const res = await agent().post('/api/v1/auth/logout-local').set('Cookie', sessionCookie)
 
 				// Check if the 'Set-Cookie' header is present and ensures the 'connect.sid' cookie is cleared
-				const cookies = res.headers['set-cookie'] ?? []
-				const sidCookie = cookies.find((cookie: string) => cookie.includes('connect.sid'))
+				const sidCookie = extractConnectSid(res.headers['set-cookie'], true)
 
 				expect(sidCookie).to.exist
 				expect(sidCookie).to.include('connect.sid=;')
@@ -577,7 +579,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-authenticated').set('Cookie', sessionCookie)
@@ -607,7 +609,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Tamper with the session cookie
 				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -650,7 +652,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-authenticated').set('Cookie', sessionCookie)
@@ -680,7 +682,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Tamper with the session cookie
 				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -713,7 +715,7 @@ describe('Auth routes', function () {
 			const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 			// Extract the session cookie directly
-			const sessionCookie: string = loginRes.headers['set-cookie'][0]
+			const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 			// Use the session cookie in the authenticated request
 			const res = await agent().get('/api/v1/auth/is-authenticated').set('Cookie', sessionCookie)
@@ -743,7 +745,7 @@ describe('Auth routes', function () {
 			const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 			// Extract the session cookie directly
-			const sessionCookie: string = loginRes.headers['set-cookie'][0]
+			const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 			// Tamper with the session cookie
 			const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -766,7 +768,7 @@ describe('Auth routes', function () {
 			clock.tick(sessionExpiry + 1000)
 
 			// Extract the session cookie directly
-			const sessionCookie: string = loginRes.headers['set-cookie'][0]
+			const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 			// Use the session cookie in the authenticated request
 			const res = await agent().get('/api/v1/auth/is-authenticated').set('Cookie', sessionCookie)
@@ -795,7 +797,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-admin').set('Cookie', sessionCookie)
@@ -825,7 +827,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Tamper with the session cookie
 				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -868,7 +870,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-admin').set('Cookie', sessionCookie)
@@ -898,7 +900,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Tamper with the session cookie
 				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -931,7 +933,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-kiosk').set('Cookie', sessionCookie)
@@ -961,7 +963,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-admin-local').send(testAdminFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Tamper with the session cookie
 				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -1004,7 +1006,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-kiosk').set('Cookie', sessionCookie)
@@ -1034,7 +1036,7 @@ describe('Auth routes', function () {
 				const loginRes = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Tamper with the session cookie
 				const tamperedSessionCookie = sessionCookie.replace('connect.sid', 'tamperedSession')
@@ -1057,7 +1059,7 @@ describe('Auth routes', function () {
 				clock.tick(sessionExpiry + 1000)
 
 				// Extract the session cookie directly
-				const sessionCookie: string = loginRes.headers['set-cookie'][0]
+				const sessionCookie: string = extractConnectSid(loginRes.headers['set-cookie'])
 
 				// Use the session cookie in the authenticated request
 				const res = await agent().get('/api/v1/auth/is-kiosk').set('Cookie', sessionCookie)

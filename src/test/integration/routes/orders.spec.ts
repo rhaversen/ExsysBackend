@@ -18,7 +18,7 @@ import PaymentModel, { type IPayment } from '../../../app/models/Payment.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import ReaderModel, { type IReader } from '../../../app/models/Reader.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Orders routes', function () {
 	let sessionCookie: string
@@ -32,7 +32,7 @@ describe('Orders routes', function () {
 		await AdminModel.create(adminFields)
 
 		const response = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-		sessionCookie = response.headers['set-cookie']
+		sessionCookie = extractConnectSid(response.headers['set-cookie'])
 	})
 
 	describe('POST /v1/orders', function () {

@@ -9,7 +9,7 @@ import { describe, it } from 'mocha'
 
 import AdminModel from '../../../app/models/Admin.js'
 import ReaderModel from '../../../app/models/Reader.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
 
 describe('Readers routes', function () {
 	let sessionCookie: string
@@ -23,7 +23,7 @@ describe('Readers routes', function () {
 		await AdminModel.create(adminFields)
 
 		const response = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-		sessionCookie = response.headers['set-cookie']
+		sessionCookie = extractConnectSid(response.headers['set-cookie'])
 	})
 
 	describe('POST /v1/readers', function () {

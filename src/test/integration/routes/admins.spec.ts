@@ -8,7 +8,7 @@ import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
 import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
 
 describe('Admins routes', function () {
 	let sessionCookie: string
@@ -22,7 +22,7 @@ describe('Admins routes', function () {
 		await AdminModel.create(adminFields)
 
 		const response = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-		sessionCookie = response.headers['set-cookie']
+		sessionCookie = extractConnectSid(response.headers['set-cookie'])
 	})
 
 	describe('POST /v1/admins', function () {

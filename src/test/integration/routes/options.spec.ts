@@ -9,7 +9,7 @@ import mongoose from 'mongoose'
 
 import AdminModel from '../../../app/models/Admin.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Options routes', function () {
 	let sessionCookie: string
@@ -23,7 +23,7 @@ describe('Options routes', function () {
 		await AdminModel.create(adminFields)
 
 		const response = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-		sessionCookie = response.headers['set-cookie']
+		sessionCookie = extractConnectSid(response.headers['set-cookie'])
 	})
 
 	describe('POST /v1/options', function () {

@@ -11,7 +11,7 @@ import AdminModel from '../../../app/models/Admin.js'
 import ConfigsModel from '../../../app/models/Configs.js'
 import KioskModel from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
-import { getChaiAppServer as agent } from '../../testSetup.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
 
 describe('Configs routes', function () {
 	let adminSessionCookie: string
@@ -26,8 +26,7 @@ describe('Configs routes', function () {
 		await AdminModel.create(adminFields)
 		const adminResponse = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 		// Extract the connect.sid cookie correctly
-		const adminCookies = adminResponse.headers['set-cookie'] as string[]
-		adminSessionCookie = adminCookies.find(cookie => cookie.startsWith('connect.sid=')) ?? ''
+		adminSessionCookie = extractConnectSid(adminResponse.headers['set-cookie'])
 
 		// Create Kiosk
 		const testReader = await ReaderModel.create({
@@ -53,8 +52,7 @@ describe('Configs routes', function () {
 			password: kioskFields.password
 		})
 		// Extract the connect.sid cookie correctly
-		const kioskCookies = kioskResponse.headers['set-cookie'] as string[]
-		kioskSessionCookie = kioskCookies.find(cookie => cookie.startsWith('connect.sid=')) ?? ''
+		kioskSessionCookie = extractConnectSid(kioskResponse.headers['set-cookie'])
 	})
 
 	describe('GET /v1/configs', function () {
