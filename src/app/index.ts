@@ -11,7 +11,6 @@ import MongoStore from 'connect-mongo'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
-import mongoSanitize from 'express-mongo-sanitize'
 import RateLimit from 'express-rate-limit'
 import session from 'express-session'
 import helmet from 'helmet'
@@ -75,7 +74,6 @@ if (NODE_ENV === 'production' || NODE_ENV === 'staging') {
 app.use(helmet()) // Security headers
 app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
-app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
 
 // Apply webhook cors config to webhook routes
 app.use('/api/v1/reader-callback', cors(webhookCorsConfig))
