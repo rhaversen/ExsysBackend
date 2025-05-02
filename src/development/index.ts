@@ -18,6 +18,8 @@ async function startServer (): Promise<void> {
 		// Start the application server
 		await import('../app/index.js')
 	} catch (error) {
+		// Must use console.error here instead of logger.error to avoid circular dependency issues
+		// eslint-disable-next-line no-console
 		console.error('Failed to start the server:', error)
 	}
 }
