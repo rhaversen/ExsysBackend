@@ -1526,7 +1526,6 @@ const allOptions = await OptionModel.find({})
 const allActivities = await ActivityModel.find({})
 const allRooms = await RoomModel.find({})
 const allKiosks = await KioskModel.find({})
-const allPayments = await PaymentModel.find({})
 
 function getRandom<T> (arr: T[], min = 1, max = 1): T[] {
 	const count = Math.floor(Math.random() * (max - min + 1)) + min
@@ -1561,7 +1560,10 @@ for (let i = 0; i < 300; i++) {
 	const activity = getRandom(allActivities)[0]
 	const room = getRandom(allRooms)[0]
 	const kiosk = getRandom(allKiosks)[0]
-	const payment = getRandom(allPayments)[0]
+	// Create a new payment for each order instead of reusing existing ones
+	const newPayment = await PaymentModel.create({
+		paymentStatus: Math.random() < 0.95 ? 'successful' : 'pending' // ~5% pending
+	})
 	const createdAt = randomDate(monthsAgo, now)
 	const updatedAt = randomDate(createdAt, now)
 
@@ -1576,7 +1578,7 @@ for (let i = 0; i < 300; i++) {
 	}
 
 	await OrderModel.create({
-		paymentId: payment._id,
+		paymentId: newPayment._id,
 		activityId: activity._id,
 		roomId: room._id,
 		kioskId: kiosk._id,
