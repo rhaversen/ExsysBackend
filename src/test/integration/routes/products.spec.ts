@@ -10,7 +10,7 @@ import mongoose, { type Types } from 'mongoose'
 import AdminModel from '../../../app/models/Admin.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Products routes', function () {
 	let sessionCookie: string

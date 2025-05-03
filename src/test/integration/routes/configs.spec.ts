@@ -11,7 +11,7 @@ import AdminModel from '../../../app/models/Admin.js'
 import ConfigsModel from '../../../app/models/Configs.js'
 import KioskModel from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Configs routes', function () {
 	let adminSessionCookie: string

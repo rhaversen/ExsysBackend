@@ -9,7 +9,7 @@ import mongoose from 'mongoose'
 
 import AdminModel from '../../../app/models/Admin.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Rooms routes', function () {
 	let sessionCookie: string

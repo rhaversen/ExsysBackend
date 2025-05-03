@@ -12,7 +12,7 @@ import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
 import config from '../../../app/utils/setupConfig.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 // Config
 const {

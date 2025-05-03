@@ -9,7 +9,7 @@ import { describe, it } from 'mocha'
 
 import AdminModel from '../../../app/models/Admin.js'
 import ReaderModel from '../../../app/models/Reader.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Readers routes', function () {
 	let sessionCookie: string

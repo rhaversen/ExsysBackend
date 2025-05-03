@@ -8,7 +8,7 @@ import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
 import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js' // Import extractConnectSid
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Admins routes', function () {
 	let sessionCookie: string
