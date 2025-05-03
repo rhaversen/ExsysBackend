@@ -8,6 +8,14 @@ describe('Development Setup', function () {
 		process.env.SUMUP_MERCHANT_CODE = 'DUMMY_SUMUP_MERCHANT_CODE'
 	})
 
+	after(function () {
+		// Close dev app
+		setTimeout(() => {
+			// eslint-disable-next-line n/no-process-exit
+			process.exit()
+		}, 5000)
+	})
+
 	// Test to check if the development environment can be started
 	it('should start the development environment', async function () {
 		this.timeout(20000)
