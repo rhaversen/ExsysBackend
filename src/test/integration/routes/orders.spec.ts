@@ -1499,7 +1499,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should have status 200', async function () {
-			this.timeout(10000) // This test fails without an extended timeout for some reason, it doesnt actually take 10 seconds
+			this.timeout(10000) // This test fails without an extended timeout for some reason, it doesn't actually take 10 seconds
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'

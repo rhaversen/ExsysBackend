@@ -66,7 +66,7 @@ const orderProductSchema = new Schema({
 		required: [true, 'Mængde er påkrævet'],
 		min: [1, 'Mængde skal være større end 0']
 	}
-}, { _id: false }) // No separate _id for subdocuments
+}, { _id: false }) // No separate _id for sub-schemas
 
 // Sub-schema for options
 const orderOptionSchema = new Schema({
@@ -80,7 +80,7 @@ const orderOptionSchema = new Schema({
 		required: [true, 'Mængde er påkrævet'],
 		min: [1, 'Mængde skal være større end 0']
 	}
-}, { _id: false }) // No separate _id for subdocuments
+}, { _id: false }) // No separate _id for sub-schemas
 
 // Main order schema
 const orderSchema = new Schema<IOrder>({
