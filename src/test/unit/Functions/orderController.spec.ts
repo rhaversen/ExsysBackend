@@ -20,6 +20,9 @@ import '../../testSetup.js'
 
 describe('Order Controller Functions', function () {
 	describe('isOrderItemList', function () {
+		const validId1 = new mongoose.Types.ObjectId().toString()
+		const validId2 = new mongoose.Types.ObjectId().toString()
+
 		describe('Positive tests', function () {
 			it('should return true for an empty array', function () {
 				const result = isOrderItemList([])
@@ -29,11 +32,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of valid items', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
 					{
-						id: '2',
+						id: validId2,
 						quantity: 2
 					}
 				])
@@ -43,11 +46,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of valid items with quantity 0', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 0
 					},
 					{
-						id: '2',
+						id: validId2,
 						quantity: 0
 					}
 				])
@@ -57,11 +60,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
 					{
-						id: '1',
+						id: validId1,
 						quantity: 2
 					}
 				])
@@ -71,11 +74,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with quantity 0', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 0
 					},
 					{
-						id: '1',
+						id: validId1,
 						quantity: 0
 					}
 				])
@@ -85,11 +88,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with different quantities', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
 					{
-						id: '1',
+						id: validId1,
 						quantity: 2
 					}
 				])
@@ -99,11 +102,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with quantity 0 and different quantities', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 0
 					},
 					{
-						id: '1',
+						id: validId1,
 						quantity: 2
 					}
 				])
@@ -113,11 +116,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with different quantities and different ids', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
 					{
-						id: '2',
+						id: validId2,
 						quantity: 2
 					}
 				])
@@ -127,11 +130,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with quantity 0 and different quantities and different ids', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 0
 					},
 					{
-						id: '2',
+						id: validId2,
 						quantity: 2
 					}
 				])
@@ -141,11 +144,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with different quantities and different ids', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
 					{
-						id: '2',
+						id: validId2,
 						quantity: 2
 					}
 				])
@@ -155,11 +158,11 @@ describe('Order Controller Functions', function () {
 			it('should return true for an array of duplicate items with quantity 0 and different quantities and different ids', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 0
 					},
 					{
-						id: '2',
+						id: validId2,
 						quantity: 2
 					}
 				])
@@ -176,10 +179,10 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of valid items with quantity 1 and undefined quantity', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
-					{ id: '2' }
+					{ id: validId2 }
 				])
 				expect(result).to.be.false
 			})
@@ -190,7 +193,7 @@ describe('Order Controller Functions', function () {
 			})
 
 			it('should return false for an array of objects without a quantity', function () {
-				const result = isOrderItemList([{ id: '1' }])
+				const result = isOrderItemList([{ id: validId1 }])
 				expect(result).to.be.false
 			})
 
@@ -207,7 +210,7 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of objects with a non-number quantity', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: '1'
 					}
 				])
@@ -217,7 +220,7 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of objects with a negative quantity', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: -1
 					}
 				])
@@ -227,7 +230,7 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of objects with a decimal quantity', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1.5
 					}
 				])
@@ -237,7 +240,7 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of objects with a quantity of Infinity', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: Infinity
 					}
 				])
@@ -257,7 +260,7 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of objects with an id of undefined', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
 					{ quantity: 1 }
@@ -268,10 +271,20 @@ describe('Order Controller Functions', function () {
 			it('should return false for an array of objects with an id of undefined', function () {
 				const result = isOrderItemList([
 					{
-						id: '1',
+						id: validId1,
 						quantity: 1
 					},
-					{ id: '2' }
+					{ id: validId2 }
+				])
+				expect(result).to.be.false
+			})
+
+			it('should return false for an array of objects with an invalid string id', function () {
+				const result = isOrderItemList([
+					{
+						id: 'invalid-id-string',
+						quantity: 1
+					}
 				])
 				expect(result).to.be.false
 			})

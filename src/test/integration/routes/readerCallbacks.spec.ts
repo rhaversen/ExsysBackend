@@ -102,7 +102,7 @@ describe('Reader Callback routes', function () {
 			expect(pendingPayment).to.have.property('paymentStatus', 'pending')
 		})
 
-		it('should have status 404 when the payment does not exist', async function () {
+		it('should have status 200 when the payment does not exist', async function () {
 			const response = await agent().post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
@@ -115,7 +115,8 @@ describe('Reader Callback routes', function () {
 				timestamp: '2021-08-20T15:00:00Z'
 			})
 
-			expect(response.status).to.equal(404)
+			expect(response.status).to.equal(200)
+			expect(response.body).to.have.property('message', 'Payment not found, callback ignored.')
 		})
 	})
 })

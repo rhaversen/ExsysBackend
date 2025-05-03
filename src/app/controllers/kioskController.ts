@@ -11,28 +11,36 @@ import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSock
 export async function transformKiosk (
 	kiosk: IKiosk
 ): Promise<IKioskFrontend> {
-	// Populate activities and readerId
-	const populatedKiosk = await kiosk.populate<{ activities: IActivity[], readerId: IReader | null }>([
-		{ path: 'activities' },
-		{ path: 'readerId' }
-	])
+	logger.silly(`Transforming kiosk ID: ${kiosk.id}`)
+	try {
+		// Populate activities and readerId
+		const populatedKiosk = await kiosk.populate<{ activities: IActivity[], readerId: IReader | null }>([
+			{ path: 'activities' },
+			{ path: 'readerId' }
+		])
+		logger.silly(`Successfully populated kiosk ID: ${kiosk.id}`)
 
-	return {
-		_id: populatedKiosk.id,
-		name: populatedKiosk.name,
-		readerId: populatedKiosk.readerId,
-		kioskTag: populatedKiosk.kioskTag,
-		activities: populatedKiosk.activities,
-		disabledActivities: populatedKiosk.disabledActivities,
-		deactivated: populatedKiosk.deactivated,
-		deactivatedUntil: populatedKiosk.deactivatedUntil,
-		createdAt: populatedKiosk.createdAt,
-		updatedAt: populatedKiosk.updatedAt
+		return {
+			_id: populatedKiosk.id,
+			name: populatedKiosk.name,
+			readerId: populatedKiosk.readerId,
+			kioskTag: populatedKiosk.kioskTag,
+			activities: populatedKiosk.activities,
+			disabledActivities: populatedKiosk.disabledActivities,
+			deactivated: populatedKiosk.deactivated,
+			deactivatedUntil: populatedKiosk.deactivatedUntil,
+			createdAt: populatedKiosk.createdAt,
+			updatedAt: populatedKiosk.updatedAt
+		}
+	} catch (error) {
+		logger.error(`Error transforming kiosk ID ${kiosk.id}`, error)
+		throw new Error(`Failed to transform kiosk ID ${kiosk.id}: ${error instanceof Error ? error.message : String(error)}`)
 	}
 }
 
 export async function createKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Creating kiosk')
+	const kioskName = req.body.name ?? 'N/A'
+	logger.info(`Attempting to create kiosk with name: ${kioskName}`)
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
@@ -47,14 +55,16 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 
 	try {
 		const newKiosk = await KioskModel.create(allowedFields)
-		// Remove population here
+		logger.debug(`Kiosk created in DB successfully: ID ${newKiosk.id}, Name: ${newKiosk.name}, Tag: ${newKiosk.kioskTag}`)
 
 		// Await the async transform function
 		const transformedKiosk = await transformKiosk(newKiosk)
+		logger.debug(`Kiosk transformed successfully: ID ${newKiosk.id}`)
 		res.status(201).json(transformedKiosk)
 
 		emitKioskCreated(transformedKiosk)
 	} catch (error) {
+		logger.error(`Kiosk creation failed for name: ${kioskName}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -64,27 +74,33 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 }
 
 export async function getMe (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting me kiosk')
+	logger.debug('Getting current kiosk user (me)')
 
 	try {
 		const kioskUser = req.user as IKiosk | undefined
 
 		if (kioskUser === null || kioskUser === undefined) {
+			logger.error('Get me (kiosk) failed: req.user is undefined despite authentication check.')
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
-		// Find the kiosk but remove population here
+		// Find the kiosk again to ensure fresh data, but without population here
 		const kiosk = await KioskModel.findById(kioskUser._id).exec()
 
 		if (!kiosk) {
+			// This indicates a data inconsistency if req.user was set but the DB record is gone
+			logger.error(`Get me (kiosk) failed: Kiosk not found in DB for authenticated user ID: ${kioskUser._id}`)
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
 		// Await the async transform function
-		res.status(200).json(await transformKiosk(kiosk))
+		const transformedKiosk = await transformKiosk(kiosk)
+		logger.debug(`Retrieved current kiosk successfully: ID ${kiosk.id}, Name: ${kiosk.name}`)
+		res.status(200).json(transformedKiosk)
 	} catch (error) {
+		logger.error('Get me (kiosk) failed: Unexpected error', error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -94,20 +110,25 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 }
 
 export async function getKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting kiosk')
+	const kioskId = req.params.id
+	logger.debug(`Getting kiosk: ID ${kioskId}`)
 
 	try {
-		// Find the kiosk but remove population here
-		const kiosk = await KioskModel.findById(req.params.id).exec()
+		// Find the kiosk without population here
+		const kiosk = await KioskModel.findById(kioskId).exec()
 
 		if (kiosk === null || kiosk === undefined) {
+			logger.warn(`Get kiosk failed: Kiosk not found. ID: ${kioskId}`)
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
 		// Await the async transform function
-		res.status(200).json(await transformKiosk(kiosk))
+		const transformedKiosk = await transformKiosk(kiosk)
+		logger.debug(`Retrieved kiosk successfully: ID ${kioskId}`)
+		res.status(200).json(transformedKiosk)
 	} catch (error) {
+		logger.error(`Get kiosk failed: Error retrieving kiosk ID ${kioskId}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -117,18 +138,21 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 }
 
 export async function getKiosks (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting kiosks')
+	logger.debug('Getting all kiosks')
 
 	try {
-		// Find kiosks but remove population here
+		// Find kiosks without population here
 		const kiosks = await KioskModel.find({}).exec()
+		logger.debug(`Found ${kiosks.length} kiosks in DB`)
 
 		// Await the transformation for each kiosk
 		const transformedKiosks = await Promise.all(
 			kiosks.map(async (kiosk) => await transformKiosk(kiosk))
 		)
+		logger.debug(`Retrieved and transformed ${transformedKiosks.length} kiosks`)
 		res.status(200).json(transformedKiosks)
 	} catch (error) {
+		logger.error('Failed to get kiosks', error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -138,41 +162,89 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 }
 
 export async function patchKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Patching kiosk')
+	const kioskId = req.params.id
+	logger.info(`Attempting to patch kiosk: ID ${kioskId}`)
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const kiosk = await KioskModel.findById(req.params.id).session(session)
+		const kiosk = await KioskModel.findById(kioskId).session(session)
 
 		if (kiosk === null || kiosk === undefined) {
+			logger.warn(`Patch kiosk failed: Kiosk not found. ID: ${kioskId}`)
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
+			await session.abortTransaction()
+			await session.endSession()
 			return
 		}
 
+		let updateApplied = false
 		// Set fields directly, checking for undefined to ensure not overwriting with undefined
-		if (req.body.name !== undefined) { kiosk.name = req.body.name }
-		if (req.body.kioskTag !== undefined) { kiosk.kioskTag = req.body.kioskTag }
-		if (req.body.readerId !== undefined) { kiosk.readerId = req.body.readerId }
-		if (req.body.activities !== undefined) { kiosk.activities = req.body.activities }
-		if (req.body.disabledActivities !== undefined) { kiosk.disabledActivities = req.body.disabledActivities }
-		if (req.body.deactivatedUntil !== undefined) { kiosk.deactivatedUntil = req.body.deactivatedUntil }
-		if (req.body.deactivated !== undefined) { kiosk.deactivated = req.body.deactivated }
+		if (req.body.name !== undefined && kiosk.name !== req.body.name) {
+			logger.debug(`Updating name for kiosk ID ${kioskId}`)
+			kiosk.name = req.body.name
+			updateApplied = true
+		}
+		if (req.body.kioskTag !== undefined && kiosk.kioskTag !== req.body.kioskTag) {
+			logger.debug(`Updating kioskTag for kiosk ID ${kioskId}`)
+			kiosk.kioskTag = req.body.kioskTag
+			updateApplied = true
+		}
+		if (req.body.readerId !== undefined && String(kiosk.readerId) !== String(req.body.readerId)) { // Compare as strings
+			logger.debug(`Updating readerId for kiosk ID ${kioskId}`)
+			kiosk.readerId = req.body.readerId
+			updateApplied = true
+		}
+		if (req.body.activities !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating activities for kiosk ID ${kioskId}`)
+			kiosk.activities = req.body.activities
+			updateApplied = true
+		}
+		if (req.body.disabledActivities !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating disabledActivities for kiosk ID ${kioskId}`)
+			kiosk.disabledActivities = req.body.disabledActivities
+			updateApplied = true
+		}
+		if (req.body.deactivatedUntil !== undefined && kiosk.deactivatedUntil?.toISOString() !== new Date(req.body.deactivatedUntil).toISOString()) { // Compare dates
+			logger.debug(`Updating deactivatedUntil for kiosk ID ${kioskId}`)
+			kiosk.deactivatedUntil = req.body.deactivatedUntil
+			updateApplied = true
+		}
+		if (req.body.deactivated !== undefined && kiosk.deactivated !== req.body.deactivated) {
+			logger.debug(`Updating deactivated status for kiosk ID ${kioskId}`)
+			kiosk.deactivated = req.body.deactivated
+			updateApplied = true
+		}
+
+		if (!updateApplied) {
+			logger.info(`Patch kiosk: No changes detected for kiosk ID ${kioskId}`)
+			// Need to transform before sending back
+			const transformedKiosk = await transformKiosk(kiosk)
+			res.status(200).json(transformedKiosk) // Return current transformed state if no changes
+			await session.commitTransaction()
+			await session.endSession()
+			return
+		}
 
 		// Validate and save the updated document
 		await kiosk.validate()
 		await kiosk.save({ session })
+		logger.debug(`Kiosk saved successfully in transaction: ID ${kioskId}`)
 
 		// Re-fetch the document *without* population here to pass to transform
+		// This ensures the transform function gets the latest saved state before populating
 		const updatedKiosk = await KioskModel.findById(kiosk._id).session(session).exec()
 
 		if (!updatedKiosk) {
+			// This should not happen if save was successful, but check for safety
 			await session.abortTransaction()
+			logger.error(`Patch kiosk failed: Could not re-fetch kiosk after save. ID: ${kioskId}`)
 			throw new Error('Failed to re-fetch updated kiosk')
 		}
 
 		await session.commitTransaction()
+		logger.info(`Kiosk patched successfully: ID ${kioskId}`)
 
 		// Await the async transform function
 		const transformedKiosk = await transformKiosk(updatedKiosk)
@@ -181,7 +253,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
 		await session.abortTransaction()
-
+		logger.error(`Patch kiosk failed: Error updating kiosk ID ${kioskId}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -193,20 +265,29 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 }
 
 export async function createNewKioskTag (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Creating new kioskTag')
+	const kioskId = req.params.id
+	logger.info(`Attempting to generate new kioskTag for kiosk: ID ${kioskId}`)
 
 	try {
-		const kiosk = await KioskModel.findById(req.params.id)
+		const kiosk = await KioskModel.findById(kioskId)
 
 		if (kiosk === null || kiosk === undefined) {
+			logger.warn(`Generate new kioskTag failed: Kiosk not found. ID: ${kioskId}`)
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
-		const kioskTag = await kiosk.generateNewKioskTag()
+		const oldTag = kiosk.kioskTag
+		const newTag = await kiosk.generateNewKioskTag() // This method saves the kiosk
 
-		res.status(200).json({ kioskTag })
+		logger.info(`New kioskTag generated successfully for kiosk ID ${kioskId}: ${oldTag} -> ${newTag}`)
+		res.status(200).json({ kioskTag: newTag })
+
+		// Emit update after tag generation
+		const transformedKiosk = await transformKiosk(kiosk) // Re-transform with new tag
+		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
+		logger.error(`Generate new kioskTag failed for kiosk ID ${kioskId}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -216,25 +297,30 @@ export async function createNewKioskTag (req: Request, res: Response, next: Next
 }
 
 export async function deleteKiosk (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Deleting kiosk')
+	const kioskId = req.params.id
+	logger.info(`Attempting to delete kiosk: ID ${kioskId}`)
 
-	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+	if (req.body?.confirm !== true) {
+		logger.warn(`Kiosk deletion failed: Confirmation not provided for ID ${kioskId}`)
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
 	try {
-		const kiosk = await KioskModel.findByIdAndDelete(req.params.id)
+		const kiosk = await KioskModel.findByIdAndDelete(kioskId)
 
 		if (kiosk === null || kiosk === undefined) {
+			logger.warn(`Kiosk deletion failed: Kiosk not found. ID: ${kioskId}`)
 			res.status(404).json({ error: 'Kiosk ikke fundet' })
 			return
 		}
 
+		logger.info(`Kiosk deleted successfully: ID ${kioskId}, Name: ${kiosk.name}, Tag: ${kiosk.kioskTag}`)
 		res.status(204).send()
 
-		emitKioskDeleted(kiosk.id as string)
+		emitKioskDeleted(kioskId)
 	} catch (error) {
+		logger.error(`Kiosk deletion failed: Error during deletion process for ID ${kioskId}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

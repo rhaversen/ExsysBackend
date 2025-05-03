@@ -9,7 +9,7 @@ import logger from './logger.js'
 const configString = JSON.stringify(config.util.toObject(config), null, 4)
 
 // Log the configs used
-logger.info(`Using configs:\n${configString}`)
+logger.debug(`Using configs:\n${configString}`)
 
 const AppConfig = {
 	veryLowSensitivityApiLimiterConfig: config.get('apiLimiter.sensitivity.veryLow') as RateLimitOptions,

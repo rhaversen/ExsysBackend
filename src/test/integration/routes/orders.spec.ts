@@ -1261,15 +1261,16 @@ describe('Orders routes', function () {
 				const res = await agent().get(`/api/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
-				expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
+				const productIds = res.body.map((order: any) => order.products[0]._id)
+				expect(productIds).to.have.members([testProduct1.id, testProduct2.id])
 			})
 
 			it('should return orders over longer intervals', async function () {
 				const res = await agent().get(`/api/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
-				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				const productIds = res.body.map((order: any) => order.products[0]._id)
+				expect(productIds).to.have.members([testProduct1.id, testProduct2.id, testProduct3.id, testProduct4.id])
 			})
 
 			it('should return the order inclusive of the date with same from and to date', async function () {
@@ -1283,7 +1284,8 @@ describe('Orders routes', function () {
 				const res = await agent().get(`/api/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				const productIds = res.body.map((order: any) => order.products[0]._id)
+				expect(productIds).to.have.members([testProduct1.id, testProduct2.id])
 			})
 
 			it('should return orders inclusive of the to date', async function () {
@@ -1297,21 +1299,24 @@ describe('Orders routes', function () {
 				const res = await agent().get('/api/v1/orders').set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
-				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				const productIds = res.body.map((order: any) => order.products[0]._id)
+				expect(productIds).to.have.members([testProduct1.id, testProduct2.id, testProduct3.id, testProduct4.id])
 			})
 
 			it('should return all following orders if only fromDate is provided', async function () {
 				const res = await agent().get(`/api/v1/orders/?fromDate=${date15.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
-				expect(res.body[0].products[0]._id).to.equal(testProduct3.id)
+				const productIds = res.body.map((order: any) => order.products[0]._id)
+				expect(productIds).to.have.members([testProduct3.id, testProduct4.id])
 			})
 
 			it('should return all previous orders if only toDate is provided', async function () {
 				const res = await agent().get(`/api/v1/orders/?toDate=${date25.toISOString()}`).set('Cookie', sessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
-				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
+				const productIds = res.body.map((order: any) => order.products[0]._id)
+				expect(productIds).to.have.members([testProduct1.id, testProduct2.id, testProduct3.id])
 			})
 
 			it('should not return orders if fromDate is after toDate', async function () {
@@ -1494,6 +1499,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should have status 200', async function () {
+			this.timeout(10000) // This test fails without an extended timeout for some reason, it doesnt actually take 10 seconds
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'

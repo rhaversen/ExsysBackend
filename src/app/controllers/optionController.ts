@@ -6,7 +6,8 @@ import logger from '../utils/logger.js'
 import { emitOptionCreated, emitOptionDeleted, emitOptionUpdated } from '../webSockets/optionHandlers.js'
 
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Creating option')
+	const optionName = req.body.name ?? 'N/A'
+	logger.info(`Attempting to create option with name: ${optionName}`)
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
@@ -17,10 +18,12 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 
 	try {
 		const newOption = await OptionModel.create(allowedFields)
+		logger.debug(`Option created successfully: ID ${newOption.id}, Name: ${newOption.name}`)
 		res.status(201).json(newOption)
 
 		emitOptionCreated(newOption)
 	} catch (error) {
+		logger.error(`Option creation failed for name: ${optionName}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -30,12 +33,14 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 }
 
 export async function getOptions (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting options')
+	logger.debug('Getting all options')
 
 	try {
 		const options = await OptionModel.find({})
+		logger.debug(`Retrieved ${options.length} options`)
 		res.status(200).json(options)
 	} catch (error) {
+		logger.error('Failed to get options', error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -45,36 +50,62 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 }
 
 export async function patchOption (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Patching option')
+	const optionId = req.params.id
+	logger.info(`Attempting to patch option: ID ${optionId}`)
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
 		// Retrieve the existing option document
-		const option = await OptionModel.findById(req.params.id).session(session)
+		const option = await OptionModel.findById(optionId).session(session)
 
 		if (option === null || option === undefined) {
+			logger.warn(`Patch option failed: Option not found. ID: ${optionId}`)
 			res.status(404).json({ error: 'Tilvalg ikke fundet' })
+			await session.abortTransaction() // Abort transaction before returning
+			await session.endSession()
 			return
 		}
 
+		let updateApplied = false
 		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.name !== undefined) { option.name = req.body.name }
-		if (req.body.imageURL !== undefined) { option.imageURL = req.body.imageURL }
-		if (req.body.price !== undefined) { option.price = req.body.price }
+		if (req.body.name !== undefined && option.name !== req.body.name) {
+			logger.debug(`Updating name for option ID ${optionId}`)
+			option.name = req.body.name
+			updateApplied = true
+		}
+		if (req.body.imageURL !== undefined && option.imageURL !== req.body.imageURL) {
+			logger.debug(`Updating imageURL for option ID ${optionId}`)
+			option.imageURL = req.body.imageURL
+			updateApplied = true
+		}
+		if (req.body.price !== undefined && option.price !== req.body.price) {
+			logger.debug(`Updating price for option ID ${optionId}`)
+			option.price = req.body.price
+			updateApplied = true
+		}
+
+		if (!updateApplied) {
+			logger.info(`Patch option: No changes detected for option ID ${optionId}`)
+			res.status(200).json(option) // Return current state if no changes
+			await session.commitTransaction()
+			await session.endSession()
+			return
+		}
 
 		// Validate and save the updated document
 		await option.validate()
 		await option.save({ session })
 
 		await session.commitTransaction()
-
+		logger.info(`Option patched successfully: ID ${optionId}`)
 		res.json(option)
 
 		emitOptionUpdated(option)
 	} catch (error) {
 		await session.abortTransaction()
+		logger.error(`Patch option failed: Error updating option ID ${optionId}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -86,25 +117,30 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 }
 
 export async function deleteOption (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Deleting option')
+	const optionId = req.params.id
+	logger.info(`Attempting to delete option: ID ${optionId}`)
 
-	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+	if (req.body?.confirm !== true) {
+		logger.warn(`Option deletion failed: Confirmation not provided for ID ${optionId}`)
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
 	try {
-		const option = await OptionModel.findByIdAndDelete(req.params.id)
+		const option = await OptionModel.findByIdAndDelete(optionId)
 
 		if (option === null || option === undefined) {
+			logger.warn(`Option deletion failed: Option not found. ID: ${optionId}`)
 			res.status(404).json({ error: 'Tilvalg ikke fundet' })
 			return
 		}
 
+		logger.info(`Option deleted successfully: ID ${optionId}, Name: ${option.name}`)
 		res.status(204).send()
 
-		emitOptionDeleted(option.id as string)
+		emitOptionDeleted(optionId)
 	} catch (error) {
+		logger.error(`Option deletion failed: Error during deletion process for ID ${optionId}`, error)
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

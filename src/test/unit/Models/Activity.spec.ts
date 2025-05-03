@@ -92,18 +92,51 @@ describe('Activity Model', function () {
 		expect(activity.rooms).to.be.an('array').that.has.lengthOf(0)
 	})
 
-	it('should remove the activity from any kiosks when deleted', async function () {
+	it('should remove the activity from any kiosks activities field when deleted', async function () {
 		const activity = await ActivityModel.create(testActivityField)
 		const kiosk = await KioskModel.create({
 			name: 'TestKiosk',
 			activities: [activity._id],
-			password: 'TestPassword'
+			kioskTag: '11111'
 		})
 
 		await ActivityModel.deleteOne({ _id: activity._id })
 
 		const updatedKiosk = await KioskModel.findById(kiosk._id)
 		expect(updatedKiosk?.activities).to.be.empty
+	})
+
+	it('should remove the activity from any kiosks disabledActivities field when deleted', async function () {
+		const activity = await ActivityModel.create(testActivityField)
+		const kiosk = await KioskModel.create({
+			name: 'TestKiosk2',
+			disabledActivities: [activity._id],
+			kioskTag: '22222'
+		})
+
+		await ActivityModel.deleteOne({ _id: activity._id })
+
+		const updatedKiosk = await KioskModel.findById(kiosk._id)
+		expect(updatedKiosk?.disabledActivities).to.be.empty
+	})
+
+	it('should not remove other activities when deleting one', async function () {
+		const activity1 = await ActivityModel.create(testActivityField)
+		const activity2 = await ActivityModel.create({ ...testActivityField, name: 'Activity 2' })
+		const kiosk = await KioskModel.create({
+			name: 'TestKiosk3',
+			activities: [activity1._id, activity2._id],
+			disabledActivities: [activity1._id, activity2._id],
+			kioskTag: '33333'
+		})
+
+		await ActivityModel.deleteOne({ _id: activity1._id })
+
+		const updatedKiosk = await KioskModel.findById(kiosk._id)
+		expect(updatedKiosk?.activities).to.have.lengthOf(1)
+		expect(updatedKiosk?.activities?.[0].toString()).to.equal(activity2._id.toString())
+		expect(updatedKiosk?.disabledActivities).to.have.lengthOf(1)
+		expect(updatedKiosk?.disabledActivities?.[0].toString()).to.equal(activity2._id.toString())
 	})
 
 	it('should not create an activity with a non-existing roomId in rooms', async function () {

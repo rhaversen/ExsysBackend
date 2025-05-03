@@ -13,14 +13,8 @@ import { transformAdmin } from './adminController.js'
 import { transformKiosk } from './kioskController.js'
 import { transformSession } from './sessionController.js'
 
-// Environment variables
-
 // Config variables
-const {
-	sessionExpiry
-} = config
-
-// Destructuring and global variables
+const { sessionExpiry } = config
 
 // Extend the Session interface to include ipAddress
 declare module 'express-session' {
@@ -34,10 +28,12 @@ declare module 'express-session' {
 }
 
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Logging in admin')
+	const adminName = req.body.name ?? 'N/A'
+	logger.info(`Attempting local login for admin: ${adminName}`)
 
 	// Check if name and password are provided
 	if (req.body.name === undefined || req.body.password === undefined) {
+		logger.warn(`Admin login failed: Missing name or password for admin: ${adminName}`)
 		res.status(400).json({
 			auth: false,
 			error: 'Navn eller kodeord mangler'
@@ -45,8 +41,9 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 		return
 	}
 
-	passport.authenticate('admin-local', (err: Error, user: Express.User, info: { message: string }) => {
+	passport.authenticate('admin-local', (err: Error | null, user: Express.User | false | null, info?: { message: string }) => { // Adjusted types
 		if (err !== null && err !== undefined) {
+			logger.error(`Admin login error during authentication for ${adminName}:`, err)
 			return res.status(500).json({
 				auth: false,
 				error: err.message
@@ -54,14 +51,17 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 		}
 
 		if (user === null || user === undefined || user === false) {
+			const message = info?.message ?? 'Authentication failed'
+			logger.warn(`Admin login failed for ${adminName}: ${message}`)
 			return res.status(401).json({
 				auth: false,
-				error: info.message
+				error: message
 			})
 		}
 
-		req.logIn(user, loginErr => {
+		req.logIn(user, async (loginErr) => {
 			if (loginErr !== null && loginErr !== undefined) {
+				logger.error(`Admin login error during req.logIn for ${adminName}:`, loginErr) // Added context
 				return res.status(500).json({
 					auth: false,
 					error: loginErr.message
@@ -69,43 +69,50 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = getIPAddress(req)
-			req.session.loginTime = new Date()
-			req.session.userAgent = req.headers['user-agent']
-			req.session.type = 'admin'
+			try {
+				req.session.ipAddress = getIPAddress(req)
+				req.session.loginTime = new Date()
+				req.session.userAgent = req.headers['user-agent']
+				req.session.type = 'admin'
 
-			// Set maxAge for persistent sessions if requested
-			if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
-				req.session.cookie.maxAge = sessionExpiry
+				// Set maxAge for persistent sessions if requested
+				if (req.body.stayLoggedIn === true || req.body.stayLoggedIn === 'true') {
+					logger.debug(`Setting persistent session for admin ${adminName}`)
+					req.session.cookie.maxAge = sessionExpiry
+				}
+
+				const sessionDoc: ISession = {
+					_id: req.sessionID,
+					session: JSON.stringify(req.session),
+					expires: req.session.cookie.expires ?? null
+				}
+				const transformedSession = transformSession(sessionDoc)
+
+				const admin = user as IAdmin
+				const transformedAdmin = transformAdmin(admin)
+
+				logger.info(`Admin ${admin.name} (ID: ${admin.id}) logged in successfully. Session ID: ${req.sessionID}`)
+				res.status(200).json({
+					auth: true,
+					user: transformedAdmin
+				})
+
+				emitSessionCreated(transformedSession)
+			} catch (sessionError) {
+				logger.error(`Admin login failed: Error during session handling for ${adminName}:`, sessionError)
+				next(sessionError)
 			}
-
-			const sessionDoc: ISession = {
-				_id: req.sessionID,
-				session: JSON.stringify(req.session),
-				expires: req.session.cookie.expires ?? null
-			}
-			const transformedSession = transformSession(sessionDoc)
-
-			const admin = user as IAdmin
-
-			const transformedAdmin = transformAdmin(admin)
-
-			logger.silly(`Admin ${admin.name} logged in`)
-			res.status(200).json({
-				auth: true,
-				user: transformedAdmin
-			})
-
-			emitSessionCreated(transformedSession)
 		})
 	})(req, res, next)
 }
 
 export async function loginKioskLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Logging in kiosk')
+	const kioskTag = req.body.kioskTag ?? 'N/A'
+	logger.info(`Attempting local login for kiosk: ${kioskTag}`)
 
 	// Check if kioskTag and password are provided
 	if (req.body.kioskTag === undefined || req.body.password === undefined) {
+		logger.warn(`Kiosk login failed: Missing kioskTag or password for kiosk: ${kioskTag}`)
 		res.status(400).json({
 			auth: false,
 			error: 'kioskTag eller kodeord mangler'
@@ -113,8 +120,9 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 		return
 	}
 
-	passport.authenticate('kiosk-local', (err: Error, user: Express.User, info: { message: string }) => {
+	passport.authenticate('kiosk-local', (err: Error | null, user: Express.User | false | null, info?: { message: string }) => {
 		if (err !== null && err !== undefined) {
+			logger.error(`Kiosk login error during authentication for ${kioskTag}:`, err)
 			return res.status(500).json({
 				auth: false,
 				error: err.message
@@ -122,14 +130,17 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 		}
 
 		if (user === null || user === undefined || user === false) {
+			const message = info?.message ?? 'Authentication failed'
+			logger.warn(`Kiosk login failed for ${kioskTag}: ${message}`)
 			return res.status(401).json({
 				auth: false,
-				error: info.message
+				error: message
 			})
 		}
 
-		req.logIn(user, loginErr => {
+		req.logIn(user, async (loginErr) => {
 			if (loginErr !== null && loginErr !== undefined) {
+				logger.error(`Kiosk login error during req.logIn for ${kioskTag}:`, loginErr)
 				return res.status(500).json({
 					auth: false,
 					error: loginErr.message
@@ -137,64 +148,75 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 			}
 
 			// Store session data
-			req.session.ipAddress = getIPAddress(req)
-			req.session.loginTime = new Date()
-			req.session.userAgent = req.headers['user-agent']
-			req.session.type = 'kiosk'
+			try {
+				req.session.ipAddress = getIPAddress(req)
+				req.session.loginTime = new Date()
+				req.session.userAgent = req.headers['user-agent']
+				req.session.type = 'kiosk'
 
-			// Set maxAge for persistent sessions always
-			req.session.cookie.maxAge = sessionExpiry
+				// Set maxAge for persistent sessions always for kiosks
+				logger.debug(`Setting persistent session for kiosk ${kioskTag}`)
+				req.session.cookie.maxAge = sessionExpiry
 
-			const sessionDoc: ISession = {
-				_id: req.sessionID,
-				session: JSON.stringify(req.session),
-				expires: req.session.cookie.expires ?? null
+				const sessionDoc: ISession = {
+					_id: req.sessionID,
+					session: JSON.stringify(req.session),
+					expires: req.session.cookie.expires ?? null
+				}
+				const transformedSession = transformSession(sessionDoc)
+
+				const kiosk = user as IKiosk
+				const transformedKiosk = await transformKiosk(kiosk)
+
+				logger.info(`Kiosk ${kiosk.kioskTag} (ID: ${kiosk.id}) logged in successfully. Session ID: ${req.sessionID}`)
+				res.status(200).json({
+					auth: true,
+					user: transformedKiosk
+				})
+
+				emitSessionCreated(transformedSession)
+			} catch (sessionError) {
+				logger.error(`Kiosk login failed: Error during session handling for ${kioskTag}:`, sessionError)
+				next(sessionError)
 			}
-			const transformedSession = transformSession(sessionDoc)
-
-			const kiosk = user as IKiosk
-
-			const transformedKiosk = transformKiosk(kiosk)
-
-			logger.silly(`Kiosk ${kiosk.kioskTag} logged in`)
-			res.status(200).json({
-				auth: true,
-				user: transformedKiosk
-			})
-
-			emitSessionCreated(transformedSession)
 		})
 	})(req, res, next)
 }
 
 export async function logoutLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Logging out')
+	const sessionId = req.sessionID
+	const userType = req.session.type ?? 'unknown'
+	const userId = (req.user as (IAdmin | IKiosk))?.id ?? 'unknown'
+	logger.info(`Attempting logout for ${userType} user ID: ${userId}, Session ID: ${sessionId}`)
 
-	emitSessionDeleted(req.sessionID)
+	emitSessionDeleted(sessionId)
 
 	req.logout(function (err) {
 		if (err !== null && err !== undefined) {
-			next(err)
-			return
+			logger.error(`Logout error during req.logout for Session ID ${sessionId}:`, err)
 		}
 
 		req.session.destroy(function (sessionErr) {
 			if (sessionErr !== null && sessionErr !== undefined) {
+				logger.error(`Logout error during session.destroy for Session ID ${sessionId}:`, sessionErr)
 				next(sessionErr)
 				return
 			}
 			res.clearCookie('connect.sid')
+			logger.info(`Logout successful for Session ID: ${sessionId}`)
 			res.status(200).json({ message: 'Succesfuldt logget ud' })
 		})
 	})
 }
 
 export function ensureAuthenticated (req: Request, res: Response, next: NextFunction): void {
-	logger.silly('Ensuring authentication')
+	logger.debug(`Ensuring authentication for request to ${req.originalUrl}, Session ID: ${req.sessionID}`)
 
 	if (!req.isAuthenticated()) {
+		logger.warn(`Authentication check failed for Session ID: ${req.sessionID}, Path: ${req.originalUrl}`)
 		res.status(401).json({ message: 'Unauthorized' })
 		return
 	}
+	logger.silly(`Authentication check passed for Session ID: ${req.sessionID}`)
 	next()
 }

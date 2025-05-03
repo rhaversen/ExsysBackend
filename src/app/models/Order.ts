@@ -55,7 +55,7 @@ export interface IOrderFrontend {
 }
 
 // Sub-schema for products
-const productsSubSchema = new Schema({
+const orderProductSchema = new Schema({
 	id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
@@ -66,10 +66,10 @@ const productsSubSchema = new Schema({
 		required: [true, 'Mængde er påkrævet'],
 		min: [1, 'Mængde skal være større end 0']
 	}
-})
+}, { _id: false }) // No separate _id for subdocuments
 
 // Sub-schema for options
-const optionsSubSchema = new Schema({
+const orderOptionSchema = new Schema({
 	id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Option',
@@ -80,10 +80,10 @@ const optionsSubSchema = new Schema({
 		required: [true, 'Mængde er påkrævet'],
 		min: [1, 'Mængde skal være større end 0']
 	}
-})
+}, { _id: false }) // No separate _id for subdocuments
 
 // Main order schema
-const orderSchema = new Schema({
+const orderSchema = new Schema<IOrder>({
 	activityId: {
 		type: Schema.Types.ObjectId,
 		ref: 'Activity',
@@ -101,13 +101,13 @@ const orderSchema = new Schema({
 	},
 	products: {
 		_id: false,
-		type: [productsSubSchema],
+		type: [orderProductSchema],
 		required: [true, 'Produkter er påkrævet'],
 		unique: true
 	},
 	options: {
 		_id: false,
-		type: [optionsSubSchema],
+		type: [orderOptionSchema],
 		unique: true,
 		default: undefined
 	},
@@ -126,20 +126,26 @@ const orderSchema = new Schema({
 })
 
 // Validations
-orderSchema.path('activityId').validate(async function (v: Schema.Types.ObjectId) {
-	const activity = await ActivityModel.findById(v)
-	return activity !== null && activity !== undefined
-}, 'Aktiviteten eksisterer ikke')
+orderSchema.path('activityId').validate(async function (value: Schema.Types.ObjectId) {
+	logger.silly(`Validating existence for activityId: "${value}", Order ID: ${this._id}`)
+	const exists = await ActivityModel.findById(value).lean()
+	if (!exists) { logger.warn(`Validation failed: activityId "${value}" does not exist. Order ID: ${this._id}`) }
+	return !!exists
+}, 'Den valgte aktivitet findes ikke')
 
-orderSchema.path('roomId').validate(async function (v: Schema.Types.ObjectId) {
-	const room = await RoomModel.findById(v)
-	return room !== null && room !== undefined
-}, 'Rummet eksisterer ikke')
+orderSchema.path('roomId').validate(async function (value: Schema.Types.ObjectId) {
+	logger.silly(`Validating existence for roomId: "${value}", Order ID: ${this._id}`)
+	const exists = await RoomModel.findById(value).lean()
+	if (!exists) { logger.warn(`Validation failed: roomId "${value}" does not exist. Order ID: ${this._id}`) }
+	return !!exists
+}, 'Det valgte rum findes ikke')
 
-orderSchema.path('kioskId').validate(async function (v: Schema.Types.ObjectId) {
-	const kiosk = await KioskModel.findById(v)
-	return kiosk !== null && kiosk !== undefined
-}, 'Kiosken eksisterer ikke')
+orderSchema.path('kioskId').validate(async function (value: Schema.Types.ObjectId) {
+	logger.silly(`Validating existence for kioskId: "${value}", Order ID: ${this._id}`)
+	const exists = await KioskModel.findById(value).lean()
+	if (!exists) { logger.warn(`Validation failed: kioskId "${value}" does not exist. Order ID: ${this._id}`) }
+	return !!exists
+}, 'Den valgte kiosk findes ikke')
 
 orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	const unique = new Set(v.map(v => v.id))
@@ -155,18 +161,21 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 	return product !== null && product !== undefined
 }, 'Produktet eksisterer ikke')
 
-orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectId) {
-	const product = await ProductModel.findById(v)
-
-	if (product === null || product === undefined) {
-		return false
-	}
-
-	// Skip order window validation if this is an update operation
-	if (!this.isNew) {
+orderSchema.path('products.id').validate(async function (this: IOrder, v: Schema.Types.ObjectId) { // Allow any for query context
+	// Skip order window validation if this is an update operation or if the document is not new
+	if (this.isNew === false) {
+		logger.silly(`Skipping order window validation for existing order update: ID ${this._id}`)
 		return true
 	}
 
+	const product = await ProductModel.findById(v).lean()
+
+	if (product == null) {
+		// Validation for product existence is handled by the other validator
+		// If product is null here, let the other validator fail it.
+		logger.warn(`Order window validation skipped: Product not found (ID: ${v}). Relying on existence validator.`)
+		return true // Let the existence validator handle the failure
+	}
 	const now = new Date()
 	const nowHour = now.getHours()
 	const nowMinute = now.getMinutes()
@@ -188,7 +197,13 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 		isEndHour = nowHour === to.hour && nowMinute <= to.minute
 	}
 
-	return isWithinHour || isStartHour || isEndHour
+	const isWithinOrderWindow = isWithinHour || isStartHour || isEndHour
+
+	if (!isWithinOrderWindow) {
+		logger.warn(`Order window validation failed for Product ${v} in Order. Now=${now}, Window=[${JSON.stringify(product.orderWindow)}]`)
+	}
+
+	return isWithinOrderWindow
 }, 'Bestillingen er uden for bestillingsvinduet')
 
 orderSchema.path('products.quantity').validate(function (v: number) {
@@ -214,15 +229,93 @@ orderSchema.path('paymentId').validate(async function (v: Schema.Types.ObjectId)
 	return payment !== null && payment !== undefined
 }, 'Betalingen eksisterer ikke')
 
-// Adding indexes
-orderSchema.index({ createdAt: 1 })
-orderSchema.index({ paymentId: 1 })
-orderSchema.index({ products: 1 })
-orderSchema.index({ options: 1 })
+// Indexes
+orderSchema.index({ createdAt: -1 }) // Index for sorting/querying by date
+orderSchema.index({ paymentId: 1 }, { unique: true }) // Ensure one order per payment
+orderSchema.index({ products: 1 }) // Index for product queries
+orderSchema.index({ options: 1 }) // Index for option queries
+orderSchema.index({ kioskId: 1, createdAt: -1 }) // Index for kiosk-specific queries
 
 // Pre-save middleware
 orderSchema.pre('save', function (next) {
-	logger.silly('Saving order')
+	if (this.isNew) {
+		logger.info(`Creating new order: Kiosk ${this.kioskId}, Activity ${this.activityId}, Payment ${this.paymentId}`) // Changed level
+	} else {
+		logger.debug(`Updating order: ID ${this.id}`)
+	}
+	next()
+})
+
+// Post-save middleware
+orderSchema.post('save', function (doc, next) {
+	logger.info(`Order saved successfully: ID ${doc.id}, Status ${doc.status}`) // Changed level
+	next()
+})
+
+// Pre-delete middleware (single document)
+orderSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, async function (next) {
+	// 'this' refers to the document being deleted
+	const orderId = this._id
+	logger.warn(`Preparing to delete order: ID ${orderId}`) // Use warn for deletion
+
+	try {
+		// Optionally delete the associated payment if it's not shared
+		const paymentId = this.paymentId
+		if (paymentId != null) {
+			// Check if other orders use this payment (shouldn't happen with unique index, but good practice)
+			const otherOrders = await OrderModel.countDocuments({ paymentId, _id: { $ne: orderId } })
+			if (otherOrders === 0) {
+				logger.info(`Deleting associated payment for order ID ${orderId}: Payment ID ${paymentId}`)
+				await PaymentModel.findByIdAndDelete(paymentId)
+			} else {
+				logger.warn(`Order ID ${orderId} is being deleted, but its Payment ID ${paymentId} is potentially shared. Payment not deleted.`)
+			}
+		}
+		next()
+	} catch (error) {
+		logger.error(`Error in pre-delete hook for order ID ${orderId}`, error)
+		next(error instanceof Error ? error : new Error('Pre-delete hook failed'))
+	}
+})
+
+// Pre-delete-many middleware (query-based)
+orderSchema.pre('deleteMany', async function (next) {
+	// 'this' refers to the query object
+	const filter = this.getFilter()
+	logger.warn('Executing deleteMany on Orders with filter:', filter)
+
+	try {
+		const docsToDelete = await OrderModel.find(filter).select('paymentId _id').lean()
+		const docIds = docsToDelete.map(doc => doc._id)
+		const paymentIdsToDelete = docsToDelete
+			.map(doc => doc.paymentId)
+
+		if (docIds.length > 0) {
+			logger.warn(`Preparing to delete ${docIds.length} orders via deleteMany: IDs [${docIds.join(', ')}]`)
+
+			// Delete associated payments (assuming 1-to-1 relationship enforced by index)
+			if (paymentIdsToDelete.length > 0) {
+				logger.info(`Deleting ${paymentIdsToDelete.length} associated payments for orders being deleted via deleteMany.`) // Changed level
+				await PaymentModel.deleteMany({ _id: { $in: paymentIdsToDelete } })
+			}
+		} else {
+			logger.info('deleteMany on Orders: No documents matched the filter.')
+		}
+		next()
+	} catch (error) {
+		logger.error('Error in pre-deleteMany hook for Orders with filter:', filter, error)
+		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
+	}
+})
+
+// Post-delete middleware
+orderSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
+	logger.warn(`Order deleted successfully: ID ${doc._id}`) // Use warn
+	next()
+})
+
+orderSchema.post('deleteMany', function (result, next) {
+	logger.warn(`deleteMany on Orders completed. Deleted count: ${result.deletedCount}`) // Use warn
 	next()
 })
 

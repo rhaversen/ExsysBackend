@@ -2,8 +2,8 @@ import { type Document, model, Schema } from 'mongoose'
 
 import logger from '../utils/logger.js'
 
+import ActivityModel from './Activity.js'
 import OptionModel from './Option.js'
-import OrderModel from './Order.js'
 
 // Interfaces
 export interface IProduct extends Document {
@@ -79,6 +79,7 @@ const productSchema = new Schema<IProduct>({
 	name: {
 		type: Schema.Types.String,
 		trim: true,
+		unique: true,
 		required: [true, 'Navn er påkrævet'],
 		maxLength: [15, 'Navnet må max være 15 tegn lang']
 	},
@@ -109,7 +110,19 @@ const productSchema = new Schema<IProduct>({
 	timestamps: true
 })
 
+// Indexes
+productSchema.index({ isActive: 1 }) // Index for querying active products
+
 // Validations
+productSchema.path('name').validate(async function (value: string) {
+	logger.silly(`Validating uniqueness for product name: "${value}", Current ID: ${this._id}`)
+	const foundProduct = await ProductModel.findOne({ name: value, _id: { $ne: this._id } }).lean()
+	if (foundProduct) {
+		logger.warn(`Validation failed: Product name "${value}" already exists (ID: ${foundProduct._id})`)
+	}
+	return !foundProduct
+}, 'Navnet er allerede i brug')
+
 productSchema.path('orderWindow').validate((v: {
 	from: { hour: number, minute: number }
 	to: { hour: number, minute: number }
@@ -143,58 +156,92 @@ productSchema.path('options').validate(function (v: Schema.Types.ObjectId[]) {
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
-// Adding indexes
-
 // Pre-save middleware
 productSchema.pre('save', function (next) {
-	logger.silly('Saving product')
+	if (this.isNew) {
+		logger.debug(`Creating new product: Name "${this.name}"`)
+	} else {
+		logger.debug(`Updating product: ID ${this.id}, Name "${this.name}"`)
+	}
+	next()
+})
+
+// Post-save middleware
+productSchema.post('save', function (doc, next) {
+	logger.debug(`Product saved successfully: ID ${doc.id}, Name "${doc.name}"`)
 	next()
 })
 
 // Pre-delete middleware
-productSchema.pre(['deleteOne', 'findOneAndDelete'], async function (next) {
-	const doc = await ProductModel.findOne(this.getQuery())
-	if (doc !== null && doc !== undefined) {
-		logger.silly('Removing product from orders with ID:', doc._id)
-		// Delete product from all orders and delete orders which are now empty
-		await OrderModel.bulkWrite([
-			{
-				updateMany: {
-					filter: { 'products.id': doc._id },
-					update: { $pull: { products: { id: doc._id } } }
-				}
-			},
-			{
-				deleteMany: {
-					filter: { products: { $size: 0 } }
-				}
-			}
-		])
+productSchema.pre('deleteOne', async function (next) {
+	// 'this' refers to the query object
+	const filter = this.getFilter()
+	logger.info('Preparing to delete Product matching filter:', filter)
+
+	try {
+		// Find the document that WILL be deleted to get its ID
+		const docToDelete = await ProductModel.findOne(filter).select('_id name').lean()
+
+		if (!docToDelete) {
+			logger.warn('Pre-deleteOne hook (Product): No document found matching filter:', filter)
+			return next()
+		}
+
+		const productId = docToDelete._id
+		logger.info(`Pre-deleteOne hook: Found Product to delete: ID ${productId}, Name "${docToDelete.name}"`)
+
+		// Remove product from Activity.disabledProducts
+		logger.debug(`Removing product ID ${productId} from Activity disabledProducts`)
+		await ActivityModel.updateMany(
+			{ disabledProducts: productId },
+			{ $pull: { disabledProducts: productId } }
+		)
+		logger.debug(`Product ID ${productId} removal attempt from relevant Activities completed`)
+		next()
+	} catch (error) {
+		logger.error('Error in pre-deleteOne hook for Product filter:', filter, error)
+		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
+})
+
+// Pre-delete-many middleware (query-based)
+productSchema.pre('deleteMany', async function (next) {
+	// 'this' refers to the query object
+	const filter = this.getFilter()
+	logger.warn('Executing deleteMany on Products with filter:', filter)
+
+	try {
+		const docsToDelete = await ProductModel.find(filter).select('_id').lean()
+		const docIds = docsToDelete.map(doc => doc._id)
+
+		if (docIds.length > 0) {
+			logger.info(`Preparing to delete ${docIds.length} products via deleteMany: IDs [${docIds.join(', ')}]`)
+
+			// Remove products from Activity.disabledProducts
+			logger.debug(`Removing product IDs [${docIds.join(', ')}] from Activity disabledProducts`)
+			await ActivityModel.updateMany(
+				{ disabledProducts: { $in: docIds } },
+				{ $pull: { disabledProducts: { $in: docIds } } }
+			)
+			logger.debug(`Product IDs [${docIds.join(', ')}] removed from relevant Activities`)
+		} else {
+			logger.info('deleteMany on Products: No documents matched the filter.')
+		}
+		next()
+	} catch (error) {
+		logger.error('Error in pre-deleteMany hook for Products with filter:', filter, error)
+		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
+	}
+})
+
+// Post-delete middleware
+productSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
+	logger.info(`Product deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
 	next()
 })
 
-// Pre-delete-many middleware
-productSchema.pre('deleteMany', async function (next) {
-	const docs = await ProductModel.find(this.getQuery())
-	const docIds = docs.map(doc => doc._id)
-	if (docIds.length > 0) {
-		logger.silly('Removing products from orders with IDs:', docIds)
-		// Delete products from all orders and delete orders which are now empty
-		await OrderModel.bulkWrite([
-			{
-				updateMany: {
-					filter: { 'products.id': { $in: docIds } },
-					update: { $pull: { products: { id: { $in: docIds } } } }
-				}
-			},
-			{
-				deleteMany: {
-					filter: { products: { $size: 0 } }
-				}
-			}
-		])
-	}
+productSchema.post('deleteMany', function (result, next) {
+	logger.info(`deleteMany on Products completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

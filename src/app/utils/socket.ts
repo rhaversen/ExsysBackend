@@ -23,7 +23,7 @@ let io: Server | undefined
 
 export async function initSocket (server: HttpServer): Promise<void> {
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
-		logger.info('Initializing socket.io for testing/development')
+		logger.debug('Initializing socket.io for testing/development')
 		io = new Server(server, {
 			cors: corsConfig
 		})
@@ -33,7 +33,7 @@ export async function initSocket (server: HttpServer): Promise<void> {
 		return
 	}
 
-	logger.info('Initializing socket.io with Redis adapter')
+	logger.debug('Initializing socket.io with Redis adapter')
 
 	io = new Server(server, {
 		cors: corsConfig
@@ -85,7 +85,7 @@ export function emitSocketEvent<T> (
 
 	try {
 		io.emit(eventName, data)
-		logger.silly(successLog)
+		logger.debug(successLog)
 	} catch (error) {
 		logger.error(`Failed to emit ${eventName}:`, error)
 	}
@@ -99,7 +99,7 @@ export function broadcastEvent (
 
 	try {
 		io.emit(eventName)
-		logger.silly(successLog)
+		logger.debug(successLog)
 		return true
 	} catch (error) {
 		logger.error(`Failed to emit ${eventName}:`, error)

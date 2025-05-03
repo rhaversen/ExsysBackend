@@ -135,20 +135,121 @@ describe('Reader Model', function () {
 		expect(reader.readerTag).to.match(/^[0-9]+$/)
 	})
 
-	it('should remove the reader from any kiosks when deleted', async function () {
-		const reader = await ReaderModel.create({
-			apiReferenceId: '12345',
-			readerTag: '54321'
-		})
-		const kiosk = await KioskModel.create({
-			name: 'Test Kiosk',
-			readerId: reader.id,
-			password: 'Test Password'
+	describe('Delete middleware', function () {
+		describe('Pre-delete middleware (deleteOne / findOneAndDelete)', function () {
+			it('should set readerId to null in any kiosks when deleted', async function () {
+				const reader = await ReaderModel.create({
+					apiReferenceId: '12345',
+					readerTag: '54321'
+				})
+				const kiosk = await KioskModel.create({
+					name: 'Test Kiosk',
+					readerId: reader.id,
+					kioskTag: '11111'
+				})
+
+				await ReaderModel.deleteOne({ _id: reader.id })
+
+				const updatedKiosk = await KioskModel.findById(kiosk.id)
+				expect(updatedKiosk?.readerId).to.be.null // Changed assertion to expect null
+			})
+
+			it('should not affect other kiosks when deleting a reader', async function () {
+				const reader1 = await ReaderModel.create({
+					apiReferenceId: '12345',
+					readerTag: '54321'
+				})
+				const reader2 = await ReaderModel.create({
+					apiReferenceId: '67890',
+					readerTag: '98765'
+				})
+				const kiosk1 = await KioskModel.create({
+					name: 'Test Kiosk 1',
+					readerId: reader1.id,
+					kioskTag: '11111'
+				})
+				const kiosk2 = await KioskModel.create({
+					name: 'Test Kiosk 2',
+					readerId: reader2.id,
+					kioskTag: '22222'
+				})
+
+				await ReaderModel.deleteOne({ _id: reader1.id })
+
+				const updatedKiosk1 = await KioskModel.findById(kiosk1.id)
+				const updatedKiosk2 = await KioskModel.findById(kiosk2.id)
+				expect(updatedKiosk1?.readerId).to.be.null
+				expect(updatedKiosk2?.readerId?.toString()).to.equal(reader2.id.toString())
+			})
 		})
 
-		await ReaderModel.deleteOne({ _id: reader.id })
+		describe('Pre-delete-many middleware', function () {
+			it('should set readerId to null in multiple kiosks when deleted via deleteMany', async function () {
+				const reader1 = await ReaderModel.create({
+					apiReferenceId: '12345',
+					readerTag: '54321'
+				})
+				const reader2 = await ReaderModel.create({
+					apiReferenceId: '67890',
+					readerTag: '98765'
+				})
+				const kiosk1 = await KioskModel.create({
+					name: 'Test Kiosk 1',
+					readerId: reader1.id,
+					kioskTag: '11111'
+				})
+				const kiosk2 = await KioskModel.create({
+					name: 'Test Kiosk 2',
+					readerId: reader2.id,
+					kioskTag: '22222'
+				})
 
-		const updatedKiosk = await KioskModel.findById(kiosk.id)
-		expect(updatedKiosk?.readerId).to.be.undefined
+				await ReaderModel.deleteMany({ _id: { $in: [reader1.id, reader2.id] } })
+
+				const updatedKiosk1 = await KioskModel.findById(kiosk1.id)
+				const updatedKiosk2 = await KioskModel.findById(kiosk2.id)
+				expect(updatedKiosk1?.readerId).to.be.null
+				expect(updatedKiosk2?.readerId).to.be.null
+			})
+
+			it('should not affect other kiosks when deleting readers via deleteMany', async function () {
+				const reader1 = await ReaderModel.create({
+					apiReferenceId: '12345',
+					readerTag: '54321'
+				})
+				const reader2 = await ReaderModel.create({
+					apiReferenceId: '67890',
+					readerTag: '98765'
+				})
+				const reader3 = await ReaderModel.create({
+					apiReferenceId: '11223',
+					readerTag: '33445'
+				})
+				const kiosk1 = await KioskModel.create({
+					name: 'Test Kiosk 1',
+					readerId: reader1.id,
+					kioskTag: '11111'
+				})
+				const kiosk2 = await KioskModel.create({
+					name: 'Test Kiosk 2',
+					readerId: reader2.id,
+					kioskTag: '22222'
+				})
+				const kiosk3 = await KioskModel.create({
+					name: 'Test Kiosk 3',
+					readerId: reader3.id,
+					kioskTag: '33333'
+				})
+
+				await ReaderModel.deleteMany({ _id: { $in: [reader1.id, reader2.id] } })
+
+				const updatedKiosk1 = await KioskModel.findById(kiosk1.id)
+				const updatedKiosk2 = await KioskModel.findById(kiosk2.id)
+				const updatedKiosk3 = await KioskModel.findById(kiosk3.id)
+				expect(updatedKiosk1?.readerId).to.be.null
+				expect(updatedKiosk2?.readerId).to.be.null
+				expect(updatedKiosk3?.readerId?.toString()).to.equal(reader3.id.toString())
+			})
+		})
 	})
 })

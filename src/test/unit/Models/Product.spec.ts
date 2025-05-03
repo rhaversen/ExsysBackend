@@ -8,12 +8,8 @@ import { describe, it } from 'mocha'
 import { Types } from 'mongoose'
 
 import ActivityModel from '../../../app/models/Activity.js'
-import KioskModel from '../../../app/models/Kiosk.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
-import OrderModel from '../../../app/models/Order.js'
-import PaymentModel from '../../../app/models/Payment.js'
 import ProductModel from '../../../app/models/Product.js'
-import RoomModel from '../../../app/models/Room.js'
 
 import '../../testSetup.js'
 
@@ -832,130 +828,79 @@ describe('Product Model', function () {
 			expect(product).to.exist
 		})
 	})
-	describe('Delete', function () {
-		let paymentId: Types.ObjectId
-		let activityId: Types.ObjectId
-		let roomId: Types.ObjectId
-		let kioskId: Types.ObjectId
 
-		beforeEach(async function () {
-			const payment = await PaymentModel.create({})
-			const room = await RoomModel.create({ name: 'Test Room', description: 'Test Description' })
-			const activity = await ActivityModel.create({
-				name: 'Test Activity',
-				roomId: room.id
-			})
-			const kiosk = await KioskModel.create({
-				name: 'Test Kiosk',
-				password: 'Test Password'
-			})
-			paymentId = payment.id
-			activityId = activity.id
-			roomId = room.id
-			kioskId = kiosk.id
-		})
-
-		describe('Pre-delete middleware', function () {
-			it('should remove the product from orders when deleting a product', async function () {
-				const product1 = await ProductModel.create(testProductFields)
-				const product2 = await ProductModel.create({ ...testProductFields, name: 'Test Product 2' })
-
-				const order = await OrderModel.create({
-					products: [{
-						id: product1.id,
-						quantity: 1
-					}, {
-						id: product2.id,
-						quantity: 1
-					}],
-					kioskId,
-					paymentId,
-					activityId,
-					roomId
+	describe('Delete middleware', function () {
+		describe('Pre-delete middleware (deleteOne / findOneAndDelete)', function () {
+			it('should remove the product from Activity.disabledProducts when deleted', async function () {
+				const product = await ProductModel.create(testProductFields)
+				const activity = await ActivityModel.create({
+					name: 'Activity1',
+					disabledProducts: [product._id]
 				})
 
-				await product1.deleteOne()
+				await ProductModel.deleteOne({ _id: product._id })
 
-				const updatedOrder = await OrderModel.findById(order.id)
-
-				expect(updatedOrder?.products.length).to.equal(1)
+				const updatedActivity = await ActivityModel.findById(activity._id)
+				expect(updatedActivity?.disabledProducts).to.be.empty
 			})
 
-			it('should remove orders with no products when deleting a product', async function () {
+			it('should not affect other products in Activity.disabledProducts when deleting a product', async function () {
 				const product1 = await ProductModel.create(testProductFields)
-
-				await OrderModel.create({
-					products: [{
-						id: product1.id,
-						quantity: 1
-					}],
-					kioskId,
-					paymentId,
-					activityId,
-					roomId
+				const product2 = await ProductModel.create({
+					...testProductFields,
+					name: 'Test Product 2'
+				})
+				const activity = await ActivityModel.create({
+					name: 'Activity1',
+					disabledProducts: [product1._id, product2._id]
 				})
 
-				await product1.deleteOne()
+				await ProductModel.deleteOne({ _id: product1._id })
 
-				const orders = await OrderModel.find({})
-
-				expect(orders.length).to.equal(0)
+				const updatedActivity = await ActivityModel.findById(activity._id)
+				expect(updatedActivity?.disabledProducts).to.have.lengthOf(1)
+				expect(updatedActivity?.disabledProducts?.[0].toString()).to.equal(product2._id.toString())
 			})
 		})
 
 		describe('Pre-delete-many middleware', function () {
-			it('should remove the products from orders when deleting multiple products', async function () {
+			it('should remove multiple products from Activity.disabledProducts when deleted via deleteMany', async function () {
 				const product1 = await ProductModel.create(testProductFields)
-				const product2 = await ProductModel.create({ ...testProductFields, name: 'Test Product 2' })
-				const product3 = await ProductModel.create({ ...testProductFields, name: 'Test Product 3' })
-
-				const order = await OrderModel.create({
-					products: [{
-						id: product1.id,
-						quantity: 1
-					}, {
-						id: product2.id,
-						quantity: 1
-					}, {
-						id: product3.id,
-						quantity: 1
-					}],
-					kioskId,
-					paymentId,
-					activityId,
-					roomId
+				const product2 = await ProductModel.create({
+					...testProductFields,
+					name: 'Test Product 2'
+				})
+				const activity = await ActivityModel.create({
+					name: 'Activity1',
+					disabledProducts: [product1._id, product2._id]
 				})
 
-				await ProductModel.deleteMany({ name: { $ne: 'Test Product 2' } })
+				await ProductModel.deleteMany({ _id: { $in: [product1._id, product2._id] } })
 
-				const updatedOrder = await OrderModel.findById(order.id)
-
-				expect(updatedOrder?.products.length).to.equal(1)
+				const updatedActivity = await ActivityModel.findById(activity._id)
+				expect(updatedActivity?.disabledProducts).to.be.empty
 			})
 
-			it('should remove orders with no products when deleting multiple products', async function () {
+			it('should not affect other products in Activity.disabledProducts when deleting multiple products via deleteMany', async function () {
 				const product1 = await ProductModel.create(testProductFields)
-				const product2 = await ProductModel.create({ ...testProductFields, name: 'Test Product 2' })
-
-				await OrderModel.create({
-					products: [{
-						id: product1.id,
-						quantity: 1
-					}, {
-						id: product2.id,
-						quantity: 1
-					}],
-					kioskId,
-					paymentId,
-					activityId,
-					roomId
+				const product2 = await ProductModel.create({
+					...testProductFields,
+					name: 'Test Product 2'
+				})
+				const product3 = await ProductModel.create({
+					...testProductFields,
+					name: 'Test Product 3'
+				})
+				const activity = await ActivityModel.create({
+					name: 'Activity1',
+					disabledProducts: [product1._id, product2._id, product3._id]
 				})
 
-				await ProductModel.deleteMany({})
+				await ProductModel.deleteMany({ _id: { $in: [product1._id, product2._id] } })
 
-				const orders = await OrderModel.find({})
-
-				expect(orders.length).to.equal(0)
+				const updatedActivity = await ActivityModel.findById(activity._id)
+				expect(updatedActivity?.disabledProducts).to.have.lengthOf(1)
+				expect(updatedActivity?.disabledProducts?.[0].toString()).to.equal(product3._id.toString())
 			})
 		})
 	})

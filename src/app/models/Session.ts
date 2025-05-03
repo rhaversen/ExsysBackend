@@ -2,9 +2,9 @@ import { model, Schema } from 'mongoose'
 
 // Interfaces
 export interface ISession {
-	_id: string
-	session: string
-	expires: Date | null
+	_id: string // Session ID
+	session: string // JSON string of session data
+	expires: Date | null // Expiry date
 }
 
 export interface ISessionFrontend {
@@ -20,7 +20,7 @@ export interface ISessionFrontend {
 }
 
 // Schema
-const SessionSchema = new Schema(
+const SessionSchema = new Schema<ISession>(
 	{
 		_id: {
 			type: String,
@@ -32,10 +32,13 @@ const SessionSchema = new Schema(
 		},
 		expires: {
 			type: Date,
-			required: true
+			required: true,
+			index: { expires: '1m' } // Add TTL index for automatic cleanup by MongoDB
 		}
 	},
-	{ strict: false } // Allow other fields
+	{
+		strict: false // Allow other fields potentially added by connect-mongo
+	}
 )
 
 // Compile the schema into a model
