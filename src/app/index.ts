@@ -165,40 +165,14 @@ server.listen(expressPort, () => {
 
 // Handle unhandled rejections outside middleware
 process.on('unhandledRejection', async (reason, promise): Promise<void> => {
-	// Attempt to get a string representation of the promise
-	const promiseString = JSON.stringify(promise) !== '' ? JSON.stringify(promise) : 'a promise'
-
-	// Get a detailed string representation of the reason
-	const reasonDetail = reason instanceof Error ? reason.stack ?? reason.message : JSON.stringify(reason)
-
-	// Log the detailed error message
-	logger.error(`Unhandled Rejection at: ${promiseString}`, { reason: reasonDetail })
-
-	try {
-		await shutDown()
-		// Optionally re-throw the original reason after shutdown attempt if needed
-		// throw reason;
-	} catch (error) {
-		// If 'error' is an Error object, log its stack trace; otherwise, convert to string
-		const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
-		logger.error('An error occurred during shutdown after unhandled rejection', { error: errorDetail })
-		// Throw the shutdown error to indicate failure and satisfy lint rule
-		throw error
-	}
+	logger.error('Unhandled Rejection', { reason, promise })
+	throw reason // Re-throw the error to allow for process termination
 })
 
 // Handle uncaught exceptions outside middleware
 process.on('uncaughtException', async (err): Promise<void> => {
 	logger.error('Uncaught exception', { error: err })
-	try {
-		await shutDown()
-		// Re-throw the original error after attempting shutdown
-		throw err
-	} catch (shutdownError) {
-		logger.error('An error occurred during shutdown after uncaught exception', { error: shutdownError })
-		// Throw the shutdown error to indicate failure and satisfy lint rule
-		throw shutdownError
-	}
+	throw err // Re-throw the error to allow for process termination
 })
 
 // Shutdown function
