@@ -3,6 +3,8 @@
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
+import { randomUUID } from 'crypto' // Add this import
+
 import { expect } from 'chai'
 import mongoose from 'mongoose'
 import sinon from 'sinon'
@@ -11,6 +13,7 @@ import { getOrCreateConfigs } from '../../../app/controllers/configsController.j
 import AdminModel, { type IAdmin } from '../../../app/models/Admin.js'
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
+import SessionModel from '../../../app/models/Session.js' // Add this import
 import config from '../../../app/utils/setupConfig.js'
 import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
@@ -430,6 +433,93 @@ describe('Auth routes', function () {
 			const res = await agent().post('/api/v1/auth/login-kiosk-local').send({})
 
 			expect(res).to.have.status(400)
+		})
+
+		it('should return 409 if the kiosk already has an active session', async function () {
+			// Manually create an active session for the test kiosk
+			await SessionModel.create({
+				_id: randomUUID(),
+				session: JSON.stringify({
+					cookie: {
+						originalMaxAge: 86400000, // Example value
+						expires: new Date(Date.now() + 86400000), // Future expiry
+						secure: true,
+						httpOnly: true,
+						path: '/'
+					},
+					passport: {
+						user: testKiosk.id // Link session to the test kiosk
+					},
+					ipAddress: '127.0.0.1',
+					loginTime: new Date(),
+					lastActivity: new Date(),
+					userAgent: 'test-agent',
+					type: 'kiosk'
+				}),
+				expires: new Date(Date.now() + 86400000) // Ensure session is not expired
+			})
+
+			// Attempt login with the standard agent
+			const res = await agent().post('/api/v1/auth/login-kiosk-local').send(testKioskFields)
+
+			expect(res).to.have.status(409)
+			expect(res.body.error).to.exist
+		})
+
+		it('should return 200 if override is true, even if the kiosk has an active session', async function () {
+			// Manually create an active session for the test kiosk
+			await SessionModel.create({
+				_id: randomUUID(),
+				session: JSON.stringify({
+					cookie: {
+						originalMaxAge: 86400000,
+						expires: new Date(Date.now() + 86400000),
+						secure: true,
+						httpOnly: true,
+						path: '/'
+					},
+					passport: { user: testKiosk.id },
+					ipAddress: '127.0.0.1',
+					loginTime: new Date(),
+					lastActivity: new Date(),
+					userAgent: 'test-agent',
+					type: 'kiosk'
+				}),
+				expires: new Date(Date.now() + 86400000)
+			})
+
+			// Attempt login with override
+			const res = await agent().post('/api/v1/auth/login-kiosk-local').send({ ...testKioskFields, override: true })
+
+			expect(res).to.have.status(200)
+		})
+
+		it('should return 200 if override is string "true", even if the kiosk has an active session', async function () {
+			// Manually create an active session for the test kiosk
+			await SessionModel.create({
+				_id: randomUUID(),
+				session: JSON.stringify({
+					cookie: {
+						originalMaxAge: 86400000,
+						expires: new Date(Date.now() + 86400000),
+						secure: true,
+						httpOnly: true,
+						path: '/'
+					},
+					passport: { user: testKiosk.id },
+					ipAddress: '127.0.0.1',
+					loginTime: new Date(),
+					lastActivity: new Date(),
+					userAgent: 'test-agent',
+					type: 'kiosk'
+				}),
+				expires: new Date(Date.now() + 86400000)
+			})
+
+			// Attempt login with override as string
+			const res = await agent().post('/api/v1/auth/login-kiosk-local').send({ ...testKioskFields, override: 'true' })
+
+			expect(res).to.have.status(200)
 		})
 	})
 
