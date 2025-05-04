@@ -95,7 +95,7 @@ optionSchema.pre('deleteOne', async function (next) {
 		logger.debug(`Option ID ${optionId} removal attempt from relevant Products completed`)
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteOne hook for Option filter:', filter, error)
+		logger.error('Error in pre-deleteOne hook for Option filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
 })
@@ -110,7 +110,7 @@ optionSchema.pre('deleteMany', async function (next) {
 		const docIds = docsToDelete.map(doc => doc._id)
 
 		if (docIds.length > 0) {
-			logger.info(`Preparing to delete ${docIds.length} options via deleteMany: IDs [${docIds.join(', ')}]`) // Changed level
+			logger.info(`Preparing to delete ${docIds.length} options via deleteMany: IDs [${docIds.join(', ')}]`)
 
 			// Remove options from Product.options
 			logger.debug(`Removing option IDs [${docIds.join(', ')}] from Product options`)
@@ -124,7 +124,7 @@ optionSchema.pre('deleteMany', async function (next) {
 		}
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteMany hook for Options with filter:', filter, error)
+		logger.error('Error in pre-deleteMany hook for Options with filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
 	}
 })

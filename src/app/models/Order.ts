@@ -273,7 +273,7 @@ orderSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: fals
 		}
 		next()
 	} catch (error) {
-		logger.error(`Error in pre-delete hook for order ID ${orderId}`, error)
+		logger.error(`Error in pre-delete hook for order ID ${orderId}`, { error })
 		next(error instanceof Error ? error : new Error('Pre-delete hook failed'))
 	}
 })
@@ -303,7 +303,7 @@ orderSchema.pre('deleteMany', async function (next) {
 		}
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteMany hook for Orders with filter:', filter, error)
+		logger.error('Error in pre-deleteMany hook for Orders with filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
 	}
 })

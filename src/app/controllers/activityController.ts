@@ -23,7 +23,7 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 
 		emitActivityPosted(newActivity)
 	} catch (error) {
-		logger.error(`Activity creation failed for name: ${req.body.name ?? 'N/A'}`, error)
+		logger.error(`Activity creation failed for name: ${req.body.name ?? 'N/A'}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -48,7 +48,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 		logger.debug(`Retrieved activity successfully: ID ${activityId}`)
 		res.status(200).json(activity)
 	} catch (error) {
-		logger.error(`Get activity failed: Error retrieving activity ID ${activityId}`, error)
+		logger.error(`Get activity failed: Error retrieving activity ID ${activityId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -65,7 +65,7 @@ export async function getActivities (req: Request, res: Response, next: NextFunc
 		logger.debug(`Retrieved ${activities.length} activities`)
 		res.status(200).json(activities)
 	} catch (error) {
-		logger.error('Failed to get activities', error)
+		logger.error('Failed to get activities', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -137,7 +137,7 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 		emitActivityUpdated(activity)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch activity failed: Error updating activity ID ${activityId}`, error)
+		logger.error(`Patch activity failed: Error updating activity ID ${activityId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -173,7 +173,7 @@ export async function deleteActivity (req: Request, res: Response, next: NextFun
 
 		emitActivityDeleted(activityId)
 	} catch (error) {
-		logger.error(`Activity deletion failed: Error during deletion process for ID ${activityId}`, error)
+		logger.error(`Activity deletion failed: Error during deletion process for ID ${activityId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

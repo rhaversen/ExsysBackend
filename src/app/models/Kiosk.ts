@@ -149,7 +149,7 @@ kioskSchema.pre('save', async function (next) {
 				this.kioskTag = await generateUniqueKioskTag()
 				logger.debug(`Generated unique kioskTag "${this.kioskTag}" for new kiosk "${this.name}"`)
 			} catch (error) {
-				logger.error(`Failed to generate unique kioskTag for new kiosk "${this.name}"`, error)
+				logger.error(`Failed to generate unique kioskTag for new kiosk "${this.name}"`, { error })
 				return next(error instanceof Error ? error : new Error('Kiosk tag generation failed'))
 			}
 		}
@@ -200,7 +200,7 @@ kioskSchema.methods.generateNewKioskTag = async function (this: IKiosk): Promise
 		logger.info(`New kioskTag "${this.kioskTag}" generated and saved for kiosk ID ${this.id}`)
 		return this.kioskTag
 	} catch (error) {
-		logger.error(`Failed to generate and save new kioskTag for kiosk ID ${this.id}`, error)
+		logger.error(`Failed to generate and save new kioskTag for kiosk ID ${this.id}`, { error })
 		throw error // Re-throw error
 	}
 }

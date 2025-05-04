@@ -23,7 +23,7 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 
 		emitOptionCreated(newOption)
 	} catch (error) {
-		logger.error(`Option creation failed for name: ${optionName}`, error)
+		logger.error(`Option creation failed for name: ${optionName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -40,7 +40,7 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 		logger.debug(`Retrieved ${options.length} options`)
 		res.status(200).json(options)
 	} catch (error) {
-		logger.error('Failed to get options', error)
+		logger.error('Failed to get options', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -105,7 +105,7 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 		emitOptionUpdated(option)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch option failed: Error updating option ID ${optionId}`, error)
+		logger.error(`Patch option failed: Error updating option ID ${optionId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -140,7 +140,7 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 
 		emitOptionDeleted(optionId)
 	} catch (error) {
-		logger.error(`Option deletion failed: Error during deletion process for ID ${optionId}`, error)
+		logger.error(`Option deletion failed: Error during deletion process for ID ${optionId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

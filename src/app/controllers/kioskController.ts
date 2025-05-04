@@ -33,7 +33,7 @@ export async function transformKiosk (
 			updatedAt: populatedKiosk.updatedAt
 		}
 	} catch (error) {
-		logger.error(`Error transforming kiosk ID ${kiosk.id}`, error)
+		logger.error(`Error transforming kiosk ID ${kiosk.id}`, { error })
 		throw new Error(`Failed to transform kiosk ID ${kiosk.id}: ${error instanceof Error ? error.message : String(error)}`)
 	}
 }
@@ -64,7 +64,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 
 		emitKioskCreated(transformedKiosk)
 	} catch (error) {
-		logger.error(`Kiosk creation failed for name: ${kioskName}`, error)
+		logger.error(`Kiosk creation failed for name: ${kioskName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -100,7 +100,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 		logger.debug(`Retrieved current kiosk successfully: ID ${kiosk.id}, Name: ${kiosk.name}`)
 		res.status(200).json(transformedKiosk)
 	} catch (error) {
-		logger.error('Get me (kiosk) failed: Unexpected error', error)
+		logger.error('Get me (kiosk) failed: Unexpected error', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -128,7 +128,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 		logger.debug(`Retrieved kiosk successfully: ID ${kioskId}`)
 		res.status(200).json(transformedKiosk)
 	} catch (error) {
-		logger.error(`Get kiosk failed: Error retrieving kiosk ID ${kioskId}`, error)
+		logger.error(`Get kiosk failed: Error retrieving kiosk ID ${kioskId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -152,7 +152,7 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 		logger.debug(`Retrieved and transformed ${transformedKiosks.length} kiosks`)
 		res.status(200).json(transformedKiosks)
 	} catch (error) {
-		logger.error('Failed to get kiosks', error)
+		logger.error('Failed to get kiosks', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -253,7 +253,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch kiosk failed: Error updating kiosk ID ${kioskId}`, error)
+		logger.error(`Patch kiosk failed: Error updating kiosk ID ${kioskId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -287,7 +287,7 @@ export async function createNewKioskTag (req: Request, res: Response, next: Next
 		const transformedKiosk = await transformKiosk(kiosk) // Re-transform with new tag
 		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
-		logger.error(`Generate new kioskTag failed for kiosk ID ${kioskId}`, error)
+		logger.error(`Generate new kioskTag failed for kiosk ID ${kioskId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -320,7 +320,7 @@ export async function deleteKiosk (req: Request, res: Response, next: NextFuncti
 
 		emitKioskDeleted(kioskId)
 	} catch (error) {
-		logger.error(`Kiosk deletion failed: Error during deletion process for ID ${kioskId}`, error)
+		logger.error(`Kiosk deletion failed: Error during deletion process for ID ${kioskId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

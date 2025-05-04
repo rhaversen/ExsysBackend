@@ -46,7 +46,7 @@ export function transformSession (
 			userAgent: sessionData.userAgent
 		}
 	} catch (error) {
-		logger.error(`Error transforming session document ID ${sessionDoc._id}:`, error) // Added error log
+		logger.error(`Error transforming session document ID ${sessionDoc._id}:`, { error })
 		// Return a default/error structure
 		// Returning a minimal structure to avoid crashing consumers
 		return {
@@ -77,7 +77,7 @@ export async function getSessions (req: Request, res: Response, next: NextFuncti
 		logger.debug(`Retrieved and transformed ${transformedSessions.length} sessions`)
 		res.status(200).json(transformedSessions)
 	} catch (error) {
-		logger.error('Failed to get sessions', error)
+		logger.error('Failed to get sessions', { error })
 		next(error)
 	}
 }
@@ -108,7 +108,7 @@ export async function getCurrentSession (req: Request, res: Response, next: Next
 		logger.debug(`Retrieved current session successfully: ID ${sessionId}`)
 		res.status(200).json(transformedSession)
 	} catch (error) {
-		logger.error(`Get current session failed: Error retrieving session ID ${sessionId}`, error)
+		logger.error(`Get current session failed: Error retrieving session ID ${sessionId}`, { error })
 		next(error)
 	}
 }
@@ -147,7 +147,7 @@ export async function deleteSession (req: Request, res: Response, next: NextFunc
 		// Emit WebSocket event after successful deletion and response
 		emitSessionDeleted(sessionId)
 	} catch (error) {
-		logger.error(`Delete session failed: Error during deletion process for ID ${sessionId}`, error) // Added context to error
+		logger.error(`Delete session failed: Error during deletion process for ID ${sessionId}`, { error })
 		next(error)
 	}
 }

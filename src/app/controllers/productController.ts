@@ -27,7 +27,7 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 		res.status(201).json(newProduct)
 		emitProductCreated(newProduct)
 	} catch (error) {
-		logger.error(`Product creation failed for name: ${productName}`, error)
+		logger.error(`Product creation failed for name: ${productName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -44,7 +44,7 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 		logger.debug(`Retrieved ${products.length} products`)
 		res.status(200).json(products)
 	} catch (error) {
-		logger.error('Failed to get products', error)
+		logger.error('Failed to get products', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -127,7 +127,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		emitProductUpdated(product)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch product failed: Error updating product ID ${productId}`, error)
+		logger.error(`Patch product failed: Error updating product ID ${productId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -162,7 +162,7 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 
 		emitProductDeleted(productId)
 	} catch (error) {
-		logger.error(`Product deletion failed: Error during deletion process for ID ${productId}`, error)
+		logger.error(`Product deletion failed: Error during deletion process for ID ${productId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

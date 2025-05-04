@@ -137,7 +137,7 @@ activitySchema.pre('deleteOne', async function (next) {
 		logger.debug(`Activity ID ${activityId} removal attempt from relevant Kiosks completed`)
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteOne hook for Activity filter:', filter, error)
+		logger.error('Error in pre-deleteOne hook for Activity filter:', { filter, error })
 		// Pass the error to the next middleware
 		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
@@ -168,7 +168,7 @@ activitySchema.pre('deleteMany', async function (next) {
 		}
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteMany hook for Activities with filter:', filter, error)
+		logger.error('Error in pre-deleteMany hook for Activities with filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
 	}
 })

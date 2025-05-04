@@ -89,7 +89,7 @@ roomSchema.pre('deleteOne', async function (next) {
 
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteOne hook for Room filter:', filter, error)
+		logger.error('Error in pre-deleteOne hook for Room filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
 })
@@ -119,7 +119,7 @@ roomSchema.pre('deleteMany', async function (next) {
 		}
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteMany hook for Rooms with filter:', filter, error)
+		logger.error('Error in pre-deleteMany hook for Rooms with filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
 	}
 })

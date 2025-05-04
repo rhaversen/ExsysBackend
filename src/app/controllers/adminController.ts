@@ -38,7 +38,7 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 
 		emitAdminCreated(transformedAdmin)
 	} catch (error) {
-		logger.error(`Admin creation failed for name: ${adminName}`, error)
+		logger.error(`Admin creation failed for name: ${adminName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -56,7 +56,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 		logger.debug(`Retrieved ${admins.length} admins`)
 		res.status(200).json(transformedAdmins)
 	} catch (error) {
-		logger.error('Failed to get admins', error)
+		logger.error('Failed to get admins', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -81,7 +81,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 		logger.debug(`Retrieved current admin successfully: ID ${admin.id}, Name: ${admin.name}`)
 		res.status(200).json(transformedAdmin)
 	} catch (error) {
-		logger.error('Get me failed: Unexpected error', error)
+		logger.error('Get me failed: Unexpected error', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -143,7 +143,7 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 		emitAdminUpdated(transformedAdmin)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch admin failed: Error updating admin ID ${adminId}`, error)
+		logger.error(`Patch admin failed: Error updating admin ID ${adminId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -192,7 +192,7 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 
 		emitAdminDeleted(adminIdToDelete)
 	} catch (error) {
-		logger.error(`Admin deletion failed: Error during deletion process for ID ${adminIdToDelete}`, error)
+		logger.error(`Admin deletion failed: Error during deletion process for ID ${adminIdToDelete}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

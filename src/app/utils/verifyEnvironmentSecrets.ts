@@ -58,8 +58,7 @@ if (process.env.NODE_ENV === 'development') {
 
 if (missingSecrets.length > 0) {
 	const errorMessage = `Missing environment secrets: ${missingSecrets.join(', ')}`
-	logger.error(errorMessage)
-	logger.info('Exiting due to missing environment secrets')
+	logger.error('Exiting due to missing environment secrets', { missingSecrets })
 	throw new Error(errorMessage)
 }
 

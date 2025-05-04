@@ -41,7 +41,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 		})
 		return response.data.data.client_transaction_id
 	} catch (error) {
-		logger.error(error)
+		logger.error('Error creating reader checkout', { error })
 		return undefined
 	}
 }
@@ -64,7 +64,7 @@ export async function pairReader (pairingCode: string): Promise<string | undefin
 		})
 		return response.data.id
 	} catch (error) {
-		logger.error(error)
+		logger.error('Error pairing reader', { error })
 		return undefined
 	}
 }
@@ -84,7 +84,7 @@ export async function unpairReader (readerId: string): Promise<boolean> {
 		})
 		return true
 	} catch (error) {
-		logger.error(error)
+		logger.error('Error unpairing reader', { error })
 		return false
 	}
 }

@@ -11,7 +11,7 @@ export async function emitPaidOrderPosted (order: IOrderFrontend): Promise<void>
 			`Broadcasted paid order posted for order ${order._id}`
 		)
 	} catch (error) {
-		logger.error(error)
+		logger.error('Failed to emit paid order posted event:', { error })
 	}
 }
 
@@ -24,6 +24,6 @@ export async function emitOrderStatusUpdated (order: IOrderFrontend): Promise<vo
 			`Broadcasted order status updated for order ${order._id}`
 		)
 	} catch (error) {
-		logger.error(error)
+		logger.error('Failed to emit order status updated event:', { error })
 	}
 }

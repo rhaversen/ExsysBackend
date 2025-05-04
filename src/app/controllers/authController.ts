@@ -43,7 +43,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 	passport.authenticate('admin-local', (err: Error | null, user: Express.User | false | null, info?: { message: string }) => { // Adjusted types
 		if (err !== null && err !== undefined) {
-			logger.error(`Admin login error during authentication for ${adminName}:`, err)
+			logger.error(`Admin login error during authentication for ${adminName}:`, { error: err })
 			return res.status(500).json({
 				auth: false,
 				error: err.message
@@ -61,7 +61,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 		req.logIn(user, async (loginErr) => {
 			if (loginErr !== null && loginErr !== undefined) {
-				logger.error(`Admin login error during req.logIn for ${adminName}:`, loginErr) // Added context
+				logger.error(`Admin login error during req.logIn for ${adminName}:`, { error: loginErr })
 				return res.status(500).json({
 					auth: false,
 					error: loginErr.message
@@ -99,7 +99,7 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 				emitSessionCreated(transformedSession)
 			} catch (sessionError) {
-				logger.error(`Admin login failed: Error during session handling for ${adminName}:`, sessionError)
+				logger.error(`Admin login failed: Error during session handling for ${adminName}:`, { error: sessionError })
 				next(sessionError)
 			}
 		})
@@ -122,7 +122,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 	passport.authenticate('kiosk-local', (err: Error | null, user: Express.User | false | null, info?: { message: string }) => {
 		if (err !== null && err !== undefined) {
-			logger.error(`Kiosk login error during authentication for ${kioskTag}:`, err)
+			logger.error(`Kiosk login error during authentication for ${kioskTag}:`, { error: err })
 			return res.status(500).json({
 				auth: false,
 				error: err.message
@@ -140,7 +140,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 		req.logIn(user, async (loginErr) => {
 			if (loginErr !== null && loginErr !== undefined) {
-				logger.error(`Kiosk login error during req.logIn for ${kioskTag}:`, loginErr)
+				logger.error(`Kiosk login error during req.logIn for ${kioskTag}:`, { error: loginErr })
 				return res.status(500).json({
 					auth: false,
 					error: loginErr.message
@@ -176,7 +176,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 
 				emitSessionCreated(transformedSession)
 			} catch (sessionError) {
-				logger.error(`Kiosk login failed: Error during session handling for ${kioskTag}:`, sessionError)
+				logger.error(`Kiosk login failed: Error during session handling for ${kioskTag}:`, { error: sessionError })
 				next(sessionError)
 			}
 		})
@@ -193,12 +193,12 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 
 	req.logout(function (err) {
 		if (err !== null && err !== undefined) {
-			logger.error(`Logout error during req.logout for Session ID ${sessionId}:`, err)
+			logger.error(`Logout error during req.logout for Session ID ${sessionId}:`, { error: err })
 		}
 
 		req.session.destroy(function (sessionErr) {
 			if (sessionErr !== null && sessionErr !== undefined) {
-				logger.error(`Logout error during session.destroy for Session ID ${sessionId}:`, sessionErr)
+				logger.error(`Logout error during session.destroy for Session ID ${sessionId}:`, { error: sessionErr })
 				next(sessionErr)
 				return
 			}

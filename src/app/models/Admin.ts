@@ -73,7 +73,7 @@ adminSchema.pre('save', async function (next) {
 		logger.silly(`Admin ID ${this.id}: Password hashed successfully.`)
 		next()
 	} catch (error) {
-		logger.error(`Admin ID ${this.id}: Error hashing password`, error)
+		logger.error(`Admin ID ${this.id}: Error hashing password`, { error })
 		// Pass error to Mongoose to halt save operation
 		next(error instanceof Error ? error : new Error('Password hashing failed'))
 	}
@@ -109,7 +109,7 @@ adminSchema.methods.comparePassword = async function (password: string): Promise
 		logger.silly(`Password comparison result for admin ID ${this.id}: ${isMatch}`)
 		return isMatch
 	} catch (error) {
-		logger.error(`Error comparing password for admin ID ${this.id}`, error)
+		logger.error(`Error comparing password for admin ID ${this.id}`, { error })
 		return false // Return false on error
 	}
 }

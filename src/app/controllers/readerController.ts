@@ -43,7 +43,7 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 		}
 		logger.debug(`Reader pairing successful. API Reference ID: ${apiReferenceId}`)
 	} catch (error) {
-		logger.error(`Reader creation failed: Error during pairing service call for pairing code ${pairingCode}`, error)
+		logger.error(`Reader creation failed: Error during pairing service call for pairing code ${pairingCode}`, { error })
 		res.status(500).json({ error: 'Fejl ved parring af læser' })
 		return
 	}
@@ -62,7 +62,7 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 
 		emitReaderCreated(transformedReader)
 	} catch (error) {
-		logger.error(`Reader creation failed: Error saving reader to database. Tag: ${readerTag ?? 'N/A'}`, error)
+		logger.error(`Reader creation failed: Error saving reader to database. Tag: ${readerTag ?? 'N/A'}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -80,7 +80,7 @@ export async function getReaders (req: Request, res: Response, next: NextFunctio
 		res.status(200).json(transformedReaders)
 		logger.debug(`Retrieved ${readers.length} readers`)
 	} catch (error) {
-		logger.error('Failed to get readers', error)
+		logger.error('Failed to get readers', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -138,7 +138,7 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 		emitReaderUpdated(transformedReader)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch reader failed: Error updating reader ID ${readerId}`, error)
+		logger.error(`Patch reader failed: Error updating reader ID ${readerId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -188,7 +188,7 @@ export async function deleteReader (req: Request, res: Response, next: NextFunct
 
 		emitReaderDeleted(readerId)
 	} catch (error) {
-		logger.error(`Reader deletion failed: Error during deletion process for ID ${readerId}`, error)
+		logger.error(`Reader deletion failed: Error during deletion process for ID ${readerId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

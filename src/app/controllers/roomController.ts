@@ -21,7 +21,7 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 		res.status(201).json(newRoom)
 		emitRoomCreated(newRoom)
 	} catch (error) {
-		logger.error(`Room creation failed for name: ${roomName}`, error)
+		logger.error(`Room creation failed for name: ${roomName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -46,7 +46,7 @@ export async function getRoom (req: Request, res: Response, next: NextFunction):
 		logger.debug(`Retrieved room successfully: ID ${roomId}`)
 		res.status(200).json(room)
 	} catch (error) {
-		logger.error(`Get room failed: Error retrieving room ID ${roomId}`, error)
+		logger.error(`Get room failed: Error retrieving room ID ${roomId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -63,7 +63,7 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 		logger.debug(`Retrieved ${rooms.length} rooms`)
 		res.status(200).json(rooms)
 	} catch (error) {
-		logger.error('Failed to get rooms', error)
+		logger.error('Failed to get rooms', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -123,7 +123,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 		emitRoomUpdated(room)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch room failed: Error updating room ID ${roomId}`, error)
+		logger.error(`Patch room failed: Error updating room ID ${roomId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -163,7 +163,7 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 
 		emitRoomDeleted(roomId)
 	} catch (error) {
-		logger.error(`Room deletion failed: Error during deletion process for ID ${roomId}`, error)
+		logger.error(`Room deletion failed: Error during deletion process for ID ${roomId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

@@ -36,7 +36,7 @@ async function connectToMongoDB (): Promise<void> {
 			logger.info('Connected to MongoDB')
 			return // Successfully connected
 		} catch (error) {
-			logger.error(`Error connecting to MongoDB: ${error instanceof Error ? error.message : String(error)}`)
+			logger.error('Error connecting to MongoDB', { error })
 			await new Promise(resolve => setTimeout(resolve, retryInterval))
 		}
 	}

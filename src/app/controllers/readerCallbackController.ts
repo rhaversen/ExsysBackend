@@ -107,7 +107,7 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 		}
 		// --- End Post-Update Actions ---
 	} catch (error) {
-		logger.error(`Reader callback processing failed for Client Tx ID ${clientTransactionId}, Event ID ${eventId}`, error)
+		logger.error(`Reader callback processing failed for Client Tx ID ${clientTransactionId}, Event ID ${eventId}`, { error })
 		// Do NOT send error response to SumUp here, as we already sent 200 OK.
 		// The error is logged for internal investigation.
 		// Use next(error) only if you have specific error handling middleware for this route

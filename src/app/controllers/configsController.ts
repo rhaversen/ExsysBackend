@@ -31,7 +31,7 @@ export async function getOrCreateConfigs (): Promise<IConfigs> {
 			configs = await ConfigsModel.create({})
 			logger.debug(`New configs document created successfully: ID ${configs.id}`)
 		} catch (error) {
-			logger.error('Failed to create initial configs document', error)
+			logger.error('Failed to create initial configs document', { error })
 			throw error // Re-throw error to be handled by caller
 		}
 	} else {
@@ -49,7 +49,7 @@ export async function getConfigs (req: Request, res: Response, next: NextFunctio
 		logger.debug('Retrieved and transformed configs successfully')
 		res.status(200).json(transformedConfigs)
 	} catch (error) {
-		logger.error('Failed to get configs', error) // Log error during retrieval/transformation phase
+		logger.error('Failed to get configs', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -117,7 +117,7 @@ export async function patchConfigs (req: Request, res: Response, next: NextFunct
 		emitConfigsUpdated(transformedConfigs)
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error('Patch configs failed', error)
+		logger.error('Patch configs failed', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

@@ -57,7 +57,7 @@ export function transformOrder (order: IOrderPopulated): IOrderFrontend {
 			updatedAt: order.updatedAt.toISOString()
 		}
 	} catch (error) {
-		logger.error(`Error transforming order ID ${order._id}`, error)
+		logger.error(`Error transforming order ID ${order._id}`, { error })
 		throw new Error(`Failed to transform order ID ${order._id}: ${error instanceof Error ? error.message : String(error)}`)
 	}
 }
@@ -108,7 +108,7 @@ export async function countSubtotalOfOrder (products: OrderItem[], options: Orde
 		logger.debug(`Calculated subtotal: ${sum}`)
 		return sum
 	} catch (error) {
-		logger.error('Error calculating subtotal', error)
+		logger.error('Error calculating subtotal', { error })
 		throw error // Re-throw to be handled by caller
 	}
 }
@@ -121,7 +121,7 @@ export function isOrderItemList (items: unknown): items is OrderItem[] { // Chan
 			'id' in item && typeof item.id === 'string' && mongoose.Types.ObjectId.isValid(item.id) && // Check if ID is valid ObjectId
 			'quantity' in item && typeof item.quantity === 'number' && item.quantity >= 0 && Number.isInteger(item.quantity)
 		if (!isValid) {
-			logger.warn('Invalid order item detected:', item)
+			logger.warn('Invalid order item detected:', { item })
 		}
 		return isValid
 	})
@@ -167,7 +167,7 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 		logger.info(`Pending payment record created for SumUp checkout. Payment ID: ${newPayment.id}, Client Transaction ID: ${clientTransactionId}`)
 		return newPayment
 	} catch (error) {
-		logger.error(`Error creating SumUp checkout for Kiosk ID ${kioskId}`, error)
+		logger.error(`Error creating SumUp checkout for Kiosk ID ${kioskId}`, { error })
 		return undefined
 	}
 }
@@ -181,7 +181,7 @@ async function createLaterCheckout (): Promise<IPayment> {
 		logger.info(`"Pay Later" payment record created. Payment ID: ${newPayment.id}`)
 		return newPayment
 	} catch (error) {
-		logger.error('Error creating "Pay Later" payment record', error)
+		logger.error('Error creating "Pay Later" payment record', { error })
 		throw error // Re-throw to be handled by caller
 	}
 }
@@ -327,7 +327,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 			await emitPaidOrderPosted(transformedOrder)
 		}
 	} catch (error) {
-		logger.error('Order creation failed: Unexpected error', error) // Added context to error
+		logger.error('Order creation failed: Unexpected error', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -338,7 +338,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 
 export async function getPaymentStatus (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const orderId = req.params.id
-	logger.debug(`Getting payment status for order: ID ${orderId}`) // Changed level and added context
+	logger.debug(`Getting payment status for order: ID ${orderId}`)
 
 	if (!mongoose.Types.ObjectId.isValid(orderId)) {
 		logger.warn(`Get payment status failed: Invalid Order ID format: ${orderId}`)
@@ -355,7 +355,7 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 			.lean() // Use lean as we only need the status
 
 		if (order === null) {
-			logger.warn(`Get payment status failed: Order not found. ID: ${orderId}`) // Added specific log
+			logger.warn(`Get payment status failed: Order not found. ID: ${orderId}`)
 			res.status(404).json({ error: 'Ordre ikke fundet' })
 			return
 		}
@@ -367,17 +367,17 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 			return
 		}
 
-		logger.debug(`Retrieved payment status for Order ID ${orderId}: ${order.paymentId.paymentStatus}`) // Added success log
+		logger.debug(`Retrieved payment status for Order ID ${orderId}: ${order.paymentId.paymentStatus}`)
 		res.status(200).json({ paymentStatus: order.paymentId.paymentStatus })
 	} catch (error) {
-		logger.error(`Get payment status failed for Order ID ${orderId}`, error) // Added context to error
+		logger.error(`Get payment status failed for Order ID ${orderId}`, { error })
 		// Avoid sending Mongoose validation/cast errors here, should be caught earlier
 		next(error)
 	}
 }
 
 export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, res: Response, next: NextFunction): Promise<void> {
-	logger.debug('Getting orders with query:', JSON.stringify(req.query)) // Log the query parameters as a string
+	logger.debug('Getting orders with query:', { query: JSON.stringify(req.query) })
 
 	const {
 		fromDate,
@@ -424,7 +424,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 	const paymentStatusFilter = paymentStatus?.split(',').map(s => s.trim()).filter(s => s)
 
 	try {
-		logger.debug('Executing order query:', JSON.stringify(query))
+		logger.debug('Executing order query:', { query: JSON.stringify(query) })
 		// Fetch and populate orders
 		const orders = await OrderModel.find(query)
 			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | 'id'> }>({ // Type the population result
@@ -464,7 +464,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		logger.info(`Successfully retrieved ${transformedOrders.length} orders matching query.`) // Changed level
 		res.status(200).json(transformedOrders)
 	} catch (error) {
-		logger.error('Failed to get orders with query', error)
+		logger.error('Failed to get orders with query', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -552,7 +552,7 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		updatedOrderDocs.forEach(order => emitOrderStatusUpdated(transformOrder(order)))
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Update order status failed during transaction for status "${status}", IDs: [${orderIds.join(', ')}]`, error) // Added context to error
+		logger.error(`Update order status failed during transaction for status "${status}", IDs: [${orderIds.join(', ')}]`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

@@ -199,7 +199,7 @@ productSchema.pre('deleteOne', async function (next) {
 		logger.debug(`Product ID ${productId} removal attempt from relevant Activities completed`)
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteOne hook for Product filter:', filter, error)
+		logger.error('Error in pre-deleteOne hook for Product filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
 })
@@ -229,7 +229,7 @@ productSchema.pre('deleteMany', async function (next) {
 		}
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteMany hook for Products with filter:', filter, error)
+		logger.error('Error in pre-deleteMany hook for Products with filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
 	}
 })

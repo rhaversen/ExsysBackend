@@ -86,7 +86,7 @@ readerSchema.pre('save', async function (next) {
 				this.readerTag = await generateUniqueReaderTag()
 				logger.debug(`Generated unique readerTag "${this.readerTag}" for new reader API Ref "${this.apiReferenceId}"`)
 			} catch (error) {
-				logger.error(`Failed to generate unique readerTag for new reader API Ref "${this.apiReferenceId}"`, error)
+				logger.error(`Failed to generate unique readerTag for new reader API Ref "${this.apiReferenceId}"`, { error })
 				return next(error instanceof Error ? error : new Error('Reader tag generation failed'))
 			}
 		}
@@ -126,7 +126,7 @@ readerSchema.pre('deleteOne', async function (next) {
 		logger.debug(`Set readerId to null in ${updateResult.modifiedCount} Kiosks`)
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteOne hook for Reader filter:', filter, error)
+		logger.error('Error in pre-deleteOne hook for Reader filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
 })
@@ -153,7 +153,7 @@ readerSchema.pre('deleteMany', async function (next) {
 		}
 		next()
 	} catch (error) {
-		logger.error('Error in pre-deleteMany hook for Readers with filter:', filter, error)
+		logger.error('Error in pre-deleteMany hook for Readers with filter:', { filter, error })
 		next(error instanceof Error ? error : new Error('Pre-deleteMany hook failed'))
 	}
 })
@@ -179,7 +179,7 @@ readerSchema.methods.generateNewReaderTag = async function (this: IReader): Prom
 		logger.info(`New readerTag "${this.readerTag}" generated and saved for reader ID ${this.id}`)
 		return this.readerTag
 	} catch (error) {
-		logger.error(`Failed to generate and save new readerTag for reader ID ${this.id}`, error)
+		logger.error(`Failed to generate and save new readerTag for reader ID ${this.id}`, { error })
 		throw error // Re-throw error
 	}
 }
