@@ -1,4 +1,4 @@
-import { type NextFunction, type Request, type Response } from 'express'
+import { type Request, type Response } from 'express'
 
 import OrderModel, { IOrderPopulated } from '../models/Order.js'
 import PaymentModel from '../models/Payment.js'
@@ -26,7 +26,7 @@ function isPaymentStatus (status: string): status is 'successful' | 'failed' {
 	return ['successful', 'failed'].includes(status)
 }
 
-export async function updatePaymentStatus (req: ICreateReaderCallback, res: Response, next: NextFunction): Promise<void> {
+export async function updatePaymentStatus (req: ICreateReaderCallback, res: Response): Promise<void> {
 	const eventId = req.body.id
 	const eventType = req.body.event_type
 	const {
@@ -110,7 +110,5 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 		logger.error(`Reader callback processing failed for Client Tx ID ${clientTransactionId}, Event ID ${eventId}`, { error })
 		// Do NOT send error response to SumUp here, as we already sent 200 OK.
 		// The error is logged for internal investigation.
-		// Use next(error) only if you have specific error handling middleware for this route
-		next(error) // Be cautious with this after sending a response
 	}
 }
