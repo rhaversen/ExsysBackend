@@ -1,14 +1,11 @@
-// Node.js built-in modules
-
-// Third-party libraries
-import { Server } from 'socket.io'
-import config from './setupConfig.js'
 import { type Server as HttpServer } from 'http'
-import logger from './logger.js'
+
 import { createAdapter } from '@socket.io/redis-adapter'
 import { createClient } from 'redis'
+import { Server } from 'socket.io'
 
-// Own modules
+import logger from './logger.js'
+import config from './setupConfig.js'
 
 // Environment variables
 const redisHost = process.env.REDIS_HOST
@@ -26,7 +23,7 @@ let io: Server | undefined
 
 export async function initSocket (server: HttpServer): Promise<void> {
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
-		logger.info('Initializing socket.io for testing/development')
+		logger.debug('Initializing socket.io for testing/development')
 		io = new Server(server, {
 			cors: corsConfig
 		})
@@ -36,7 +33,7 @@ export async function initSocket (server: HttpServer): Promise<void> {
 		return
 	}
 
-	logger.info('Initializing socket.io with Redis adapter')
+	logger.debug('Initializing socket.io with Redis adapter')
 
 	io = new Server(server, {
 		cors: corsConfig
@@ -50,8 +47,8 @@ export async function initSocket (server: HttpServer): Promise<void> {
 	const subClient = pubClient.duplicate()
 
 	// Handle Redis client errors
-	pubClient.on('error', (err) => { logger.error('Redis Pub Client Error:', err) })
-	subClient.on('error', (err) => { logger.error('Redis Sub Client Error:', err) })
+	pubClient.on('error', (err) => { logger.error('Redis Pub Client Error:', { error: err }) })
+	subClient.on('error', (err) => { logger.error('Redis Sub Client Error:', { error: err }) })
 
 	// Connect to Redis
 	await Promise.all([pubClient.connect(), subClient.connect()])
@@ -88,13 +85,13 @@ export function emitSocketEvent<T> (
 
 	try {
 		io.emit(eventName, data)
-		logger.silly(successLog)
+		logger.debug(successLog)
 	} catch (error) {
-		logger.error(`Failed to emit ${eventName}:`, error)
+		logger.error(`Failed to emit ${eventName}:`, { error })
 	}
 }
 
-export function broadcastEvent(
+export function broadcastEvent (
 	eventName: string,
 	successLog: string
 ): boolean {
@@ -102,10 +99,10 @@ export function broadcastEvent(
 
 	try {
 		io.emit(eventName)
-		logger.silly(successLog)
+		logger.debug(successLog)
 		return true
 	} catch (error) {
-		logger.error(`Failed to emit ${eventName}:`, error)
+		logger.error(`Failed to broadcast ${eventName}:`, { error })
 		return false
 	}
 }

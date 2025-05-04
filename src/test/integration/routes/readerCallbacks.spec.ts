@@ -1,18 +1,13 @@
-/* eslint-disable local/enforce-comment-order */
- 
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
-import { describe, it } from 'mocha'
 import { expect } from 'chai'
+import { describe, it } from 'mocha'
 
-// Own modules
-import { chaiAppServer as agent } from '../../testSetup.js'
 import PaymentModel from '../../../app/models/Payment.js'
+import { getChaiAgent as agent } from '../../testSetup.js'
 
 describe('Reader Callback routes', function () {
 	describe('POST /v1/reader-callback', function () {
@@ -25,7 +20,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should have status 200 when updating a payment status', async function () {
-			const response = await agent.post('/api/v1/reader-callback').send({
+			const response = await agent().post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -41,7 +36,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should update the payment status to successful', async function () {
-			await agent.post('/api/v1/reader-callback').send({
+			await agent().post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -60,7 +55,7 @@ describe('Reader Callback routes', function () {
 		})
 
 		it('should update the payment status to failed', async function () {
-			await agent.post('/api/v1/reader-callback').send({
+			await agent().post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -84,7 +79,7 @@ describe('Reader Callback routes', function () {
 				paymentStatus: 'pending'
 			})
 
-			await agent.post('/api/v1/reader-callback').send({
+			await agent().post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -107,8 +102,8 @@ describe('Reader Callback routes', function () {
 			expect(pendingPayment).to.have.property('paymentStatus', 'pending')
 		})
 
-		it('should have status 404 when the payment does not exist', async function () {
-			const response = await agent.post('/api/v1/reader-callback').send({
+		it('should have status 200 when the payment does not exist', async function () {
+			const response = await agent().post('/api/v1/reader-callback').send({
 				id: '12345',
 				event_type: 'payment_status_updated',
 				payload: {
@@ -120,7 +115,8 @@ describe('Reader Callback routes', function () {
 				timestamp: '2021-08-20T15:00:00Z'
 			})
 
-			expect(response.status).to.equal(404)
+			expect(response.status).to.equal(200)
+			expect(response.body).to.have.property('message', 'Payment not found, callback ignored.')
 		})
 	})
 })

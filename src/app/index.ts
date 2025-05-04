@@ -4,51 +4,42 @@ import './utils/verifyEnvironmentSecrets.js'
 // Use Sentry
 import './utils/instrument.js'
 
-// Node.js built-in modules
 import { createServer } from 'node:http'
 
-// Third-party libraries
+import * as Sentry from '@sentry/node'
+import MongoStore from 'connect-mongo'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import express from 'express'
-import mongoSanitize from 'express-mongo-sanitize'
+import RateLimit from 'express-rate-limit'
+import session from 'express-session'
 import helmet from 'helmet'
 import mongoose from 'mongoose'
-import RateLimit from 'express-rate-limit'
-import cors from 'cors'
-import session from 'express-session'
-import cookieParser from 'cookie-parser'
 import passport from 'passport'
-import MongoStore from 'connect-mongo'
-import * as Sentry from '@sentry/node'
 
-// Own modules
-import databaseConnector from './utils/databaseConnector.js'
-import logger from './utils/logger.js'
-import config from './utils/setupConfig.js'
+import { transformSession } from './controllers/sessionController.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
-import configurePassport from './utils/passportConfig.js'
-import { initSocket } from './utils/socket.js'
 import { type ISession } from './models/Session.js'
-import { getIPAddress, transformSession } from './utils/sessionUtils.js'
-import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
-
-// Business logic routes
+import activityRoutes from './routes/activities.js'
+import adminRoutes from './routes/admins.js'
+import authRoutes from './routes/auth.js'
+import configRoutes from './routes/configs.js'
+import kioskRoutes from './routes/kiosks.js'
+import optionRoutes from './routes/options.js'
 import orderRoutes from './routes/orders.js'
 import productRoutes from './routes/products.js'
-import adminRoutes from './routes/admins.js'
-import roomRoutes from './routes/rooms.js'
-import optionRoutes from './routes/options.js'
-import authRoutes from './routes/auth.js'
-import activityRoutes from './routes/activities.js'
-import kioskRoutes from './routes/kiosks.js'
-import readerRoutes from './routes/readers.js'
-import sessionRoutes from './routes/sessions.js'
-import configRoutes from './routes/configs.js'
-
-// Callback routes
 import readerCallbackRoutes from './routes/readerCallback.js'
-
-// Service routes
+import readerRoutes from './routes/readers.js'
+import roomRoutes from './routes/rooms.js'
 import serviceRoutes from './routes/service.js'
+import sessionRoutes from './routes/sessions.js'
+import databaseConnector from './utils/databaseConnector.js'
+import logger from './utils/logger.js'
+import configurePassport from './utils/passportConfig.js'
+import { getIPAddress } from './utils/sessionUtils.js'
+import config from './utils/setupConfig.js'
+import { initSocket } from './utils/socket.js'
+import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Environment variables
 const { NODE_ENV, SESSION_SECRET } = process.env as Record<string, string>
@@ -83,7 +74,6 @@ if (NODE_ENV === 'production' || NODE_ENV === 'staging') {
 app.use(helmet()) // Security headers
 app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
-app.use(mongoSanitize()) // Data sanitization against NoSQL query injection
 
 // Apply webhook cors config to webhook routes
 app.use('/api/v1/reader-callback', cors(webhookCorsConfig))
@@ -94,7 +84,7 @@ app.use(cors(corsConfig))
 
 // Create a session store
 const sessionStore = MongoStore.create({
-	client: mongoose.connection.getClient() as any, // Use the existing connection
+	client: mongoose.connection.getClient(), // Use the existing connection
 	autoRemove: 'interval', // Remove expired sessions
 	autoRemoveInterval: 1 // 1 minute
 })
@@ -174,38 +164,28 @@ server.listen(expressPort, () => {
 })
 
 // Handle unhandled rejections outside middleware
-process.on('unhandledRejection', (reason, promise): void => {
-	// Attempt to get a string representation of the promise
-	const promiseString = JSON.stringify(promise) !== '' ? JSON.stringify(promise) : 'a promise'
-
-	// Get a detailed string representation of the reason
-	const reasonDetail = reason instanceof Error ? reason.stack ?? reason.message : JSON.stringify(reason)
-
-	// Log the detailed error message
-	logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
-
-	shutDown().catch(error => {
-		// If 'error' is an Error object, log its stack trace; otherwise, convert to string
-		const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
-		logger.error(`An error occurred during shutdown: ${errorDetail}`)
-		process.exit(1)
-	})
+process.on('unhandledRejection', async (reason, promise): Promise<void> => {
+	const errorMessage = reason instanceof Error ? reason.message : String(reason)
+	logger.error(`Unhandled Rejection: ${errorMessage}`, { reason, promise })
+	throw reason // Re-throw the error to allow for process termination
 })
 
 // Handle uncaught exceptions outside middleware
-process.on('uncaughtException', (err): void => {
-	logger.error('Uncaught exception:', err)
-	shutDown().catch(error => {
-		logger.error('An error occurred during shutdown:', error)
-		process.exit(1)
-	})
+process.on('uncaughtException', async (err): Promise<void> => {
+	logger.error('Uncaught exception', { error: err })
+	throw err // Re-throw the error to allow for process termination
 })
 
 // Shutdown function
-export async function shutDown(): Promise<void> {
+export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
+
+	logger.info('Closing session store...')
+	await sessionStore.close()
+	logger.info('Session store closed')
+
 	logger.info('Closing database connection...')
 	await mongoose.connection.close()
 	logger.info('Database connection closed')

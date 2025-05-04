@@ -1,100 +1,108 @@
-// Node.js built-in modules
-
-// Third-party libraries
-import { Strategy as LocalStrategy } from 'passport-local'
 import { type PassportStatic } from 'passport'
+import { Strategy as LocalStrategy } from 'passport-local'
 
-// Own modules
+import { getOrCreateConfigs } from '../controllers/configsController.js'
 import AdminModel, { type IAdmin } from '../models/Admin.js'
 import KioskModel, { type IKiosk } from '../models/Kiosk.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import logger from './logger.js'
 
 const configurePassport = (passport: PassportStatic): void => {
 	// Local Admin Strategy
 	passport.use('admin-local', new LocalStrategy({
 		usernameField: 'name',
 		passwordField: 'password'
-	}, (name, password, done) => {
-		(async () => {
-			try {
-				const admin = await AdminModel.findOne({ name }).exec()
-				if (admin === null || admin === undefined) {
-					done(null, false, { message: 'Admin med navnet ' + name + ' findes ikke.' })
-					return
-				}
-
-				const isMatch = await admin.comparePassword(password)
-				if (!isMatch) {
-					done(null, false, { message: 'Ugyldigt kodeord' })
-					return
-				}
-
-				done(null, admin)
-			} catch (err) {
-				done(err)
+	}, async (name, password, done) => {
+		try {
+			const admin = await AdminModel.findOne({ name }).exec()
+			if (admin === null || admin === undefined) {
+				logger.warn(`Admin login failed: Admin with name ${name} not found`)
+				return done(null, false, { message: 'Admin med navnet ' + name + ' findes ikke.' })
 			}
-		})().catch(err => { done(err) })
+
+			const isMatch = await admin.comparePassword(password)
+			if (!isMatch) {
+				logger.warn(`Admin login failed: Invalid password for admin ${name}`)
+				return done(null, false, { message: 'Ugyldigt kodeord' })
+			}
+
+			logger.info(`Admin ${name} logged in successfully`)
+			return done(null, admin)
+		} catch (error) {
+			if (error instanceof Error) {
+				logger.error(`Admin login error: ${error.message}`, { error })
+			} else {
+				logger.error('Admin login error: An unknown error occurred', { error })
+			}
+			return done(error)
+		}
 	}))
 
 	// Local Kiosk Strategy
 	passport.use('kiosk-local', new LocalStrategy({
 		usernameField: 'kioskTag',
 		passwordField: 'password'
-	}, (kioskTag, password, done) => {
-		(async () => {
-			try {
-				const kiosk = await KioskModel.findOne({ kioskTag }).exec()
-				if (kiosk === null || kiosk === undefined) {
-					done(null, false, { message: 'Kiosk med tag ' + kioskTag + ' findes ikke.' })
-					return
-				}
-
-				const isMatch = await kiosk.comparePassword(password)
-				if (!isMatch) {
-					done(null, false, { message: 'Ugyldigt kodeord' })
-					return
-				}
-
-				done(null, kiosk)
-			} catch (err) {
-				done(err)
+	}, async (kioskTag, password, done) => {
+		try {
+			const kiosk = await KioskModel.findOne({ kioskTag }).exec()
+			if (kiosk === null || kiosk === undefined) {
+				logger.warn(`Kiosk login failed: Kiosk with tag ${kioskTag} not found`)
+				return done(null, false, { message: 'Kiosk med tag ' + kioskTag + ' findes ikke.' })
 			}
-		})().catch(err => { done(err) })
+
+			// Fetch the unified kiosk password from Configs
+			const configs = await getOrCreateConfigs()
+
+			// Compare the provided password directly (not hashed)
+			const isMatch = password === configs.kioskPassword
+			if (!isMatch) {
+				logger.warn(`Kiosk login failed: Invalid password for kiosk ${kioskTag}`)
+				return done(null, false, { message: 'Ugyldigt kodeord' })
+			}
+
+			logger.info(`Kiosk ${kioskTag} logged in successfully`)
+			return done(null, kiosk)
+		} catch (error) {
+			if (error instanceof Error) {
+				logger.error(`Kiosk login error: ${error.message}`, { error })
+			} else {
+				logger.error('Kiosk login error: An unknown error occurred', { error })
+			}
+			return done(error)
+		}
 	}))
 
-	passport.serializeUser(function (user: any, done) {
+	passport.serializeUser((user, done) => {
 		const userId = (user as IAdmin | IKiosk).id
+		logger.debug(`Serializing user: ID ${userId}`)
 		done(null, userId)
 	})
 
-	passport.deserializeUser(function (id, done) {
-		AdminModel.findById(id).exec()
-			.then(admin => {
-				if (admin !== null && admin !== undefined) {
-					done(null, admin) // Call done with admin if found
-				} else {
-					// Only search for kiosk if no admin is found
-					KioskModel.findById(id).exec()
-						.then(kiosk => {
-							if (kiosk !== null && kiosk !== undefined) {
-								done(null, kiosk) // Call done with kiosk if found
-							} else {
-								done(new Error('Bruger ikke fundet'), false) // No user found
-							}
-						})
-						.catch(err => {
-							done(err, false) // Error handling for kiosk query
-						})
-				}
-			})
-			.catch(err => {
-				done(err, false) // Error handling for admin query
-			})
+	passport.deserializeUser(async (id: string, done) => {
+		try {
+			const admin = await AdminModel.findById(id).exec()
+			if (admin !== null && admin !== undefined) {
+				return done(null, admin) // Admin found
+			}
+
+			// If no admin, attempt to find kiosk
+			const kiosk = await KioskModel.findById(id).exec()
+			if (kiosk !== null && kiosk !== undefined) {
+				logger.debug(`Kiosk ${kiosk.kioskTag} deserialized successfully`)
+				return done(null, kiosk) // Kiosk found
+			}
+
+			// If neither admin nor kiosk is found
+			logger.warn(`User not found during deserialization: ID ${id}`)
+			return done(new Error('Bruger ikke fundet'), false)
+		} catch (err) {
+			if (err instanceof Error) {
+				logger.error(`Error during deserialization: ${err.message}`, { error: err })
+			} else {
+				logger.error('Error during deserialization: An unknown error occurred', { error: err })
+			}
+			return done(err, false)
+		}
 	})
 }
 

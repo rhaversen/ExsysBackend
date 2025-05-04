@@ -1,12 +1,5 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-
-// Controller functions
 import {
 	ensureAuthenticated,
 	loginAdminLocal,
@@ -15,11 +8,6 @@ import {
 } from '../controllers/authController.js'
 import { isAdmin, isKiosk } from '../middleware/authorization.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**
@@ -28,12 +16,13 @@ const router = Router()
  * @access Public
  * @param {string} req.body.kioskTag - The tag of the kiosk.
  * @param {string} req.body.password - The password of the kiosk.
+ * @param {boolean} [req.body.override] - Optional. If true, logs in even if an active session exists for the kiosk.
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The kiosk object.
  * @returns {string} res.headers['set-cookie'] - The session cookie.
  */
 router.post('/login-kiosk-local',
-	asyncErrorHandler(loginKioskLocal)
+	loginKioskLocal
 )
 
 /**
@@ -48,7 +37,7 @@ router.post('/login-kiosk-local',
  * @returns {string} res.headers['set-cookie'] - The session cookie.
  */
 router.post('/login-admin-local',
-	asyncErrorHandler(loginAdminLocal)
+	loginAdminLocal
 )
 
 /**
@@ -58,7 +47,7 @@ router.post('/login-admin-local',
  * @returns {number} res.status - The status code of the HTTP response.
  */
 router.post('/logout-local',
-	asyncErrorHandler(logoutLocal)
+	logoutLocal
 )
 
 /**

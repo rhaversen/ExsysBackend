@@ -1,22 +1,13 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-// Own modules
 import ProductModel from '../models/Product.js'
 import logger from '../utils/logger.js'
 import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
-
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Creating product')
+	const productName = req.body.name ?? 'N/A'
+	logger.info(`Attempting to create product with name: ${productName}`)
 
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
@@ -29,10 +20,14 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 	}
 
 	try {
-		const newProduct = await (await ProductModel.create(allowedFields)).populate('options')
+		// Create and then populate options
+		const newProduct = await ProductModel.create(allowedFields)
+		await newProduct.populate('options')
+		logger.debug(`Product created successfully: ID ${newProduct.id}, Name: ${newProduct.name}`)
 		res.status(201).json(newProduct)
 		emitProductCreated(newProduct)
 	} catch (error) {
+		logger.error(`Product creation failed for name: ${productName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -42,12 +37,14 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 }
 
 export async function getProducts (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Getting products')
+	logger.debug('Getting all products')
 
 	try {
 		const products = await ProductModel.find({}).populate('options')
+		logger.debug(`Retrieved ${products.length} products`)
 		res.status(200).json(products)
 	} catch (error) {
+		logger.error('Failed to get products', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -57,27 +54,65 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 }
 
 export async function patchProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Patching product')
+	const productId = req.params.id
+	logger.info(`Attempting to patch product: ID ${productId}`)
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
 		// Retrieve the existing product document
-		const product = await ProductModel.findById(req.params.id).session(session)
+		const product = await ProductModel.findById(productId).session(session)
 
 		if (product === null || product === undefined) {
+			logger.warn(`Patch product failed: Product not found. ID: ${productId}`)
 			res.status(404).json({ error: 'Produkt ikke fundet' })
+			await session.abortTransaction() // Abort transaction before returning
+			await session.endSession()
 			return
 		}
 
-		// Manually set each field from allowed fields if it's present in the request body
-		if (req.body.name !== undefined) product.name = req.body.name
-		if (req.body.price !== undefined) product.price = req.body.price
-		if (req.body.imageURL !== undefined) product.imageURL = req.body.imageURL
-		if (req.body.orderWindow !== undefined) product.orderWindow = req.body.orderWindow
-		if (req.body.options !== undefined) product.options = req.body.options
-		if (req.body.isActive !== undefined) product.isActive = req.body.isActive
+		let updateApplied = false
+		// Manually set each field from allowed fields if it's present in the request body and changed
+		if (req.body.name !== undefined && product.name !== req.body.name) {
+			logger.debug(`Updating name for product ID ${productId}`)
+			product.name = req.body.name
+			updateApplied = true
+		}
+		if (req.body.price !== undefined && product.price !== req.body.price) {
+			logger.debug(`Updating price for product ID ${productId}`)
+			product.price = req.body.price
+			updateApplied = true
+		}
+		if (req.body.imageURL !== undefined && product.imageURL !== req.body.imageURL) {
+			logger.debug(`Updating imageURL for product ID ${productId}`)
+			product.imageURL = req.body.imageURL
+			updateApplied = true
+		}
+		if (req.body.orderWindow !== undefined && JSON.stringify(product.orderWindow) !== JSON.stringify(req.body.orderWindow)) { // Basic object comparison
+			logger.debug(`Updating orderWindow for product ID ${productId}`)
+			product.orderWindow = req.body.orderWindow
+			updateApplied = true
+		}
+		if (req.body.options !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating options for product ID ${productId}`)
+			product.options = req.body.options
+			updateApplied = true
+		}
+		if (req.body.isActive !== undefined && product.isActive !== req.body.isActive) {
+			logger.debug(`Updating isActive status for product ID ${productId}`)
+			product.isActive = req.body.isActive
+			updateApplied = true
+		}
+
+		if (!updateApplied) {
+			logger.info(`Patch product: No changes detected for product ID ${productId}`)
+			await product.populate('options') // Populate before sending response
+			res.status(200).json(product) // Return current state if no changes
+			await session.commitTransaction()
+			await session.endSession()
+			return
+		}
 
 		// Validate and save the updated document
 		await product.validate()
@@ -86,12 +121,13 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		await product.populate('options')
 
 		await session.commitTransaction()
-
-		res.json(product)
+		logger.info(`Product patched successfully: ID ${productId}`)
+		res.json(product) // Send populated product
 
 		emitProductUpdated(product)
 	} catch (error) {
 		await session.abortTransaction()
+		logger.error(`Patch product failed: Error updating product ID ${productId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -103,25 +139,30 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 }
 
 export async function deleteProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.silly('Deleting product')
+	const productId = req.params.id
+	logger.info(`Attempting to delete product: ID ${productId}`)
 
-	if (req.body.confirm === undefined || req.body.confirm === null || typeof req.body.confirm !== 'boolean' || req.body.confirm !== true) {
+	if (req.body?.confirm !== true) {
+		logger.warn(`Product deletion failed: Confirmation not provided for ID ${productId}`)
 		res.status(400).json({ error: 'Kræver konfirmering' })
 		return
 	}
 
 	try {
-		const product = await ProductModel.findByIdAndDelete(req.params.id)
+		const product = await ProductModel.findByIdAndDelete(productId)
 
 		if (product === null || product === undefined) {
+			logger.warn(`Product deletion failed: Product not found. ID: ${productId}`)
 			res.status(404).json({ error: 'Produkt ikke fundet' })
 			return
 		}
 
+		logger.info(`Product deleted successfully: ID ${productId}, Name: ${product.name}`)
 		res.status(204).send()
 
-		emitProductDeleted(product.id as string)
+		emitProductDeleted(productId)
 	} catch (error) {
+		logger.error(`Product deletion failed: Error during deletion process for ID ${productId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {

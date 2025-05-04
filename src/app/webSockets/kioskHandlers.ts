@@ -1,16 +1,5 @@
-// Node.js built-in modules
-
-// Third-party libraries
-
-// Own modules
-import { emitSocketEvent } from '../utils/socket.js'
 import { type IKioskFrontend } from '../models/Kiosk.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import { emitSocketEvent } from '../utils/socket.js'
 
 export function emitKioskCreated (kiosk: IKioskFrontend): void {
 	emitSocketEvent<IKioskFrontend>(

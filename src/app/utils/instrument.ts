@@ -1,16 +1,5 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import * as Sentry from '@sentry/node'
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
-
-// Own modules
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 Sentry.init({
 	dsn: process.env.SENTRY_DSN,
