@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { Logtail } from '@logtail/node'
 import { createLogger, format as _format, transports as _transports } from 'winston'
 
-const { token } = process.env as Record<string, string>
+const { BETTERSTACK_LOG_TOKEN } = process.env as Record<string, string>
 
 const _filename = fileURLToPath(import.meta.url)
 const _dirname = dirname(_filename)
@@ -72,7 +72,7 @@ const logToBetterStackNonBlocking = (
 	}
 
 	if (!betterStackLogger) {
-		betterStackLogger = new Logtail(token)
+		betterStackLogger = new Logtail(BETTERSTACK_LOG_TOKEN)
 	}
 
 	// Use a non-blocking approach with .catch()
