@@ -27,7 +27,6 @@ interface GetOrdersWithDateRangeRequest extends Request {
 }
 
 export function transformOrder (order: IOrderPopulated): IOrderFrontend {
-	logger.silly(`Transforming order ID: ${order._id}`)
 	try {
 		const products = order.products
 			.filter(item => item.id != null) // Filter out items where product might have been deleted

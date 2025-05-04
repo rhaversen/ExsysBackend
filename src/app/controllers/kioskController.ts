@@ -11,14 +11,12 @@ import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSock
 export async function transformKiosk (
 	kiosk: IKiosk
 ): Promise<IKioskFrontend> {
-	logger.silly(`Transforming kiosk ID: ${kiosk.id}`)
 	try {
 		// Populate activities and readerId
 		const populatedKiosk = await kiosk.populate<{ activities: IActivity[], readerId: IReader | null }>([
 			{ path: 'activities' },
 			{ path: 'readerId' }
 		])
-		logger.silly(`Successfully populated kiosk ID: ${kiosk.id}`)
 
 		return {
 			_id: populatedKiosk.id,

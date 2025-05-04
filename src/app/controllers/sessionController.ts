@@ -26,7 +26,6 @@ export interface ParsedSessionData {
 export function transformSession (
 	sessionDoc: ISession
 ): ISessionFrontend {
-	logger.silly(`Transforming session document ID: ${sessionDoc._id}`)
 	try {
 		const sessionData = JSON.parse(sessionDoc.session) as ParsedSessionData
 		const userId = sessionData?.passport?.user?.toString() ?? null // Safely access user ID
