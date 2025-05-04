@@ -1,13 +1,5 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
-
-// Controller functions
 import {
 	createKiosk,
 	createNewKioskTag,
@@ -17,12 +9,8 @@ import {
 	getMe,
 	patchKiosk
 } from '../controllers/kioskController.js'
+import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**
@@ -33,7 +21,6 @@ const router = Router()
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {string} req.body.password - The password of the kiosk.
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
@@ -43,7 +30,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createKiosk)
+	createKiosk
 )
 
 /**
@@ -56,7 +43,7 @@ router.post('/',
  */
 router.get('/me',
 	isKiosk,
-	asyncErrorHandler(getMe)
+	getMe
 )
 
 /**
@@ -70,7 +57,7 @@ router.get('/me',
  */
 router.get('/:id',
 	isAdminOrKiosk,
-	asyncErrorHandler(getKiosk)
+	getKiosk
 )
 
 /**
@@ -83,7 +70,7 @@ router.get('/:id',
  */
 router.get('/',
 	isAdmin,
-	asyncErrorHandler(getKiosks)
+	getKiosks
 )
 
 /**
@@ -95,7 +82,6 @@ router.get('/',
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {string} [req.body.password] - The password of the kiosk (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.activities] - The activities the kiosk is responsible for (optional).
  * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
@@ -105,7 +91,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchKiosk)
+	patchKiosk
 )
 
 /**
@@ -119,7 +105,7 @@ router.patch('/:id',
  */
 router.patch('/:id/kioskTag',
 	isAdmin,
-	asyncErrorHandler(createNewKioskTag)
+	createNewKioskTag
 )
 
 /**
@@ -133,7 +119,7 @@ router.patch('/:id/kioskTag',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteKiosk)
+	deleteKiosk
 )
 
 export default router

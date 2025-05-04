@@ -1,20 +1,15 @@
-/* eslint-disable local/enforce-comment-order */
- 
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
-// Own modules
-import OptionModel, { type IOption } from '../../../app/models/Option.js'
-import { chaiAppServer as agent } from '../../testSetup.js'
 import AdminModel from '../../../app/models/Admin.js'
+import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('Options routes', function () {
 	let sessionCookie: string
@@ -27,8 +22,8 @@ describe('Options routes', function () {
 		}
 		await AdminModel.create(adminFields)
 
-		const response = await agent.post('/api/v1/auth/login-admin-local').send(adminFields)
-		sessionCookie = response.headers['set-cookie']
+		const response = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
+		sessionCookie = extractConnectSid(response.headers['set-cookie'])
 	})
 
 	describe('POST /v1/options', function () {
@@ -39,19 +34,19 @@ describe('Options routes', function () {
 		}
 
 		it('should have status 201', async function () {
-			const response = await agent.post('/api/v1/options').send(testOptionFields1).set('Cookie', sessionCookie)
+			const response = await agent().post('/api/v1/options').send(testOptionFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.post('/api/v1/options').send(testOptionFields1)
+			const response = await agent().post('/api/v1/options').send(testOptionFields1)
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should create a new option', async function () {
-			await agent.post('/api/v1/options').send(testOptionFields1).set('Cookie', sessionCookie)
+			await agent().post('/api/v1/options').send(testOptionFields1).set('Cookie', sessionCookie)
 
 			const option = await OptionModel.findOne({})
 			expect(option).to.exist
@@ -63,7 +58,7 @@ describe('Options routes', function () {
 		})
 
 		it('should return the newly created object', async function () {
-			const response = await agent.post('/api/v1/options').send(testOptionFields1).set('Cookie', sessionCookie)
+			const response = await agent().post('/api/v1/options').send(testOptionFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testOptionFields1.name)
@@ -80,7 +75,7 @@ describe('Options routes', function () {
 				_id: newId
 			}
 
-			await agent.post('/api/v1/options').send(updatedFields).set('Cookie', sessionCookie)
+			await agent().post('/api/v1/options').send(updatedFields).set('Cookie', sessionCookie)
 			const option = await OptionModel.findOne({})
 			expect(option?.id.toString()).to.not.equal(newId)
 		})
@@ -105,19 +100,19 @@ describe('Options routes', function () {
 		})
 
 		it('should have status 200', async function () {
-			const response = await agent.get('/api/v1/options').set('Cookie', sessionCookie)
+			const response = await agent().get('/api/v1/options').set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.get('/api/v1/options')
+			const response = await agent().get('/api/v1/options')
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should return all options', async function () {
-			const response = await agent.get('/api/v1/options').set('Cookie', sessionCookie)
+			const response = await agent().get('/api/v1/options').set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.an('array')
 			expect(response.body).to.have.length(2)
@@ -135,7 +130,7 @@ describe('Options routes', function () {
 		it('should return an empty array if no options exist', async function () {
 			await OptionModel.deleteMany({})
 
-			const response = await agent.get('/api/v1/options').set('Cookie', sessionCookie)
+			const response = await agent().get('/api/v1/options').set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 			expect(response.body).to.be.an('array')
@@ -170,7 +165,7 @@ describe('Options routes', function () {
 				price: 15
 			}
 
-			const response = await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
 		})
@@ -182,7 +177,7 @@ describe('Options routes', function () {
 				price: 15
 			}
 
-			const response = await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields)
+			const response = await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields)
 
 			expect(response).to.have.status(403)
 		})
@@ -194,7 +189,7 @@ describe('Options routes', function () {
 				price: 15
 			}
 
-			await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const option = await OptionModel.findById(testOption1.id)
 			expect(option).to.exist
 			expect(option).to.have.property('name', updatedFields.name)
@@ -209,7 +204,7 @@ describe('Options routes', function () {
 				price: 15
 			}
 
-			const response = await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', updatedFields.name)
 			expect(response.body).to.have.property('imageURL', updatedFields.imageURL)
@@ -224,7 +219,7 @@ describe('Options routes', function () {
 				name: 'Updated Option 1'
 			}
 
-			await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			const option = await OptionModel.findById(testOption1.id)
 
@@ -237,7 +232,7 @@ describe('Options routes', function () {
 				imageURL: 'https://example.com/imageNew.jpg'
 			}
 
-			await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			const option = await OptionModel.findById(testOption1.id)
 
@@ -251,7 +246,7 @@ describe('Options routes', function () {
 				price: 15
 			}
 
-			const response = await agent.patch(`/api/v1/options/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent().patch(`/api/v1/options/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(404)
 			expect(response.body).to.have.property('error', 'Tilvalg ikke fundet')
@@ -264,7 +259,7 @@ describe('Options routes', function () {
 				price: -15
 			}
 
-			const response = await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			const response = await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error')
@@ -275,7 +270,7 @@ describe('Options routes', function () {
 				_id: new mongoose.Types.ObjectId().toString()
 			}
 
-			await agent.patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
+			await agent().patch(`/api/v1/options/${testOption1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const option = await OptionModel.findById(testOption1.id)
 			expect(option?.id.toString()).to.equal(testOption1.id)
 		})
@@ -300,19 +295,19 @@ describe('Options routes', function () {
 		})
 
 		it('should have status 204', async function () {
-			const response = await agent.delete(`/api/v1/options/${testOption1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent().delete(`/api/v1/options/${testOption1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(204)
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			const response = await agent.delete(`/api/v1/options/${testOption1.id}`).send({ confirm: true })
+			const response = await agent().delete(`/api/v1/options/${testOption1.id}`).send({ confirm: true })
 
 			expect(response).to.have.status(403)
 		})
 
 		it('should delete an option', async function () {
-			const response = await agent.delete(`/api/v1/options/${testOption1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent().delete(`/api/v1/options/${testOption1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.empty
 			const product = await OptionModel.findById(testOption1.id)
@@ -320,28 +315,28 @@ describe('Options routes', function () {
 		})
 
 		it('should return 404 if the option does not exist', async function () {
-			const response = await agent.delete(`/api/v1/options/${new mongoose.Types.ObjectId().toString()}`).send({ confirm: true }).set('Cookie', sessionCookie)
+			const response = await agent().delete(`/api/v1/options/${new mongoose.Types.ObjectId().toString()}`).send({ confirm: true }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(404)
 			expect(response.body).to.have.property('error', 'Tilvalg ikke fundet')
 		})
 
 		it('should return an error if confirm false', async function () {
-			const response = await agent.delete(`/api/v1/options/${testOption1.id}`).send({ confirm: false }).set('Cookie', sessionCookie)
+			const response = await agent().delete(`/api/v1/options/${testOption1.id}`).send({ confirm: false }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error', 'Kræver konfirmering')
 		})
 
 		it('should return an error if confirm is not a boolean', async function () {
-			const response = await agent.delete(`/api/v1/options/${testOption1.id}`).send({ confirm: 'true' }).set('Cookie', sessionCookie)
+			const response = await agent().delete(`/api/v1/options/${testOption1.id}`).send({ confirm: 'true' }).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error', 'Kræver konfirmering')
 		})
 
 		it('should return an error if confirm is not present', async function () {
-			const response = await agent.delete(`/api/v1/options/${testOption1.id}`).set('Cookie', sessionCookie)
+			const response = await agent().delete(`/api/v1/options/${testOption1.id}`).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(400)
 			expect(response.body).to.have.property('error', 'Kræver konfirmering')

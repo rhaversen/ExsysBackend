@@ -1,23 +1,17 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
+import mongoose from 'mongoose'
 
-// Own modules
-import ActivityModel, { IActivity, IActivityPopulated } from '../../../app/models/Activity.js'
+import ActivityModel, { IActivityPopulated } from '../../../app/models/Activity.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
-import KioskModel from '../../../app/models/Kiosk.js'
-import mongoose, { PopulatedDoc } from 'mongoose'
 
 describe('Activity Model', function () {
 	let testRoom: IRoom
@@ -61,7 +55,7 @@ describe('Activity Model', function () {
 		try {
 			await ActivityModel.create(testActivityField)
 			await ActivityModel.create(testActivityField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -75,7 +69,7 @@ describe('Activity Model', function () {
 				...testActivityField,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -98,18 +92,51 @@ describe('Activity Model', function () {
 		expect(activity.rooms).to.be.an('array').that.has.lengthOf(0)
 	})
 
-	it('should remove the activity from any kiosks when deleted', async function () {
+	it('should remove the activity from any kiosks activities field when deleted', async function () {
 		const activity = await ActivityModel.create(testActivityField)
 		const kiosk = await KioskModel.create({
 			name: 'TestKiosk',
 			activities: [activity._id],
-			password: 'TestPassword'
+			kioskTag: '11111'
 		})
 
 		await ActivityModel.deleteOne({ _id: activity._id })
 
 		const updatedKiosk = await KioskModel.findById(kiosk._id)
 		expect(updatedKiosk?.activities).to.be.empty
+	})
+
+	it('should remove the activity from any kiosks disabledActivities field when deleted', async function () {
+		const activity = await ActivityModel.create(testActivityField)
+		const kiosk = await KioskModel.create({
+			name: 'TestKiosk2',
+			disabledActivities: [activity._id],
+			kioskTag: '22222'
+		})
+
+		await ActivityModel.deleteOne({ _id: activity._id })
+
+		const updatedKiosk = await KioskModel.findById(kiosk._id)
+		expect(updatedKiosk?.disabledActivities).to.be.empty
+	})
+
+	it('should not remove other activities when deleting one', async function () {
+		const activity1 = await ActivityModel.create(testActivityField)
+		const activity2 = await ActivityModel.create({ ...testActivityField, name: 'Activity 2' })
+		const kiosk = await KioskModel.create({
+			name: 'TestKiosk3',
+			activities: [activity1._id, activity2._id],
+			disabledActivities: [activity1._id, activity2._id],
+			kioskTag: '33333'
+		})
+
+		await ActivityModel.deleteOne({ _id: activity1._id })
+
+		const updatedKiosk = await KioskModel.findById(kiosk._id)
+		expect(updatedKiosk?.activities).to.have.lengthOf(1)
+		expect(updatedKiosk?.activities?.[0].toString()).to.equal(activity2._id.toString())
+		expect(updatedKiosk?.disabledActivities).to.have.lengthOf(1)
+		expect(updatedKiosk?.disabledActivities?.[0].toString()).to.equal(activity2._id.toString())
 	})
 
 	it('should not create an activity with a non-existing roomId in rooms', async function () {
@@ -119,7 +146,7 @@ describe('Activity Model', function () {
 				...testActivityField,
 				rooms: [new mongoose.Types.ObjectId().toString()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

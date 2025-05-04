@@ -1,18 +1,12 @@
-// Node.js built-in modules
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
-import { Logtail } from '@logtail/node'
 
-// Third-party libraries
+import { Logtail } from '@logtail/node'
 import { createLogger, format as _format, transports as _transports } from 'winston'
 
-// Own modules
+const { token } = process.env as Record<string, string>
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const _filename = fileURLToPath(import.meta.url)
 const _dirname = dirname(_filename)
 const logDirectory = join(_dirname, (['production', 'staging'].includes(process.env.NODE_ENV ?? '') ? './logs/' : '../../logs/'))
@@ -35,23 +29,20 @@ const winstonLogger = createLogger({
 	},
 	format: _format.combine(
 		_format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:SSS' }),
-		_format.json(), // Use JSON format for logs
-		_format.printf((logObject) => {
-			return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`
-		})
+		_format.json()
 	),
 	defaultMeta: { service: 'exsys-backend' }, // Set a default metadata field
 	transports: [
 		new _transports.File({
-			filename: join(logDirectory, '../../logs/error.log'),
+			filename: join(logDirectory, 'error.log'),
 			level: 'error'
 		}),
 		new _transports.File({
-			filename: join(logDirectory, '../../logs/info.log'),
+			filename: join(logDirectory, 'info.log'),
 			level: 'info'
 		}),
 		new _transports.File({
-			filename: join(logDirectory, '../../logs/combined.log'),
+			filename: join(logDirectory, 'combined.log'),
 			level: 'silly'
 		}),
 		new _transports.Console({
@@ -62,95 +53,63 @@ const winstonLogger = createLogger({
 					return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`
 				})
 			),
-			level: logLevel[process.env.NODE_ENV as keyof typeof logLevel]
+			level: logLevel[process.env.NODE_ENV as keyof typeof logLevel] ?? 'info'
 		})
 	]
 })
 
-// Instantiate betterStackLogger only in production
+// Instantiate betterStackLogger lazily only in production/staging
 let betterStackLogger: Logtail | null = null
 
-function logToWinston (level: string, ...messages: any[]): void {
-	const combinedMessage = messages.join(' ')
-	switch (level) {
-		case 'error':
-			winstonLogger.error(combinedMessage)
-			break
-		case 'warn':
-			winstonLogger.warn(combinedMessage)
-			break
-		case 'info':
-			winstonLogger.info(combinedMessage)
-			break
-		case 'http':
-			winstonLogger.http(combinedMessage)
-			break
-		case 'verbose':
-			winstonLogger.verbose(combinedMessage)
-			break
-		case 'debug':
-			winstonLogger.debug(combinedMessage)
-			break
-		case 'silly':
-			winstonLogger.silly(combinedMessage)
-			break
-	}
-}
-
-async function logToBetterStack (level: string, ...messages: any[]): Promise<void> {
+// Helper to handle BetterStack logging non-blocking
+const logToBetterStackNonBlocking = (
+	level: 'error' | 'warn' | 'info' | 'debug',
+	message: string,
+	context?: Record<string, any>
+): void => {
 	if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
 		return
 	}
 
-	if (betterStackLogger === null || betterStackLogger === undefined) {
-		betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN ?? '')
+	if (!betterStackLogger) {
+		betterStackLogger = new Logtail(token)
 	}
 
-	const combinedMessage = messages.join(' ')
-	switch (level) {
-		case 'error':
-			await betterStackLogger.error(combinedMessage)
-			break
-		case 'warn':
-			await betterStackLogger.warn(combinedMessage)
-			break
-		case 'info':
-			await betterStackLogger.info(combinedMessage)
-			break
-		default:
-			await betterStackLogger.debug(combinedMessage)
-	}
-}
-
-function log (level: string, ...messages: unknown[]): void {
-	logToWinston(level, messages)
-	logToBetterStack(level, messages)
-		.catch((error) => {
-			logToWinston('error', `Error logging to BetterStack: ${error instanceof Error ? error.toString() : String(error)}`)
-		})
+	// Use a non-blocking approach with .catch()
+	betterStackLogger[level](message, context).catch((error) => {
+		// Log BetterStack errors to Winston to avoid infinite loops
+		winstonLogger.error(`Error logging to BetterStack: ${error instanceof Error ? error.toString() : String(error)}`, { error })
+	})
 }
 
 const logger = {
-	error: (...messages: unknown[]) => {
-		log('error', ...messages)
+	error: (message: string, context?: Record<string, any>) => {
+		winstonLogger.error(message, context)
+		logToBetterStackNonBlocking('error', message, context)
 	},
-	warn: (...messages: unknown[]) => {
-		log('warn', ...messages)
+	warn: (message: string, context?: Record<string, any>) => {
+		winstonLogger.warn(message, context)
+		logToBetterStackNonBlocking('warn', message, context)
 	},
-	info: (...messages: unknown[]) => {
-		log('info', ...messages)
+	info: (message: string, context?: Record<string, any>) => {
+		winstonLogger.info(message, context)
+		logToBetterStackNonBlocking('info', message, context)
 	},
-	http: (...messages: unknown[]) => {
-		log('http', ...messages)
+	http: (message: string, context?: Record<string, any>) => {
+		winstonLogger.http(message, context)
+		logToBetterStackNonBlocking('debug', message, context)
 	},
-	verbose: (...messages: unknown[]) => {
-		log('verbose', ...messages)
+	verbose: (message: string, context?: Record<string, any>) => {
+		winstonLogger.verbose(message, context)
+		logToBetterStackNonBlocking('debug', message, context)
 	},
-	debug: (...messages: unknown[]) => {
-		log('debug', ...messages)
+	debug: (message: string, context?: Record<string, any>) => {
+		winstonLogger.debug(message, context)
+		logToBetterStackNonBlocking('debug', message, context)
 	},
-	silly: (...messages: unknown[]) => {
-		log('silly', ...messages)
+	silly: (message: string, context?: Record<string, any>) => {
+		winstonLogger.silly(message, context)
+		logToBetterStackNonBlocking('debug', message, context)
 	}
 }
 

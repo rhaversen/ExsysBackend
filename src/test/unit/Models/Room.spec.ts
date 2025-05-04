@@ -1,21 +1,15 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
-// Own modules
-import RoomModel from '../../../app/models/Room.js'
+import ActivityModel, { IActivity } from '../../../app/models/Activity.js'
+import RoomModel, { IRoom } from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
-import ActivityModel from '../../../app/models/Activity.js'
 
 describe('Room Model', function () {
 	const testRoomField = {
@@ -53,7 +47,7 @@ describe('Room Model', function () {
 		try {
 			await RoomModel.create(testRoomField)
 			await RoomModel.create(testRoomField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -67,7 +61,7 @@ describe('Room Model', function () {
 				...testRoomField,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -81,7 +75,7 @@ describe('Room Model', function () {
 				...testRoomField,
 				description: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -99,5 +93,90 @@ describe('Room Model', function () {
 
 		const updatedActivity = await ActivityModel.findById(activity._id)
 		expect(updatedActivity?.rooms).to.be.an('array').that.is.empty
+	})
+
+	describe('Delete middleware', function () {
+		let room1: IRoom, room2: IRoom, room3: IRoom
+		let activity1: IActivity, activity2: IActivity
+
+		beforeEach(async function () {
+			room1 = await RoomModel.create({ name: 'RoomToDelete1', description: 'Desc1' })
+			room2 = await RoomModel.create({ name: 'RoomToDelete2', description: 'Desc2' })
+			room3 = await RoomModel.create({ name: 'RoomToKeep', description: 'DescKeep' })
+
+			activity1 = await ActivityModel.create({
+				name: 'Activity1',
+				rooms: [room1._id, room3._id],
+				disabledRooms: [room1._id, room3._id]
+			})
+			activity2 = await ActivityModel.create({
+				name: 'Activity2',
+				rooms: [room2._id],
+				disabledRooms: [room2._id]
+			})
+		})
+
+		describe('Pre-delete middleware (deleteOne / findOneAndDelete)', function () {
+			it('should remove the room from Activity.rooms when deleted', async function () {
+				await RoomModel.deleteOne({ _id: room1._id })
+
+				const updatedActivity1 = await ActivityModel.findById(activity1._id)
+				expect(updatedActivity1?.rooms).to.have.lengthOf(1)
+				expect(updatedActivity1?.rooms?.[0].toString()).to.equal(room3._id.toString())
+			})
+
+			it('should remove the room from Activity.disabledRooms when deleted', async function () {
+				await RoomModel.deleteOne({ _id: room1._id })
+
+				const updatedActivity1 = await ActivityModel.findById(activity1._id)
+				expect(updatedActivity1?.disabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity1?.disabledRooms?.[0].toString()).to.equal(room3._id.toString())
+			})
+
+			it('should not affect other activities when deleting a room', async function () {
+				await RoomModel.deleteOne({ _id: room1._id })
+
+				const updatedActivity2 = await ActivityModel.findById(activity2._id)
+				expect(updatedActivity2?.rooms).to.have.lengthOf(1)
+				expect(updatedActivity2?.rooms?.[0].toString()).to.equal(room2._id.toString())
+				expect(updatedActivity2?.disabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity2?.disabledRooms?.[0].toString()).to.equal(room2._id.toString())
+			})
+		})
+
+		describe('Pre-delete-many middleware', function () {
+			it('should remove the rooms from Activity.rooms when deleted via deleteMany', async function () {
+				await RoomModel.deleteMany({ _id: { $in: [room1._id, room2._id] } })
+
+				const updatedActivity1 = await ActivityModel.findById(activity1._id)
+				const updatedActivity2 = await ActivityModel.findById(activity2._id)
+
+				expect(updatedActivity1?.rooms).to.have.lengthOf(1)
+				expect(updatedActivity1?.rooms?.[0].toString()).to.equal(room3._id.toString())
+				expect(updatedActivity2?.rooms).to.be.empty
+			})
+
+			it('should remove the rooms from Activity.disabledRooms when deleted via deleteMany', async function () {
+				await RoomModel.deleteMany({ _id: { $in: [room1._id, room2._id] } })
+
+				const updatedActivity1 = await ActivityModel.findById(activity1._id)
+				const updatedActivity2 = await ActivityModel.findById(activity2._id)
+
+				expect(updatedActivity1?.disabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity1?.disabledRooms?.[0].toString()).to.equal(room3._id.toString())
+				expect(updatedActivity2?.disabledRooms).to.be.empty
+			})
+
+			it('should not affect activities not referencing the deleted rooms via deleteMany', async function () {
+				const activity3 = await ActivityModel.create({ name: 'Activity3', rooms: [room3._id], disabledRooms: [room3._id] })
+				await RoomModel.deleteMany({ _id: { $in: [room1._id, room2._id] } })
+
+				const updatedActivity3 = await ActivityModel.findById(activity3._id)
+				expect(updatedActivity3?.rooms).to.have.lengthOf(1)
+				expect(updatedActivity3?.rooms?.[0].toString()).to.equal(room3._id.toString())
+				expect(updatedActivity3?.disabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity3?.disabledRooms?.[0].toString()).to.equal(room3._id.toString())
+			})
+		})
 	})
 })
