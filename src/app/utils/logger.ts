@@ -61,7 +61,7 @@ const winstonLogger = createLogger({
 // Instantiate betterStackLogger lazily only in production/staging
 let betterStackLogger: Logtail | null = null
 
-// Helper to handle BetterStack logging non-blockingly
+// Helper to handle BetterStack logging non-blocking
 const logToBetterStackNonBlocking = (
 	level: 'error' | 'warn' | 'info' | 'debug',
 	message: string,
