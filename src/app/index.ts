@@ -165,7 +165,8 @@ server.listen(expressPort, () => {
 
 // Handle unhandled rejections outside middleware
 process.on('unhandledRejection', async (reason, promise): Promise<void> => {
-	logger.error('Unhandled Rejection', { reason, promise })
+	const errorMessage = reason instanceof Error ? reason.message : String(reason)
+	logger.error(`Unhandled Rejection: ${errorMessage}`, { reason, promise })
 	throw reason // Re-throw the error to allow for process termination
 })
 
@@ -180,9 +181,11 @@ export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
+
 	logger.info('Closing session store...')
 	await sessionStore.close()
 	logger.info('Session store closed')
+
 	logger.info('Closing database connection...')
 	await mongoose.connection.close()
 	logger.info('Database connection closed')
