@@ -3,7 +3,7 @@ import passport from 'passport'
 
 import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
-import { type ISession } from '../models/Session.js'
+import SessionModel, { type ISession } from '../models/Session.js'
 import logger from '../utils/logger.js'
 import { getIPAddress } from '../utils/sessionUtils.js'
 import config from '../utils/setupConfig.js'
@@ -108,7 +108,8 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 
 export async function loginKioskLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const kioskTag = req.body.kioskTag ?? 'N/A'
-	logger.info(`Attempting local login for kiosk: ${kioskTag}`)
+	const override = req.body.override === true || req.body.override === 'true'
+	logger.info(`Attempting local login for kiosk: ${kioskTag}${override ? ' (override active session check)' : ''}`)
 
 	// Check if kioskTag and password are provided
 	if (req.body.kioskTag === undefined || req.body.password === undefined) {
@@ -120,7 +121,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 		return
 	}
 
-	passport.authenticate('kiosk-local', (err: Error | null, user: Express.User | false | null, info?: { message: string }) => {
+	passport.authenticate('kiosk-local', async (err: Error | null, user: Express.User | false | null, info?: { message: string }) => {
 		if (err !== null && err !== undefined) {
 			logger.error(`Kiosk login error during authentication for ${kioskTag}:`, { error: err })
 			return res.status(500).json({
@@ -136,6 +137,37 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				auth: false,
 				error: message
 			})
+		}
+
+		// User is authenticated, now check for existing sessions before logging in
+		const kiosk = user as IKiosk
+
+		if (!override) {
+			try {
+				// Check for existing sessions for this kiosk user ID
+				const existingSession = await SessionModel.findOne({
+					// We need to search within the stringified session data
+					// This assumes the user ID is stored under session.passport.user
+					session: { $regex: `"passport":{"user":"${kiosk.id}"}` },
+					expires: { $gt: new Date() } // Only consider non-expired sessions
+				}).lean().exec()
+
+				if (existingSession !== null) {
+					logger.warn(`Kiosk login blocked for ${kioskTag}: Active session found (ID: ${existingSession._id}). Use override if needed.`)
+					res.status(409).json({
+						auth: false,
+						error: 'Denne kiosk har allerede en aktiv session. Brug override for at logge ind alligevel.'
+					})
+					return
+				}
+			} catch (sessionCheckError) {
+				logger.error(`Kiosk login error during active session check for ${kioskTag}:`, { error: sessionCheckError })
+				res.status(500).json({
+					auth: false,
+					error: 'Fejl ved kontrol af eksisterende sessioner.'
+				})
+				return
+			}
 		}
 
 		req.logIn(user, async (loginErr) => {
@@ -165,7 +197,6 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				}
 				const transformedSession = transformSession(sessionDoc)
 
-				const kiosk = user as IKiosk
 				const transformedKiosk = await transformKiosk(kiosk)
 
 				logger.info(`Kiosk ${kiosk.kioskTag} (ID: ${kiosk.id}) logged in successfully. Session ID: ${req.sessionID}`)

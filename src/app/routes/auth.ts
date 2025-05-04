@@ -16,6 +16,7 @@ const router = Router()
  * @access Public
  * @param {string} req.body.kioskTag - The tag of the kiosk.
  * @param {string} req.body.password - The password of the kiosk.
+ * @param {boolean} [req.body.override] - Optional. If true, logs in even if an active session exists for the kiosk.
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The kiosk object.
  * @returns {string} res.headers['set-cookie'] - The session cookie.
