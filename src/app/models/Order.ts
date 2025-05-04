@@ -239,7 +239,7 @@ orderSchema.index({ kioskId: 1, createdAt: -1 }) // Index for kiosk-specific que
 // Pre-save middleware
 orderSchema.pre('save', function (next) {
 	if (this.isNew) {
-		logger.info(`Creating new order: Kiosk ${this.kioskId}, Activity ${this.activityId}, Payment ${this.paymentId}`) // Changed level
+		logger.info(`Creating new order: Kiosk ${this.kioskId}, Activity ${this.activityId}, Payment ${this.paymentId}`)
 	} else {
 		logger.debug(`Updating order: ID ${this.id}`)
 	}
@@ -248,7 +248,7 @@ orderSchema.pre('save', function (next) {
 
 // Post-save middleware
 orderSchema.post('save', function (doc, next) {
-	logger.info(`Order saved successfully: ID ${doc.id}, Status ${doc.status}`) // Changed level
+	logger.info(`Order saved successfully: ID ${doc.id}, Status ${doc.status}`)
 	next()
 })
 
@@ -256,7 +256,7 @@ orderSchema.post('save', function (doc, next) {
 orderSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, async function (next) {
 	// 'this' refers to the document being deleted
 	const orderId = this._id
-	logger.warn(`Preparing to delete order: ID ${orderId}`) // Use warn for deletion
+	logger.warn(`Preparing to delete order: ID ${orderId}`)
 
 	try {
 		// Optionally delete the associated payment if it's not shared
@@ -295,7 +295,7 @@ orderSchema.pre('deleteMany', async function (next) {
 
 			// Delete associated payments (assuming 1-to-1 relationship enforced by index)
 			if (paymentIdsToDelete.length > 0) {
-				logger.info(`Deleting ${paymentIdsToDelete.length} associated payments for orders being deleted via deleteMany.`) // Changed level
+				logger.info(`Deleting ${paymentIdsToDelete.length} associated payments for orders being deleted via deleteMany.`)
 				await PaymentModel.deleteMany({ _id: { $in: paymentIdsToDelete } })
 			}
 		} else {
@@ -310,12 +310,12 @@ orderSchema.pre('deleteMany', async function (next) {
 
 // Post-delete middleware
 orderSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.warn(`Order deleted successfully: ID ${doc._id}`) // Use warn
+	logger.warn(`Order deleted successfully: ID ${doc._id}`)
 	next()
 })
 
 orderSchema.post('deleteMany', function (result, next) {
-	logger.warn(`deleteMany on Orders completed. Deleted count: ${result.deletedCount}`) // Use warn
+	logger.warn(`deleteMany on Orders completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

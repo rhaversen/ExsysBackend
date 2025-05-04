@@ -89,15 +89,13 @@ adminSchema.post('save', function (doc, next) {
 // Pre-delete middleware (if any cascading logic needed, e.g., logging out sessions)
 adminSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, async function (next) {
 	// 'this' refers to the document being deleted
-	logger.info(`Preparing to delete admin: ID ${this._id}, Name "${this.name}"`) // Changed level
-	// Add logic here if needed, e.g., invalidate sessions associated with this admin ID
-	// Example: await SessionModel.deleteMany({ 'session.passport.user': this._id });
+	logger.info(`Preparing to delete admin: ID ${this._id}, Name "${this.name}"`)
 	next()
 })
 
 // Post-delete middleware
 adminSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.info(`Admin deleted successfully: ID ${doc._id}, Name "${doc.name}"`) // Changed level
+	logger.info(`Admin deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
 	next()
 })
 

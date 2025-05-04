@@ -176,12 +176,12 @@ activitySchema.pre('deleteMany', async function (next) {
 // Post-delete middleware (for logging confirmation)
 activitySchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	// 'doc' is the deleted document
-	logger.info(`Activity deleted successfully: ID ${doc._id}, Name "${doc.name}"`) // Changed level
+	logger.info(`Activity deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
 	next()
 })
 
 activitySchema.post('deleteMany', function (result, next) {
-	logger.info(`deleteMany on Activities completed. Deleted count: ${result.deletedCount}`) // Changed level
+	logger.info(`deleteMany on Activities completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

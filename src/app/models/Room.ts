@@ -126,12 +126,12 @@ roomSchema.pre('deleteMany', async function (next) {
 
 // Post-delete middleware
 roomSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.info(`Room deleted successfully: ID ${doc._id}, Name "${doc.name}"`) // Changed level
+	logger.info(`Room deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
 	next()
 })
 
 roomSchema.post('deleteMany', function (result, next) {
-	logger.info(`deleteMany on Rooms completed. Deleted count: ${result.deletedCount}`) // Changed level
+	logger.info(`deleteMany on Rooms completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

@@ -119,7 +119,7 @@ export async function deleteSession (req: Request, res: Response, next: NextFunc
 	const requestingUserId = requestingUser?.id ?? 'Unknown'
 	const requestingUserType = requestingUser?.type ?? 'Unknown'
 
-	logger.info(`User ${requestingUserType} ID ${requestingUserId} attempting to delete session: ID ${sessionId}`) // Changed level and added context
+	logger.info(`User ${requestingUserType} ID ${requestingUserId} attempting to delete session: ID ${sessionId}`)
 
 	if (!mongoose.Types.ObjectId.isValid(sessionId) && typeof sessionId !== 'string') { // Also check if it's just a string session ID
 		logger.warn(`Delete session failed: Invalid Session ID format: ${sessionId}`)

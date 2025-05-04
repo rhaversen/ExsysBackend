@@ -181,12 +181,12 @@ kioskSchema.pre('deleteMany', async function (next) {
 
 // Post-delete middleware
 kioskSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.info(`Kiosk deleted successfully: ID ${doc._id}, Name "${doc.name}", Tag "${doc.kioskTag}"`) // Changed level
+	logger.info(`Kiosk deleted successfully: ID ${doc._id}, Name "${doc.name}", Tag "${doc.kioskTag}"`)
 	next()
 })
 
 kioskSchema.post('deleteMany', function (result, next) {
-	logger.info(`deleteMany on Kiosks completed. Deleted count: ${result.deletedCount}`) // Changed level
+	logger.info(`deleteMany on Kiosks completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

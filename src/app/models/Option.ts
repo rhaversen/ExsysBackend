@@ -131,12 +131,12 @@ optionSchema.pre('deleteMany', async function (next) {
 
 // Post-delete middleware
 optionSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.info(`Option deleted successfully: ID ${doc._id}, Name "${doc.name}"`) // Changed level
+	logger.info(`Option deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
 	next()
 })
 
 optionSchema.post('deleteMany', function (result, next) {
-	logger.info(`deleteMany on Options completed. Deleted count: ${result.deletedCount}`) // Changed level
+	logger.info(`deleteMany on Options completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

@@ -113,7 +113,7 @@ export async function countSubtotalOfOrder (products: OrderItem[], options: Orde
 	}
 }
 
-export function isOrderItemList (items: unknown): items is OrderItem[] { // Changed input type
+export function isOrderItemList (items: unknown): items is OrderItem[] {
 	logger.silly('Validating order item list structure')
 	return Array.isArray(items) && items.every((item: unknown): item is OrderItem => {
 		const isValid = item !== null &&
@@ -459,9 +459,9 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		logger.debug(`${filteredOrders.length} orders remaining after payment status filter`)
 
 		// Transform orders
-		const transformedOrders = filteredOrders.map(order => transformOrder(order)) // transformOrder handles its own logging
+		const transformedOrders = filteredOrders.map(order => transformOrder(order))
 
-		logger.info(`Successfully retrieved ${transformedOrders.length} orders matching query.`) // Changed level
+		logger.info(`Successfully retrieved ${transformedOrders.length} orders matching query.`)
 		res.status(200).json(transformedOrders)
 	} catch (error) {
 		logger.error('Failed to get orders with query', { error })
@@ -479,7 +479,7 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		status
 	} = req.body
 
-	logger.info(`Attempting to update status to "${status ?? 'N/A'}" for order IDs: [${Array.isArray(orderIds) ? orderIds.join(', ') : 'Invalid Input'}]`) // Changed level and added context
+	logger.info(`Attempting to update status to "${status ?? 'N/A'}" for order IDs: [${Array.isArray(orderIds) ? orderIds.join(', ') : 'Invalid Input'}]`)
 
 	// --- Input Validation ---
 	if (!Array.isArray(orderIds) || orderIds.length === 0 || !orderIds.every(id => typeof id === 'string' && mongoose.Types.ObjectId.isValid(id))) {
@@ -544,7 +544,7 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		}
 
 		await session.commitTransaction()
-		logger.info(`Successfully updated status to "${status}" for ${updatedCount} out of ${ordersToUpdate.length} found orders. IDs: [${orderIds.join(', ')}]`) // Added success log with counts
+		logger.info(`Successfully updated status to "${status}" for ${updatedCount} out of ${ordersToUpdate.length} found orders. IDs: [${orderIds.join(', ')}]`)
 
 		res.status(200).json(updatedOrderDocs) // Respond with the (potentially modified) documents
 

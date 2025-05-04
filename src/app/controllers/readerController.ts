@@ -100,7 +100,7 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 		const reader = await ReaderModel.findById(readerId).session(session)
 
 		if (reader === null || reader === undefined) {
-			logger.warn(`Patch reader failed: Reader not found. ID: ${readerId}`) // Added specific log
+			logger.warn(`Patch reader failed: Reader not found. ID: ${readerId}`)
 			res.status(404).json({ error: 'Læser ikke fundet' })
 			await session.abortTransaction() // Abort transaction before returning
 			await session.endSession()

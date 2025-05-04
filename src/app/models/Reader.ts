@@ -142,7 +142,7 @@ readerSchema.pre('deleteMany', async function (next) {
 		const docIds = docsToDelete.map(doc => doc._id)
 
 		if (docIds.length > 0) {
-			logger.info(`Preparing to delete ${docIds.length} readers via deleteMany: IDs [${docIds.join(', ')}]`) // Changed level
+			logger.info(`Preparing to delete ${docIds.length} readers via deleteMany: IDs [${docIds.join(', ')}]`)
 
 			// Set readerId to null in associated Kiosks
 			logger.debug(`Setting reader IDs [${docIds.join(', ')}] to null in associated Kiosks`)
@@ -160,12 +160,12 @@ readerSchema.pre('deleteMany', async function (next) {
 
 // Post-delete middleware
 readerSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.info(`Reader deleted successfully: ID ${doc._id}, API Ref "${doc.apiReferenceId}", Tag "${doc.readerTag}"`) // Changed level
+	logger.info(`Reader deleted successfully: ID ${doc._id}, API Ref "${doc.apiReferenceId}", Tag "${doc.readerTag}"`)
 	next()
 })
 
 readerSchema.post('deleteMany', function (result, next) {
-	logger.info(`deleteMany on Readers completed. Deleted count: ${result.deletedCount}`) // Changed level
+	logger.info(`deleteMany on Readers completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 

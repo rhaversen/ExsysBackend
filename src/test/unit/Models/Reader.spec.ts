@@ -151,7 +151,7 @@ describe('Reader Model', function () {
 				await ReaderModel.deleteOne({ _id: reader.id })
 
 				const updatedKiosk = await KioskModel.findById(kiosk.id)
-				expect(updatedKiosk?.readerId).to.be.null // Changed assertion to expect null
+				expect(updatedKiosk?.readerId).to.be.null
 			})
 
 			it('should not affect other kiosks when deleting a reader', async function () {

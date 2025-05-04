@@ -36,7 +36,7 @@ const paymentSchema = new Schema<IPayment>({
 paymentSchema.pre('save', async function (next) {
 	// Log status changes
 	if (this.isNew) {
-		logger.info(`Creating new payment: Status "${this.paymentStatus}", ClientTxID (if SumUp): ${this.clientTransactionId ?? 'N/A'}`) // Changed level
+		logger.info(`Creating new payment: Status "${this.paymentStatus}", ClientTxID (if SumUp): ${this.clientTransactionId ?? 'N/A'}`)
 	} else if (this.isModified('paymentStatus')) {
 		logger.info(`Updating payment status: ID ${this.id}, New Status "${this.paymentStatus}"`)
 	} else {
@@ -55,7 +55,7 @@ paymentSchema.post('save', function (doc, next) {
 paymentSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, async function (next) {
 	// 'this' refers to the document being deleted
 	const paymentId = this._id
-	logger.warn(`Preparing to delete payment: ID ${paymentId}, Status "${this.paymentStatus}"`) // Use warn
+	logger.warn(`Preparing to delete payment: ID ${paymentId}, Status "${this.paymentStatus}"`)
 	next()
 })
 
@@ -69,12 +69,12 @@ paymentSchema.pre('deleteMany', async function (next) {
 
 // Post-delete middleware
 paymentSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
-	logger.warn(`Payment deleted successfully: ID ${doc._id}, Status "${doc.paymentStatus}"`) // Use warn
+	logger.warn(`Payment deleted successfully: ID ${doc._id}, Status "${doc.paymentStatus}"`)
 	next()
 })
 
 paymentSchema.post('deleteMany', function (result, next) {
-	logger.warn(`deleteMany on Payments completed. Deleted count: ${result.deletedCount}`) // Use warn
+	logger.warn(`deleteMany on Payments completed. Deleted count: ${result.deletedCount}`)
 	next()
 })
 
