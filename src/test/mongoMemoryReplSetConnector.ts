@@ -32,7 +32,6 @@ export default async function connectToInMemoryMongoDB (): Promise<void> {
 export async function disconnectFromInMemoryMongoDB (sessionStore: MongoStore): Promise<void> {
 	try {
 		logger.info('Closing session store...')
-		// Explicitly close the MongoStore connection first
 		await sessionStore.close()
 		logger.info('Session store closed')
 
@@ -41,7 +40,7 @@ export async function disconnectFromInMemoryMongoDB (sessionStore: MongoStore): 
 		logger.info('Mongoose disconnected')
 
 		logger.info('Stopping memory database replica set...')
-		await replSet.stop({ force: true })
+		await replSet.stop({ doCleanup: true, force: true })
 		logger.info('Memory database replica set stopped')
 	} catch (error) {
 		if (error instanceof Error) {
