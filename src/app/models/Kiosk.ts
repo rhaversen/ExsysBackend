@@ -1,24 +1,11 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
-import { compare, hash } from 'bcrypt'
 
-// Own modules
 import logger from '../utils/logger.js'
-import config from '../utils/setupConfig.js'
-import ReaderModel from './Reader.js'
-import ActivityModel from './Activity.js'
 
-// Environment variables
+import ActivityModel, { IActivity } from './Activity.js'
+import ReaderModel, { IReader } from './Reader.js'
 
-// Config variables
-const {
-	bcryptSaltRounds
-} = config
-
-// Destructuring and global variables
 const nanoidAlphabet = '123465789'
 const nanoidLength = 5
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
@@ -29,7 +16,6 @@ export interface IKiosk extends Document {
 	_id: Schema.Types.ObjectId
 	name: string // Name of the kiosk
 	kioskTag: string // Unique identifier generated with nanoid
-	password: string // Hashed password
 	activities: Schema.Types.ObjectId[] | [] // Promoted activities for this kiosk
 	disabledActivities: Schema.Types.ObjectId[] | [] // Activities that are disabled for this kiosk
 	readerId: Schema.Types.ObjectId | undefined // The pay station the kiosk is connected to
@@ -41,7 +27,6 @@ export interface IKiosk extends Document {
 	updatedAt: Date
 
 	// Methods
-	comparePassword: (password: string) => Promise<boolean>
 	generateNewKioskTag: () => Promise<string>
 }
 
@@ -49,11 +34,11 @@ export interface IKioskFrontend {
 	_id: string
 	name: string
 	kioskTag: string
-	activities: Schema.Types.ObjectId[] | string[]
-	disabledActivities: Schema.Types.ObjectId[] | string[]
-	readerId: Schema.Types.ObjectId | string[] | undefined
-	deactivated: boolean;
-	deactivatedUntil: Date | null;
+	activities: IActivity[]
+	disabledActivities: Schema.Types.ObjectId[]
+	readerId: IReader | null
+	deactivated: boolean
+	deactivatedUntil: Date | null
 	createdAt: Date
 	updatedAt: Date
 }
@@ -64,36 +49,30 @@ const kioskSchema = new Schema<IKiosk>({
 		type: Schema.Types.String,
 		required: true,
 		trim: true,
-		maxlength: [50, 'Navn kan højest være 50 tegn']
+		maxLength: [50, 'Navn kan højest være 50 tegn']
 	},
 	kioskTag: {
 		type: Schema.Types.String,
-		unique: true,
-		trim: true
-	},
-	password: {
-		type: Schema.Types.String,
-		required: true,
 		trim: true,
-		minlength: [4, 'Password skal være mindst 4 tegn'],
-		maxlength: [100, 'Password kan højest være 100 tegn']
+		unique: true
 	},
 	readerId: {
 		type: Schema.Types.ObjectId,
-		ref: 'Reader'
+		ref: 'Reader',
+		default: null
 	},
-	activities: {
-		type: [Schema.Types.ObjectId],
+	activities: [{
+		type: Schema.Types.ObjectId,
 		ref: 'Activity',
 		default: []
-	},
-	disabledActivities: {
-		type: [Schema.Types.ObjectId],
+	}],
+	disabledActivities: [{
+		type: Schema.Types.ObjectId,
 		ref: 'Activity',
 		default: []
-	},
+	}],
 	deactivated: {
-		type: Boolean,
+		type: Schema.Types.Boolean,
 		default: false
 	},
 	deactivatedUntil: {
@@ -105,13 +84,14 @@ const kioskSchema = new Schema<IKiosk>({
 })
 
 // Validations
-kioskSchema.path('kioskTag').validate(async function (v: string) {
-	const foundKioskWithTag = await KioskModel.findOne({
-		kioskTag: v,
-		_id: { $ne: this._id }
-	})
-	return foundKioskWithTag === null || foundKioskWithTag === undefined
-}, 'KioskTag er allerede i brug')
+kioskSchema.path('kioskTag').validate(async function (value: string) {
+	logger.silly(`Validating uniqueness for kioskTag: "${value}", Current ID: ${this._id}`)
+	const foundKiosk = await KioskModel.findOne({ kioskTag: value, _id: { $ne: this._id } }).lean()
+	if (foundKiosk) {
+		logger.warn(`Validation failed: kioskTag "${value}" already exists (ID: ${foundKiosk._id})`)
+	}
+	return !foundKiosk
+}, 'Kiosk tag er allerede i brug')
 
 kioskSchema.path('kioskTag').validate(function (v: string) {
 	return v.length === 5
@@ -121,11 +101,15 @@ kioskSchema.path('kioskTag').validate(function (v: string) {
 	return /^[0-9]+$/.test(v)
 }, 'KioskTag kan kun indeholde tal')
 
-kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
-	if (v === undefined || v === null) return true
-	const foundReader = await ReaderModel.findOne({ _id: v })
-	return foundReader !== null && foundReader !== undefined
-}, 'Kortlæseren findes ikke')
+kioskSchema.path('readerId').validate(async function (value: Schema.Types.ObjectId) {
+	if (value === undefined || value === null) { return true }
+	logger.silly(`Validating existence for readerId: "${value}", Kiosk ID: ${this._id}`)
+	const foundReader = await ReaderModel.findById(value).lean()
+	if (!foundReader) {
+		logger.warn(`Validation failed: readerId "${value}" does not exist. Kiosk ID: ${this._id}`)
+	}
+	return !!foundReader
+}, 'Den valgte kortlæser findes ikke')
 
 kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
 	for (const activity of v) {
@@ -138,7 +122,7 @@ kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId
 }, 'En eller flere aktiviteter findes ikke')
 
 kioskSchema.path('readerId').validate(async function (v: Schema.Types.ObjectId) {
-	if (v === undefined || v === null) return true
+	if (v === undefined || v === null) { return true }
 	const foundKioskWithReader = await KioskModel.findOne({
 		readerId: v,
 		_id: { $ne: this._id }
@@ -156,41 +140,91 @@ kioskSchema.path('disabledActivities').validate(async function (v: Schema.Types.
 	return true
 }, 'En eller flere deaktiverede aktiviteter findes ikke')
 
-// Pre-save middleware
+// Pre-save middleware for generating kioskTag
 kioskSchema.pre('save', async function (next) {
-	logger.silly('Saving kiosk')
-	if (this.kioskTag === undefined) {
-		// Set default value to accessToken
-		this.kioskTag = await generateUniqueKioskTag()
-	}
-	// Password hashing
-	if (this.isModified('password')) {
-		this.password = await hash(this.password, bcryptSaltRounds) // Using a random salt for each user
+	if (this.isNew) {
+		logger.debug(`Creating new kiosk: Name "${this.name}"`)
+		if (!this.kioskTag) { // Generate tag only if not provided and is new
+			try {
+				this.kioskTag = await generateUniqueKioskTag()
+				logger.debug(`Generated unique kioskTag "${this.kioskTag}" for new kiosk "${this.name}"`)
+			} catch (error) {
+				logger.error(`Failed to generate unique kioskTag for new kiosk "${this.name}"`, { error })
+				return next(error instanceof Error ? error : new Error('Kiosk tag generation failed'))
+			}
+		}
 	}
 	next()
 })
 
+// Post-save middleware
+kioskSchema.post('save', function (doc, next) {
+	logger.debug(`Kiosk saved successfully: ID ${doc.id}, Name "${doc.name}", Tag "${doc.kioskTag}"`)
+	next()
+})
+
+// Pre-delete middleware (single document)
+kioskSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, async function (next) {
+	// 'this' refers to the document being deleted
+	const kioskId = this._id
+	logger.info(`Preparing to delete kiosk: ID ${kioskId}, Name "${this.name}", Tag "${this.kioskTag}"`)
+	next()
+})
+
+// Pre-delete-many middleware (query-based)
+kioskSchema.pre('deleteMany', async function (next) {
+	// 'this' refers to the query object
+	const filter = this.getFilter()
+	logger.warn('Executing deleteMany on Kiosks with filter:', filter)
+	next()
+})
+
+// Post-delete middleware
+kioskSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
+	logger.info(`Kiosk deleted successfully: ID ${doc._id}, Name "${doc.name}", Tag "${doc.kioskTag}"`)
+	next()
+})
+
+kioskSchema.post('deleteMany', function (result, next) {
+	logger.info(`deleteMany on Kiosks completed. Deleted count: ${result.deletedCount}`)
+	next()
+})
+
 // Kiosk methods
-kioskSchema.methods.generateNewKioskTag = async function (this: IKiosk) {
-	logger.silly('Generating access token')
-	this.kioskTag = await generateUniqueKioskTag()
-	await this.save()
-	return this.kioskTag
+kioskSchema.methods.generateNewKioskTag = async function (this: IKiosk): Promise<string> {
+	const oldTag = this.kioskTag
+	logger.info(`Generating new kioskTag for kiosk: ID ${this.id}, Old Tag: ${oldTag}`)
+	try {
+		this.kioskTag = await generateUniqueKioskTag()
+		await this.save() // Save the kiosk with the new tag
+		logger.info(`New kioskTag "${this.kioskTag}" generated and saved for kiosk ID ${this.id}`)
+		return this.kioskTag
+	} catch (error) {
+		logger.error(`Failed to generate and save new kioskTag for kiosk ID ${this.id}`, { error })
+		throw error // Re-throw error
+	}
 }
 
-kioskSchema.methods.comparePassword = async function (this: IKiosk, password: string): Promise<boolean> {
-	logger.silly('Comparing password')
-	const isPasswordCorrect = await compare(password, this.password)
-	return isPasswordCorrect
-}
-
+// Helper function for generating unique tag
 async function generateUniqueKioskTag (): Promise<string> {
-	let newKioskTag
-	let foundKioskWithTag
+	let attempts = 0
+	const maxAttempts = 10 // Prevent infinite loop
+	let newKioskTag: string
+	let foundKioskWithTag: IKiosk | null
+
+	logger.silly('Attempting to generate a unique kioskTag...')
 	do {
+		if (attempts >= maxAttempts) {
+			logger.error(`Failed to generate a unique kioskTag after ${maxAttempts} attempts.`)
+			throw new Error('Could not generate unique kiosk tag')
+		}
 		newKioskTag = nanoid()
-		foundKioskWithTag = await KioskModel.findOne({ kioskTag: newKioskTag })
+		logger.silly(`Generated candidate kioskTag: ${newKioskTag} (Attempt ${attempts + 1})`)
+		foundKioskWithTag = await KioskModel.findOne({ kioskTag: newKioskTag }).lean()
+		attempts++
 	} while (foundKioskWithTag !== null)
+
+	logger.debug(`Unique kioskTag generated: ${newKioskTag} after ${attempts} attempts.`)
 	return newKioskTag
 }
 

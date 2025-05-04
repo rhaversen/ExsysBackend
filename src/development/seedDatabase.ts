@@ -1,7 +1,8 @@
-/* eslint-disable local/enforce-comment-order */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
+import { randomUUID } from 'crypto'
 
 import ActivityModel from '../app/models/Activity.js'
 import AdminModel from '../app/models/Admin.js'
@@ -14,7 +15,6 @@ import ReaderModel from '../app/models/Reader.js'
 import RoomModel from '../app/models/Room.js'
 import SessionModel from '../app/models/Session.js'
 import logger from '../app/utils/logger.js'
-import { randomUUID } from 'crypto'
 
 logger.info('Seeding database')
 
@@ -752,7 +752,7 @@ await SessionModel.create({
 })
 
 const kiosk2 = await KioskModel.create({
-	name: 'Kiosk wihtout activities and reader',
+	name: 'Kiosk without activities and reader',
 	readerId: reader1.id,
 	kioskTag: '00001',
 	password: 'password'
@@ -899,7 +899,7 @@ await SessionModel.create({
 })
 
 // New kiosks with different deactivatedUntil/deactivated combinations
-const kioskdeactivated = await KioskModel.create({
+const kioskDeactivated = await KioskModel.create({
 	name: 'Kiosk deactivated',
 	kioskTag: '77777',
 	password: 'password',
@@ -916,7 +916,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskdeactivated.id },
+		passport: { user: kioskDeactivated.id },
 		ipAddress: '192.168.1.16',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -926,7 +926,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-const kioskdeactivatedUntil = await KioskModel.create({
+const kioskDeactivatedUntil = await KioskModel.create({
 	name: 'Kiosk deactivatedUntil',
 	kioskTag: '88888',
 	password: 'password',
@@ -943,7 +943,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskdeactivatedUntil.id },
+		passport: { user: kioskDeactivatedUntil.id },
 		ipAddress: '192.168.1.17',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -953,7 +953,7 @@ await SessionModel.create({
 	expires: new Date(Date.now() + 86400000)
 })
 
-const kioskdeactivatedAnddeactivatedUntil = await KioskModel.create({
+const kioskDeactivatedAndDeactivatedUntil = await KioskModel.create({
 	name: 'Kiosk deactivated and deactivatedUntil',
 	kioskTag: '99999',
 	password: 'password',
@@ -970,7 +970,7 @@ await SessionModel.create({
 			httpOnly: true,
 			path: '/'
 		},
-		passport: { user: kioskdeactivatedAnddeactivatedUntil.id },
+		passport: { user: kioskDeactivatedAndDeactivatedUntil.id },
 		ipAddress: '192.168.1.18',
 		loginTime: new Date(),
 		lastActivity: new Date(Date.now() - 3600000),
@@ -1526,15 +1526,14 @@ const allOptions = await OptionModel.find({})
 const allActivities = await ActivityModel.find({})
 const allRooms = await RoomModel.find({})
 const allKiosks = await KioskModel.find({})
-const allPayments = await PaymentModel.find({})
 
-function getRandom(arr: any[], min = 1, max = 1) {
+function getRandom<T> (arr: T[], min = 1, max = 1): T[] {
 	const count = Math.floor(Math.random() * (max - min + 1)) + min
 	const shuffled = arr.slice().sort(() => 0.5 - Math.random())
 	return shuffled.slice(0, Math.min(count, arr.length))
 }
 
-function randomDate(start: Date, end: Date) {
+function randomDate (start: Date, end: Date) {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
 }
 
@@ -1543,9 +1542,6 @@ const monthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
 
 // Only use products with orderWindow from 00:00 to 23:59
 const allDayProducts = allProducts.filter(p =>
-	p.orderWindow &&
-	p.orderWindow.from &&
-	p.orderWindow.to &&
 	p.orderWindow.from.hour === 0 &&
 	p.orderWindow.from.minute === 0 &&
 	p.orderWindow.to.hour === 23 &&
@@ -1564,7 +1560,10 @@ for (let i = 0; i < 300; i++) {
 	const activity = getRandom(allActivities)[0]
 	const room = getRandom(allRooms)[0]
 	const kiosk = getRandom(allKiosks)[0]
-	const payment = getRandom(allPayments)[0]
+	// Create a new payment for each order instead of reusing existing ones
+	const newPayment = await PaymentModel.create({
+		paymentStatus: Math.random() < 0.95 ? 'successful' : 'pending' // ~5% pending
+	})
 	const createdAt = randomDate(monthsAgo, now)
 	const updatedAt = randomDate(createdAt, now)
 
@@ -1579,7 +1578,7 @@ for (let i = 0; i < 300; i++) {
 	}
 
 	await OrderModel.create({
-		paymentId: payment._id,
+		paymentId: newPayment._id,
 		activityId: activity._id,
 		roomId: room._id,
 		kioskId: kiosk._id,

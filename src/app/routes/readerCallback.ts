@@ -1,19 +1,7 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-
-// Controller functions
 import { updatePaymentStatus } from '../controllers/readerCallbackController.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**
@@ -26,7 +14,7 @@ const router = Router()
  * @returns {Object} res.body - The updated payment status.
  */
 router.post('/',
-	asyncErrorHandler(updatePaymentStatus)
+	updatePaymentStatus
 )
 
 export default router

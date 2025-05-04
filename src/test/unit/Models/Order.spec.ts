@@ -1,28 +1,22 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import { Types } from 'mongoose'
 import sinon from 'sinon'
 
-// Own modules
-import OrderModel, { IOrder } from '../../../app/models/Order.js'
-import ProductModel, { type IProduct } from '../../../app/models/Product.js'
-import RoomModel, { type IRoom } from '../../../app/models/Room.js'
-import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import KioskModel from '../../../app/models/Kiosk.js'
-import ReaderModel from '../../../app/models/Reader.js'
+import OptionModel, { type IOption } from '../../../app/models/Option.js'
+import OrderModel, { IOrder } from '../../../app/models/Order.js'
 import PaymentModel from '../../../app/models/Payment.js'
+import ProductModel, { type IProduct } from '../../../app/models/Product.js'
+import ReaderModel from '../../../app/models/Reader.js'
+import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Order Model', function () {
@@ -47,7 +41,8 @@ describe('Order Model', function () {
 
 	beforeEach(async function () {
 		// Set the fake time to a specific date and time that is before lunch
-		const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+		// Use local time constructor: new Date(year, monthIndex, day, hours, minutes, seconds)
+		const fakeTime = new Date(2024, 3, 21, 10, 0, 0).getTime() // April 21st, 10:00 local time
 		sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 		testProduct = await ProductModel.create({
@@ -133,7 +128,7 @@ describe('Order Model', function () {
 					quantity: 1.5
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -150,7 +145,7 @@ describe('Order Model', function () {
 					quantity: 1.5
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -172,7 +167,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				activityId: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -186,7 +181,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				activityId: new Types.ObjectId()
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -200,7 +195,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				products: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -217,7 +212,7 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -240,7 +235,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -263,7 +258,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -286,7 +281,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -303,7 +298,7 @@ describe('Order Model', function () {
 					quantity: undefined
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -320,7 +315,7 @@ describe('Order Model', function () {
 					quantity: 0
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -337,7 +332,7 @@ describe('Order Model', function () {
 					quantity: -1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -362,7 +357,7 @@ describe('Order Model', function () {
 					quantity: 1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -385,7 +380,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -402,7 +397,7 @@ describe('Order Model', function () {
 					quantity: undefined
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -419,7 +414,7 @@ describe('Order Model', function () {
 					quantity: 0
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -436,7 +431,7 @@ describe('Order Model', function () {
 					quantity: -1
 				}]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -459,7 +454,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -482,7 +477,7 @@ describe('Order Model', function () {
 					}
 				]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -496,7 +491,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				roomId: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -510,7 +505,7 @@ describe('Order Model', function () {
 				...testOrderFields,
 				roomId: new Types.ObjectId()
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -572,8 +567,8 @@ describe('Order Model', function () {
 		})
 
 		it('should not allow products to be ordered before the order window', async function () {
-			// Set the fake time to a specific date and time that is before lunch
-			const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is before lunch (10:00 local)
+			const fakeTime = new Date(2024, 3, 21, 10, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			let errorOccurred = false
@@ -585,7 +580,7 @@ describe('Order Model', function () {
 						quantity: 1
 					}]
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -593,8 +588,8 @@ describe('Order Model', function () {
 		})
 
 		it('should not allow products to be ordered after the order window', async function () {
-			// Set the fake time to a specific date and time that is before lunch
-			const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is after lunch (14:00 local)
+			const fakeTime = new Date(2024, 3, 21, 14, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			let errorOccurred = false
@@ -606,7 +601,7 @@ describe('Order Model', function () {
 						quantity: 1
 					}]
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -614,8 +609,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered deep within the order window before lunch', async function () {
-			// Set the fake time to a specific date and time that is before lunch
-			const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is before lunch (10:00 local)
+			const fakeTime = new Date(2024, 3, 21, 10, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -629,8 +624,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered deep within the order window after lunch', async function () {
-			// Set the fake time to a specific date and time that is after lunch
-			const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is after lunch (14:00 local)
+			const fakeTime = new Date(2024, 3, 21, 14, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -644,8 +639,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered within the last hour of the order window', async function () {
-			// Set the fake time to a specific date and time that is within the last hour of the order window
-			const fakeTime = new Date('2024-04-21T11:59:00Z').getTime()
+			// Set the fake time to a specific date and time that is within the last hour of the order window (11:59 local)
+			const fakeTime = new Date(2024, 3, 21, 11, 59, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -659,8 +654,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered within the first hour of the order window', async function () {
-			// Set the fake time to a specific date and time that is within the first hour of the order window
-			const fakeTime = new Date('2024-04-21T12:01:00Z').getTime()
+			// Set the fake time to a specific date and time that is within the first hour of the order window (12:01 local)
+			const fakeTime = new Date(2024, 3, 21, 12, 1, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -674,8 +669,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered at the exact start of the order window', async function () {
-			// Set the fake time to a specific date and time that is at the exact start of the order window
-			const fakeTime = new Date('2024-04-21T12:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is at the exact start of the order window (12:00 local)
+			const fakeTime = new Date(2024, 3, 21, 12, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -689,8 +684,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered at the exact end of the order window', async function () {
-			// Set the fake time to a specific date and time that is at the exact end of the order window
-			const fakeTime = new Date('2024-04-21T12:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is at the exact end of the order window (12:00 local)
+			const fakeTime = new Date(2024, 3, 21, 12, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -704,8 +699,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered inside the order window before midnight when the order window is moves across midnight', async function () {
-			// Set the fake time to a specific date and time that is before lunch
-			const fakeTime = new Date('2024-04-21T21:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is before midnight (21:00 local)
+			const fakeTime = new Date(2024, 3, 21, 21, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -719,8 +714,8 @@ describe('Order Model', function () {
 		})
 
 		it('should allow products to be ordered inside the order window after midnight when the order window moves across midnight', async function () {
-			// Set the fake time to a specific date and time that is after lunch
-			const fakeTime = new Date('2024-04-21T03:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is after midnight (03:00 local)
+			const fakeTime = new Date(2024, 3, 21, 3, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			const order = await OrderModel.create({
@@ -734,8 +729,8 @@ describe('Order Model', function () {
 		})
 
 		it('should not allow products to be ordered when only one is withing the order window', async function () {
-			// Set the fake time to a specific date and time that is after lunch
-			const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+			// Set the fake time to a specific date and time that is after lunch (14:00 local)
+			const fakeTime = new Date(2024, 3, 21, 14, 0, 0).getTime()
 			sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 			let errorOccurred = false
@@ -753,7 +748,7 @@ describe('Order Model', function () {
 						}
 					]
 				})
-			} catch (err) {
+			} catch {
 				// The promise was rejected as expected
 				errorOccurred = true
 			}
@@ -764,9 +759,9 @@ describe('Order Model', function () {
 			let testOrder: IOrder
 
 			beforeEach(async function () {
-				// Set the fake time to a specific date and time that is before lunch
+				// Set the fake time to a specific date and time that is before lunch (10:00 local)
 				sinon.restore() // Restore the JavaScript environment's time
-				const fakeTime = new Date('2024-04-21T10:00:00Z').getTime()
+				const fakeTime = new Date(2024, 3, 21, 10, 0, 0).getTime()
 				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
 
 				testOrder = await OrderModel.create({
@@ -779,11 +774,11 @@ describe('Order Model', function () {
 			})
 
 			it('should allow order status to be updated to confirmed after the order window has passed', async function () {
-				// Set the fake time to a specific date and time that is after lunch
+				// Set the fake time to a specific date and time that is after lunch (14:00 local)
 				sinon.restore() // Restore the JavaScript environment's time
-				const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+				const fakeTime = new Date(2024, 3, 21, 14, 0, 0).getTime()
 				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
-				
+
 				testOrder.status = 'confirmed'
 				await testOrder.save()
 
@@ -791,11 +786,11 @@ describe('Order Model', function () {
 			})
 
 			it('should allow order status to be updated to delivered after the order window has passed', async function () {
-				// Set the fake time to a specific date and time that is after lunch
+				// Set the fake time to a specific date and time that is after lunch (14:00 local)
 				sinon.restore() // Restore the JavaScript environment's time
-				const fakeTime = new Date('2024-04-21T14:00:00Z').getTime()
+				const fakeTime = new Date(2024, 3, 21, 14, 0, 0).getTime()
 				sinon.useFakeTimers(fakeTime) // Fake the JavaScript environment's time
-				
+
 				testOrder.status = 'delivered'
 				await testOrder.save()
 

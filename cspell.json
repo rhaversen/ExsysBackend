@@ -1,0 +1,34 @@
+{
+    "version": "0.2",
+    "language": "en-US,da-DK",
+    "import": ["@cspell/dict-da-dk/cspell-ext.json"],
+    "ignorePaths": [
+        "node_modules/**",
+        ".next/**",
+        "k8s/**",
+        ".idea/**",
+        ".vscode/**",
+        ".git/**",
+        ".github/**",
+        "**/*.svg",
+        "**/*.xml",
+        "Dockerfile",
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json",
+        "dist/**"
+    ],
+    "ignoreWords": [
+        "KHTML",
+        "SUMUP",
+        "BETTERSTACK",
+        "Logtail",
+        "logtail",
+        "readyz",
+        "livez",
+        "chunkname",
+        "unpair",
+        "Unpairing",
+        "unpairing"
+    ]
+}

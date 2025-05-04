@@ -1,27 +1,16 @@
-// Node.js built-in modules
-
-// Third-party libraries
-
-// Own modules
+import { ISessionFrontend } from '../models/Session.js'
 import { emitSocketEvent } from '../utils/socket.js'
-import { type TransformedSession } from '../utils/sessionUtils'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
-
-export function emitSessionCreated (session: TransformedSession): void {
-	emitSocketEvent<TransformedSession>(
+export function emitSessionCreated (session: ISessionFrontend): void {
+	emitSocketEvent<ISessionFrontend>(
 		'sessionCreated',
 		session,
 		`Broadcasted session created for session ${session._id}`
 	)
 }
 
-export function emitSessionUpdated (session: TransformedSession): void {
-	emitSocketEvent<TransformedSession>(
+export function emitSessionUpdated (session: ISessionFrontend): void {
+	emitSocketEvent<ISessionFrontend>(
 		'sessionUpdated',
 		session,
 		`Broadcasted session updated for session ${session._id}`

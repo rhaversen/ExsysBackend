@@ -1,25 +1,13 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-
-// Controller functions
 import {
 	createProduct,
 	deleteProduct,
 	getProducts,
 	patchProduct
 } from '../controllers/productController.js'
+import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**
@@ -38,7 +26,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createProduct)
+	createProduct
 )
 
 /**
@@ -51,7 +39,7 @@ router.post('/',
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getProducts)
+	getProducts
 )
 
 /**
@@ -71,7 +59,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchProduct)
+	patchProduct
 )
 
 /**
@@ -85,7 +73,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteProduct)
+	deleteProduct
 )
 
 export default router

@@ -1,17 +1,6 @@
-// Node.js built-in modules
-
-// Third-party libraries
-
-// Own modules
+import { IOrderFrontend } from '../models/Order.js'
 import logger from '../utils/logger.js'
 import { emitSocketEvent } from '../utils/socket.js'
-import { IOrderFrontend } from '../models/Order.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 
 export async function emitPaidOrderPosted (order: IOrderFrontend): Promise<void> {
 	try {
@@ -22,6 +11,19 @@ export async function emitPaidOrderPosted (order: IOrderFrontend): Promise<void>
 			`Broadcasted paid order posted for order ${order._id}`
 		)
 	} catch (error) {
-		logger.error(error)
+		logger.error('Failed to emit paid order posted event:', { error })
+	}
+}
+
+export async function emitOrderStatusUpdated (order: IOrderFrontend): Promise<void> {
+	try {
+		// Emit the event using the generic emit function
+		emitSocketEvent<IOrderFrontend>(
+			'orderStatusUpdated',
+			order,
+			`Broadcasted order status updated for order ${order._id}`
+		)
+	} catch (error) {
+		logger.error('Failed to emit order status updated event:', { error })
 	}
 }

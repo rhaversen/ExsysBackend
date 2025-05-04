@@ -1,24 +1,17 @@
-/* eslint-disable local/enforce-comment-order */
-/* eslint-disable typescript/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
-// Third-party libraries
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
-import { compare } from 'bcrypt'
 
-// Own modules
-import KioskModel from '../../../app/models/Kiosk.js'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
-import RoomModel from '../../../app/models/Room.js'
+import KioskModel from '../../../app/models/Kiosk.js'
 import ReaderModel from '../../../app/models/Reader.js'
+import RoomModel from '../../../app/models/Room.js'
 
-// Setup test environment
 import '../../testSetup.js'
 
 describe('Kiosk Model', function () {
@@ -27,7 +20,6 @@ describe('Kiosk Model', function () {
 	let testKioskField: {
 		name: string
 		kioskTag: string
-		password: string
 		activities: mongoose.Types.ObjectId[]
 		readerId: mongoose.Types.ObjectId
 	}
@@ -56,7 +48,6 @@ describe('Kiosk Model', function () {
 		testKioskField = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
-			password: 'Test Password',
 			activities: [testActivity1.id.toString(), testActivity2.id.toString()],
 			readerId: testReader.id
 		}
@@ -67,8 +58,6 @@ describe('Kiosk Model', function () {
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal(testKioskField.kioskTag)
 		expect(kiosk).to.have.property('name', testKioskField.name)
-		expect(kiosk).to.have.property('password')
-		expect(await compare(testKioskField.password, kiosk.password)).to.be.true
 		const populatedKiosk = await kiosk?.populate('activities')
 		expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskField.activities[0])
 	})
@@ -91,21 +80,12 @@ describe('Kiosk Model', function () {
 		expect(kiosk.kioskTag).to.equal('12346')
 	})
 
-	it('should trim the password', async function () {
-		const admin = await KioskModel.create({
-			...testKioskField,
-			password: '  testPassword  '
-		})
-		expect(admin).to.exist
-		expect(await compare('testPassword', admin.password)).to.be.true
-	})
-
 	it('should not create a kiosk with the same tag', async function () {
 		let errorOccurred = false
 		try {
 			await KioskModel.create(testKioskField)
 			await KioskModel.create(testKioskField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -119,7 +99,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				kioskTag: '123456'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -133,7 +113,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				kioskTag: '1234'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -147,7 +127,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				kioskTag: '1234a'
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -161,7 +141,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				activities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -175,7 +155,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				name: undefined
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -189,7 +169,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				readerId: new mongoose.Types.ObjectId()
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -220,15 +200,14 @@ describe('Kiosk Model', function () {
 		})
 		await KioskModel.create({
 			readerId: reader.id,
-			name: 'Test Kiosk 2',
-			password: 'Test Password 2'
+			name: 'Test Kiosk 2'
 		})
 		try {
 			await KioskModel.create({
 				...testKioskField,
 				readerId: reader.id
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -248,7 +227,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create(testKioskField)
 			await KioskModel.create(testKioskField)
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -271,27 +250,6 @@ describe('Kiosk Model', function () {
 		expect(kiosk.kioskTag).to.exist
 	})
 
-	it('should hash the password', async function () {
-		const kiosk = await KioskModel.create({
-			...testKioskField,
-			password: 'testPassword'
-		})
-		expect(kiosk.password).to.not.equal('testPassword')
-		expect(await compare('testPassword', kiosk.password)).to.be.true
-	})
-
-	it('should compare the password', async function () {
-		const kiosk = await KioskModel.create(testKioskField)
-		const isPasswordCorrect = await kiosk.comparePassword('Test Password')
-		expect(isPasswordCorrect).to.be.true
-	})
-
-	it('should not compare an incorrect password', async function () {
-		const kiosk = await KioskModel.create(testKioskField)
-		const isPasswordCorrect = await kiosk.comparePassword('Incorrect Password')
-		expect(isPasswordCorrect).to.be.false
-	})
-
 	it('should not create a kiosk with a non existing activity', async function () {
 		let errorOccurred = false
 		try {
@@ -299,7 +257,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				activities: [new mongoose.Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}
@@ -313,7 +271,7 @@ describe('Kiosk Model', function () {
 				...testKioskField,
 				activities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
-		} catch (err) {
+		} catch {
 			// The promise was rejected as expected
 			errorOccurred = true
 		}

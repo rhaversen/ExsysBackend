@@ -1,22 +1,11 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-
-// Controller functions
 import {
 	getConfigs,
 	patchConfigs
 } from '../controllers/configsController.js'
-// Environment variables
+import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**
@@ -29,7 +18,7 @@ const router = Router()
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getConfigs)
+	getConfigs
 )
 
 /**
@@ -41,12 +30,13 @@ router.get('/',
  * @param {string} [req.body.kioskInactivityTimeoutWarningMs] - The inactivity timeout warning of the kiosk (optional).
  * @param {string} [req.body.kioskOrderConfirmationTimeoutMs] - The order confirmation timeout of the kiosk (optional).
  * @param {number[]} [req.body.disabledWeekdays] - The disabled weekdays of the kiosk, 0=Monday, 6=Sunday (optional).
+ * @param {string} [req.body.kioskPassword] - The unified password for all kiosks (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated configs.
  */
 router.patch('/',
 	isAdmin,
-	asyncErrorHandler(patchConfigs)
+	patchConfigs
 )
 
 export default router

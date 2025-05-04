@@ -1,16 +1,5 @@
-// Node.js built-in modules
-
-// Third-party libraries
-
-// Own modules
-import { emitSocketEvent } from '../utils/socket.js'
 import { type IAdminFrontend } from '../models/Admin.js'
-
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
+import { emitSocketEvent } from '../utils/socket.js'
 
 export function emitAdminCreated (admin: IAdminFrontend): void {
 	emitSocketEvent<IAdminFrontend>(

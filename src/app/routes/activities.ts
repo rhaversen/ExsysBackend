@@ -1,13 +1,5 @@
-// Node.js built-in modules
+import { Router } from 'express'
 
-// Third-party libraries
-import Router from 'express'
-
-// Own modules
-import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
-
-// Controller functions
 import {
 	createActivity,
 	deleteActivity,
@@ -15,12 +7,8 @@ import {
 	getActivity,
 	patchActivity
 } from '../controllers/activityController.js'
+import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
 const router = Router()
 
 /**
@@ -37,7 +25,7 @@ const router = Router()
  */
 router.post('/',
 	isAdmin,
-	asyncErrorHandler(createActivity)
+	createActivity
 )
 
 /**
@@ -51,7 +39,7 @@ router.post('/',
  */
 router.get('/:id',
 	isAdminOrKiosk,
-	asyncErrorHandler(getActivity)
+	getActivity
 )
 
 /**
@@ -64,7 +52,7 @@ router.get('/:id',
  */
 router.get('/',
 	isAdminOrKiosk,
-	asyncErrorHandler(getActivities)
+	getActivities
 )
 
 /**
@@ -82,7 +70,7 @@ router.get('/',
  */
 router.patch('/:id',
 	isAdmin,
-	asyncErrorHandler(patchActivity)
+	patchActivity
 )
 
 /**
@@ -96,7 +84,7 @@ router.patch('/:id',
  */
 router.delete('/:id',
 	isAdmin,
-	asyncErrorHandler(deleteActivity)
+	deleteActivity
 )
 
 export default router

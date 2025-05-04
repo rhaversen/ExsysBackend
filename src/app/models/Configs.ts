@@ -1,17 +1,7 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import { type Document, model, Schema } from 'mongoose'
 
-// Own modules
+import logger from '../utils/logger.js'
 
-// Environment variables
-
-// Config variables
-
-// Destructuring and global variables
-
-// Interfaces
 export interface IConfigs extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
@@ -19,6 +9,7 @@ export interface IConfigs extends Document {
 	kioskInactivityTimeoutWarningMs: number
 	kioskOrderConfirmationTimeoutMs: number
 	disabledWeekdays: number[] // 0=Monday, 6=Sunday
+	kioskPassword: string
 
 	// Timestamps
 	createdAt: Date
@@ -32,6 +23,7 @@ export interface IConfigsFrontend {
 		kioskInactivityTimeoutWarningMs: number
 		kioskOrderConfirmationTimeoutMs: number
 		disabledWeekdays: number[] // 0=Monday, 6=Sunday
+		kioskPassword: string
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -42,17 +34,17 @@ const configsSchema = new Schema<IConfigs>({
 	kioskInactivityTimeoutMs: {
 		type: Schema.Types.Number,
 		default: 60000, // 60 seconds
-		min: [1000, 'Inaktivitets timeout skal være mindst 1 sekund'],
+		min: [1000, 'Inaktivitets timeout skal være mindst 1 sekund']
 	},
 	kioskInactivityTimeoutWarningMs: {
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
-		min: [1000, 'Inaktivitets timeout advarsel skal være mindst 1 sekund'],
+		min: [1000, 'Inaktivitets timeout advarsel skal være mindst 1 sekund']
 	},
 	kioskOrderConfirmationTimeoutMs: {
 		type: Schema.Types.Number,
 		default: 10000, // 10 seconds
-		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund'],
+		min: [1000, 'Ordrebekræftelses timeout skal være mindst 1 sekund']
 	},
 	disabledWeekdays: {
 		type: [Schema.Types.Number],
@@ -69,16 +61,30 @@ const configsSchema = new Schema<IConfigs>({
 			validator: (arr: number[]) => new Set(arr).size === arr.length,
 			message: 'Deaktiverede ugedage skal være unikke'
 		}]
+	},
+	kioskPassword: {
+		type: Schema.Types.String,
+		trim: true,
+		default: 'Password',
+		minlength: [4, 'Adgangskode skal være mindst 4 tegn'],
+		maxLength: [100, 'Adgangskode kan højest være 100 tegn']
 	}
 }, {
 	timestamps: true
 })
 
-// Validations
-
-// Adding indexes
-
 // Pre-save middleware
+configsSchema.pre('save', async function (next) {
+	logger.debug(`Saving configs: ${this._id}`)
+	next()
+})
+
+// Post-save middleware
+configsSchema.post('save', function (doc, next) {
+	// Avoid logging password hash
+	logger.debug(`Configs saved successfully: ID ${doc.id}`)
+	next()
+})
 
 // Compile the schema into a model
 const ConfigsModel = model<IConfigs>('Configs', configsSchema)

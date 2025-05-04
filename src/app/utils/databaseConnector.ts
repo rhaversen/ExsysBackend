@@ -1,12 +1,9 @@
-// Node.js built-in modules
-
-// Third-party libraries
 import mongoose from 'mongoose'
 
-// Own modules
+import { shutDown } from '../index.js'
+
 import logger from './logger.js'
 import config from './setupConfig.js'
-import { shutDown } from '../index.js'
 
 // Environment variables
 
@@ -28,7 +25,7 @@ function isMemoryDatabase (): boolean {
 }
 
 async function connectToMongoDB (): Promise<void> {
-	if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') return
+	if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') { return }
 
 	for (let currentRetryAttempt = 0; currentRetryAttempt < maxRetryAttempts; currentRetryAttempt++) {
 		logger.info('Attempting connection to MongoDB')
@@ -37,8 +34,8 @@ async function connectToMongoDB (): Promise<void> {
 			await mongoose.connect(mongoUri, mongooseOpts)
 			logger.info('Connected to MongoDB')
 			return // Successfully connected
-		} catch (error: any) {
-			logger.error(`Error connecting to MongoDB: ${error.message !== undefined ? error.message : error}`)
+		} catch (error) {
+			logger.error('Error connecting to MongoDB', { error })
 			await new Promise(resolve => setTimeout(resolve, retryInterval))
 		}
 	}
