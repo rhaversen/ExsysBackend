@@ -18,25 +18,21 @@ import PaymentModel, { type IPayment } from '../../../app/models/Payment.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import ReaderModel, { type IReader } from '../../../app/models/Reader.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
-import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
+import { getChaiAgent as agent } from '../../testSetup.js'
 
 describe('Orders routes', function () {
-	let adminSessionCookie: string
-	let kioskSessionCookie: string
-
+	let adminFields: { name: string; password: string }
+	let kioskFields: { name: string; kioskTag: string; password: string }
 	beforeEach(async function () {
 		// Log the admin agent in to get a valid session
-		const adminFields = {
+		adminFields = {
 			name: 'Agent Admin',
 			password: 'agentPassword'
 		}
 		await AdminModel.create(adminFields)
 
-		const adminResponse = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-		adminSessionCookie = extractConnectSid(adminResponse.headers['set-cookie'])
-
 		// Create and log in kiosk user
-		const kioskFields = {
+		kioskFields = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
 			password: 'Password'
@@ -46,9 +42,6 @@ describe('Orders routes', function () {
 			readerTag: '12346'
 		})
 		await KioskModel.create({ ...kioskFields, readerId: testReader.id })
-
-		const kioskResponse = await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
-		kioskSessionCookie = extractConnectSid(kioskResponse.headers['set-cookie'])
 	})
 
 	describe('POST /v1/orders', function () {
@@ -103,6 +96,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should have status 201', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			const response = await agent().post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
@@ -116,7 +110,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 
 			expect(response).to.have.status(201)
 		})
@@ -141,6 +135,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should create a valid order', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			await agent().post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
@@ -154,7 +149,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
@@ -169,6 +164,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should return the order', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			const res = await agent().post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
@@ -182,7 +178,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body.roomId).to.equal(testRoom.id)
 			expect(res.body.activityId).to.equal(testActivity.id)
@@ -196,6 +192,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should handle orders with undefined options', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			await agent().post('/api/v1/orders').send({
 				activityId: testActivity.id,
 				kioskId: testKiosk.id,
@@ -205,12 +202,13 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
 		})
 
 		it('should handle orders with undefined products', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			await agent().post('/api/v1/orders').send({
 				activityId: testActivity.id,
 				roomId: testRoom.id,
@@ -220,14 +218,14 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 			const order = await OrderModel.findOne({})
 			expect(order).to.not.exist
 		})
 
 		it('should not allow setting the _id', async function () {
 			const updatedId = new mongoose.Types.ObjectId().toString()
-
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			await agent().post('/api/v1/orders').send({
 				activityId: testActivity.id,
 				roomId: testRoom.id,
@@ -238,12 +236,13 @@ describe('Orders routes', function () {
 				}],
 				checkoutMethod: 'later',
 				_id: updatedId
-			}).set('Cookie', kioskSessionCookie)
+			})
 			const order = await OrderModel.findOne({})
 			expect(order?.id.toString()).to.not.equal(updatedId)
 		})
 
 		it('should require a roomId', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			const res = await agent().post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
@@ -252,12 +251,13 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 			expect(res).to.have.status(400)
 			expect(res.body.error).to.exist
 		})
 
 		it('should not allow a non-existent roomId', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			const res = await agent().post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
@@ -267,7 +267,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', kioskSessionCookie)
+			})
 			expect(res).to.have.status(400)
 			expect(res.body.error).to.exist
 		})
@@ -294,6 +294,7 @@ describe('Orders routes', function () {
 				})
 
 				it('should create a order with a product with quantity 0 and product with quantity 1', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -307,12 +308,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
 
 				it('should remove products with quantity 0', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -326,12 +328,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 				})
 
 				it('should combine products with the same product id', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -345,12 +348,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.products[0].quantity).to.equal(2)
 				})
 
 				it('should handle two duplicate and a unique products', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -368,7 +372,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
 					expect(order?.products[0].quantity).to.equal(3)
@@ -376,6 +380,7 @@ describe('Orders routes', function () {
 				})
 
 				it('should handle unique products with different quantities', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -389,7 +394,7 @@ describe('Orders routes', function () {
 							quantity: 2
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
 					expect(order?.products[0].quantity).to.equal(1)
@@ -397,6 +402,7 @@ describe('Orders routes', function () {
 				})
 
 				it('should handle products with quantity 0 and products with quantity 1', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -410,13 +416,14 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 					expect(order?.products[0].quantity).to.equal(1)
 				})
 
 				it('should handle products with quantity 1 and products with undefined quantity', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -429,7 +436,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order).to.not.exist
 				})
@@ -446,6 +453,7 @@ describe('Orders routes', function () {
 				})
 
 				it('should create a order with a option with quantity 0 and option with quantity 1', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -463,12 +471,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
 
 				it('should create a order with a option with quantity 0', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -482,12 +491,13 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
 
 				it('should remove option with quantity 0', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -501,12 +511,13 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(0)
 				})
 
 				it('should remove options with quantity 0', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -524,12 +535,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 				})
 
 				it('should combine options with the same option id', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -547,12 +559,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(2)
 				})
 
 				it('should handle two duplicate options with different quantities', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -570,12 +583,13 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(3)
 				})
 
 				it('should handle two duplicate and a unique option', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -597,7 +611,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
 					expect(order?.options?.[0].quantity).to.equal(3)
@@ -605,6 +619,7 @@ describe('Orders routes', function () {
 				})
 
 				it('should handle unique options with different quantities', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -622,7 +637,7 @@ describe('Orders routes', function () {
 							quantity: 2
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
 					expect(order?.options?.[0].quantity).to.equal(1)
@@ -630,6 +645,7 @@ describe('Orders routes', function () {
 				})
 
 				it('should handle options with quantity 0 and options with quantity 1', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -647,13 +663,14 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 					expect(order?.options?.[0].quantity).to.equal(1)
 				})
 
 				it('should handle options with quantity 1 and options with undefined quantity', async function () {
+					await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 					await agent().post('/api/v1/orders').send({
 						kioskId: testKiosk.id,
 						activityId: testActivity.id,
@@ -670,7 +687,7 @@ describe('Orders routes', function () {
 							id: testOption2.id
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', kioskSessionCookie)
+					})
 					const order = await OrderModel.findOne({})
 					expect(order).to.not.exist
 				})
@@ -679,6 +696,7 @@ describe('Orders routes', function () {
 
 		describe('Use sumUp checkout method', function () {
 			it('should create a paymentId on the order', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -693,12 +711,13 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				expect(order?.paymentId).to.exist
 			})
 
 			it('should create a paymentId', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -713,13 +732,14 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment).to.exist
 			})
 
 			it('should return the paymentId', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				const res = await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -734,12 +754,13 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
 			})
 
 			it('should set the paymentId on the order', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -754,13 +775,14 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
 			})
 
 			it('should set the payment status to pending', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -775,13 +797,14 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.paymentStatus).to.equal('pending')
 			})
 
 			it('should set the clientTransactionId on the payment', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -796,7 +819,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.clientTransactionId).to.exist
@@ -805,6 +828,7 @@ describe('Orders routes', function () {
 
 		describe('Use later checkout method', function () {
 			it('should create a paymentId on the order', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -819,12 +843,13 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				expect(order?.paymentId).to.exist
 			})
 
 			it('should create a paymentId', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -839,13 +864,14 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment).to.exist
 			})
 
 			it('should return the paymentId', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				const res = await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -860,12 +886,13 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
 			})
 
 			it('should set the paymentId on the order', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -880,13 +907,14 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
 			})
 
 			it('should set the payment status to successful', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -901,13 +929,14 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.paymentStatus).to.equal('successful')
 			})
 
 			it('should not set the clientTransactionId on the payment', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -922,7 +951,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				})
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.clientTransactionId).to.not.exist
@@ -931,6 +960,7 @@ describe('Orders routes', function () {
 
 		describe('Use manual checkout method', function () {
 			it('should allow admin to create manual order (status 201)', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				const response = await agent().post('/api/v1/orders').send({
 					// No kioskId for manual
 					activityId: testActivity.id,
@@ -940,18 +970,19 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'manual'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				expect(response).to.have.status(201)
 			})
 
 			it('should create a payment with status successful for manual order', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				await agent().post('/api/v1/orders').send({
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'manual'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				const order = await OrderModel.findOne({}).populate('paymentId')
 				expect(order?.paymentId).to.exist
@@ -959,75 +990,81 @@ describe('Orders routes', function () {
 			})
 
 			it('should set kioskId to null for manual order', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				await agent().post('/api/v1/orders').send({
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'manual'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				const order = await OrderModel.findOne({})
 				expect(order?.kioskId).to.be.null
 			})
 
 			it('should return kioskId as null for manual order', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				const res = await agent().post('/api/v1/orders').send({
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'manual'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				expect(res.body.kioskId).to.be.null
 			})
 
 			it('should forbid admin from using later checkout (status 403)', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Required for 'later'
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
 			})
 
 			it('should forbid admin from using sumUp checkout (status 403)', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Required for 'sumUp'
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
 			})
 
 			it('should forbid kiosk from using manual checkout (status 403)', async function () {
+				await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 				const response = await agent().post('/api/v1/orders').send({
 					// No kioskId for manual
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'manual'
-				}).set('Cookie', kioskSessionCookie) // Use kiosk session
+				})
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Kiosks can only create orders with checkoutMethod \'sumUp\' or \'later\'')
 			})
 
 			it('should reject manual order if kioskId is provided (status 400)', async function () {
+				await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Incorrectly providing kioskId
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'manual'
-				}).set('Cookie', adminSessionCookie)
+				})
 
 				expect(response).to.have.status(400)
 				expect(response.body.error).to.equal('kioskId must not be provided for manual orders')
@@ -1192,10 +1229,11 @@ describe('Orders routes', function () {
 				}],
 				checkoutMethod: 'later'
 			})
+			await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 		})
 
 		it('should have status 200', async function () {
-			const res = await agent().get('/api/v1/orders').set('Cookie', adminSessionCookie)
+			const res = await agent().get('/api/v1/orders')
 			expect(res).to.have.status(200)
 		})
 
@@ -1205,7 +1243,7 @@ describe('Orders routes', function () {
 		})
 
 		it('should return all orders', async function () {
-			const res = await agent().get('/api/v1/orders').set('Cookie', adminSessionCookie)
+			const res = await agent().get('/api/v1/orders')
 			expect(res.body).to.exist
 			expect(res.body[0].activityId).to.equal(testActivity.id)
 			expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
@@ -1229,7 +1267,7 @@ describe('Orders routes', function () {
 
 		it('should return an empty array if there are no orders', async function () {
 			await OrderModel.deleteMany({})
-			const res = await agent().get('/api/v1/orders').set('Cookie', adminSessionCookie)
+			const res = await agent().get('/api/v1/orders')
 			expect(res.body).to.exist
 			expect(res.body.length).to.equal(0)
 		})
@@ -1279,7 +1317,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should return all orders with status delivered', async function () {
-				const res = await agent().get('/api/v1/orders/?status=delivered').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?status=delivered')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
@@ -1288,20 +1326,20 @@ describe('Orders routes', function () {
 
 			it('should return an empty array if there are no orders with status', async function () {
 				await OrderModel.deleteMany({ status: 'delivered' })
-				const res = await agent().get('/api/v1/orders/?status=delivered').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?status=delivered')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
 
 			it('should include the paymentId in the response', async function () {
-				const res = await agent().get('/api/v1/orders/?status=delivered').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?status=delivered')
 				expect(res.body).to.exist
 				expect(res.body[0].paymentId).to.equal(testPayment1.id)
 				expect(res.body[1].paymentId).to.equal(testPayment2.id)
 			})
 
 			it('should allow multiple statuses', async function () {
-				const res = await agent().get('/api/v1/orders/?status=delivered,pending').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?status=delivered,pending')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
 				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
@@ -1347,7 +1385,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should have status 200', async function () {
-				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z')
 				expect(res).to.have.status(200)
 			})
 
@@ -1357,7 +1395,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should include timestamp and id in the response', async function () {
-				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z')
 				expect(res.body).to.exist
 				expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
 				expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
@@ -1365,27 +1403,27 @@ describe('Orders routes', function () {
 			})
 
 			it('should include the paymentId in the response', async function () {
-				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z')
 				expect(res.body).to.exist
 				expect(res.body[0].paymentId).to.equal(testPayment1.id)
 				expect(res.body[1].paymentId).to.equal(testPayment2.id)
 			})
 
 			it('should return an empty array if there are no orders in the interval', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date35.toISOString()}&toDate=${date4.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date35.toISOString()}&toDate=${date4.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
 
 			it('should return an order', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date15.toISOString()}&toDate=${date25.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date15.toISOString()}&toDate=${date25.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0]._id).to.equal(testProduct3.id)
 			})
 
 			it('should return two orders', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date15.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				const productIds = res.body.map((order: any) => order.products[0]._id)
@@ -1393,7 +1431,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should return orders over longer intervals', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date05.toISOString()}&toDate=${date3.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
 				const productIds = res.body.map((order: any) => order.products[0]._id)
@@ -1401,14 +1439,14 @@ describe('Orders routes', function () {
 			})
 
 			it('should return the order inclusive of the date with same from and to date', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date2.toISOString()}&toDate=${date2.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date2.toISOString()}&toDate=${date2.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0]._id).to.equal(testProduct3.id)
 			})
 
 			it('should return multiple orders inclusive of the date with same from and to date', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date1.toISOString()}&toDate=${date1.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				const productIds = res.body.map((order: any) => order.products[0]._id)
@@ -1416,14 +1454,14 @@ describe('Orders routes', function () {
 			})
 
 			it('should return orders inclusive of the to date', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date25.toISOString()}&toDate=${date3.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date25.toISOString()}&toDate=${date3.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0]._id).to.equal(testProduct4.id)
 			})
 
 			it('should return all orders if no dates are provided', async function () {
-				const res = await agent().get('/api/v1/orders').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(4)
 				const productIds = res.body.map((order: any) => order.products[0]._id)
@@ -1431,7 +1469,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should return all following orders if only fromDate is provided', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date15.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date15.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				const productIds = res.body.map((order: any) => order.products[0]._id)
@@ -1439,7 +1477,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should return all previous orders if only toDate is provided', async function () {
-				const res = await agent().get(`/api/v1/orders/?toDate=${date25.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?toDate=${date25.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(3)
 				const productIds = res.body.map((order: any) => order.products[0]._id)
@@ -1447,7 +1485,7 @@ describe('Orders routes', function () {
 			})
 
 			it('should not return orders if fromDate is after toDate', async function () {
-				const res = await agent().get(`/api/v1/orders/?fromDate=${date3.toISOString()}&toDate=${date1.toISOString()}`).set('Cookie', adminSessionCookie)
+				const res = await agent().get(`/api/v1/orders/?fromDate=${date3.toISOString()}&toDate=${date1.toISOString()}`)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
@@ -1455,7 +1493,7 @@ describe('Orders routes', function () {
 
 		describe('GET /v1/orders/?paymentStatus', function () {
 			it('should return all orders with paymentStatus successful', async function () {
-				const res = await agent().get('/api/v1/orders/?paymentStatus=successful').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?paymentStatus=successful')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
@@ -1467,13 +1505,13 @@ describe('Orders routes', function () {
 					products: { $elemMatch: { id: testProduct1.id } },
 					options: { $elemMatch: { id: testOption.id } }
 				}, { paymentId: testPayment3.id })
-				const res = await agent().get('/api/v1/orders/?paymentStatus=successful').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?paymentStatus=successful')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
 
 			it('should allow multiple paymentStatuses', async function () {
-				const res = await agent().get('/api/v1/orders/?paymentStatus=successful,failed').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?paymentStatus=successful,failed')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(2)
 				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
@@ -1526,14 +1564,14 @@ describe('Orders routes', function () {
 			})
 
 			it('should return all orders with status delivered and paymentStatus successful', async function () {
-				const res = await agent().get('/api/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(1)
 				expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
 			})
 
 			it('should return an empty array if there are no orders with status and paymentStatus', async function () {
-				const res = await agent().get('/api/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-25T00:00:00.000Z&toDate=2024-04-25T23:59:59.999Z').set('Cookie', adminSessionCookie)
+				const res = await agent().get('/api/v1/orders/?status=delivered&paymentStatus=successful&fromDate=2024-04-25T00:00:00.000Z&toDate=2024-04-25T23:59:59.999Z')
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
 			})
@@ -1627,6 +1665,7 @@ describe('Orders routes', function () {
 				}],
 				checkoutMethod: 'later'
 			})
+			await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 		})
 
 		it('should have status 200', async function () {
@@ -1634,11 +1673,21 @@ describe('Orders routes', function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res).to.have.status(200)
 		})
 
 		it('should have status 403 if not logged in', async function () {
+			await agent().post('/api/v1/auth/logout-local').send()
+			const res = await agent().patch('/api/v1/orders').send({
+				orderIds: [order1.id],
+				status: 'delivered'
+			})
+			expect(res).to.have.status(403)
+		})
+
+		it('should have status 403 if not an admin', async function () {
+			await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
@@ -1650,7 +1699,7 @@ describe('Orders routes', function () {
 			await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			const updatedOrder = await OrderModel.findById(order1.id)
 			expect(updatedOrder).to.exist
 			expect(updatedOrder?.status).to.equal('delivered')
@@ -1673,7 +1722,7 @@ describe('Orders routes', function () {
 			await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'confirmed'
-			}).set('Cookie', adminSessionCookie)
+			})
 
 			const updatedOrder = await OrderModel.findById(order1.id)
 
@@ -1698,7 +1747,7 @@ describe('Orders routes', function () {
 			await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 
 			const updatedOrder = await OrderModel.findById(order1.id)
 
@@ -1710,7 +1759,7 @@ describe('Orders routes', function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
 			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(1)
@@ -1722,7 +1771,7 @@ describe('Orders routes', function () {
 			await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id, order2.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			const updatedOrder1 = await OrderModel.findById(order1.id)
 			const updatedOrder2 = await OrderModel.findById(order2.id)
 			expect(updatedOrder1).to.exist
@@ -1735,7 +1784,7 @@ describe('Orders routes', function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id, order2.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body[0].status).to.equal('delivered')
 			expect(res.body[1].status).to.equal('delivered')
@@ -1747,7 +1796,7 @@ describe('Orders routes', function () {
 		it('should return an error if orderIds is missing', async function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -1755,7 +1804,7 @@ describe('Orders routes', function () {
 		it('should return an error if status is missing', async function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id]
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -1764,7 +1813,7 @@ describe('Orders routes', function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -1773,7 +1822,7 @@ describe('Orders routes', function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: ['invalidId'],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 		})
@@ -1782,7 +1831,7 @@ describe('Orders routes', function () {
 			const res = await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'invalid'
-			}).set('Cookie', adminSessionCookie)
+			})
 			expect(res.body).to.exist
 			expect(res.body.error).to.exist
 			const updatedOrder = await OrderModel.findById(order1.id)
@@ -1794,7 +1843,7 @@ describe('Orders routes', function () {
 			await agent().patch('/api/v1/orders').send({
 				orderIds: [order1.id],
 				status: 'delivered'
-			}).set('Cookie', adminSessionCookie)
+			})
 			const nonUpdatedOrder = await OrderModel.findById(order2.id)
 			expect(nonUpdatedOrder).to.exist
 			expect(nonUpdatedOrder?.status).to.equal('pending')
@@ -1806,7 +1855,7 @@ describe('Orders routes', function () {
 				_id: new mongoose.Types.ObjectId().toString()
 			}
 
-			await agent().patch('/api/v1/orders').send(updatedFields).set('Cookie', adminSessionCookie)
+			await agent().patch('/api/v1/orders').send(updatedFields)
 			const order = await OrderModel.findOne({})
 			expect(order?.id.toString()).to.equal(order1.id)
 		})
