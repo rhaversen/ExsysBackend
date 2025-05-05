@@ -985,7 +985,7 @@ describe('Orders routes', function () {
 
 			it('should forbid admin from using later checkout (status 403)', async function () {
 				const res = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-				const newAdminSessionCookie = extractConnectSid(res.headers['Set-Cookie'])
+				const newAdminSessionCookie = extractConnectSid(res.headers['set-cookie'])
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Required for 'later'
 					activityId: testActivity.id,
@@ -1000,7 +1000,7 @@ describe('Orders routes', function () {
 
 			it('should forbid admin from using sumUp checkout (status 403)', async function () {
 				const res = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
-				const newAdminSessionCookie = extractConnectSid(res.headers['Set-Cookie'])
+				const newAdminSessionCookie = extractConnectSid(res.headers['set-cookie'])
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Required for 'sumUp'
 					activityId: testActivity.id,
