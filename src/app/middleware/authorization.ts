@@ -40,7 +40,7 @@ export function isAdminOrKiosk (req: Request, res: Response, next: NextFunction)
 export function canCreateOrder (req: Request, res: Response, next: NextFunction): void {
 	if (!req.isAuthenticated()) {
 		logger.warn('canCreateOrder check failed: User not authenticated')
-		res.status(401).json({ error: 'Unauthorized' })
+		res.status(403).send('Forbidden')
 		return
 	}
 
