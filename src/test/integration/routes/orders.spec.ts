@@ -1599,7 +1599,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'later'
 			})
 
 			order2 = await OrderModel.create({
