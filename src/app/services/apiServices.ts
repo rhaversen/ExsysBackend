@@ -27,20 +27,22 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	try {
 		const response = await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/checkout`, {
 			total_amount: {
-				value: totalAmount * 100,
+				value: Math.round(totalAmount * 100),
 				currency: 'DKK',
 				minor_unit: 2
 			},
 			return_url: returnUrl
 		}, {
 			headers: {
-				Authorization: `Bearer ${SUMUP_API_KEY}`,
+				'Authorization': `Bearer ${SUMUP_API_KEY}`,
 				'Content-Type': 'application/json'
 			}
 		})
+		logger.debug('Reader checkout created', { response })
 		return response.data.data.client_transaction_id
 	} catch (error) {
 		logger.error('Error creating reader checkout', { error })
+		console.error(error)
 		return undefined
 	}
 }
