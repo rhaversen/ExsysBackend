@@ -115,7 +115,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 
 			expect(response).to.have.status(201)
 		})
@@ -153,7 +153,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
@@ -181,7 +181,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 			expect(res.body).to.exist
 			expect(res.body.roomId).to.equal(testRoom.id)
 			expect(res.body.activityId).to.equal(testActivity.id)
@@ -204,7 +204,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order).to.exist
 		})
@@ -219,7 +219,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order).to.not.exist
 		})
@@ -237,7 +237,7 @@ describe('Orders routes', function () {
 				}],
 				checkoutMethod: 'later',
 				_id: updatedId
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 			const order = await OrderModel.findOne({})
 			expect(order?.id.toString()).to.not.equal(updatedId)
 		})
@@ -251,7 +251,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 			expect(res).to.have.status(400)
 			expect(res.body.error).to.exist
 		})
@@ -266,7 +266,7 @@ describe('Orders routes', function () {
 					quantity: 1
 				}],
 				checkoutMethod: 'later'
-			}).set('Cookie', adminSessionCookie)
+			}).set('Cookie', kioskSessionCookie)
 			expect(res).to.have.status(400)
 			expect(res.body.error).to.exist
 		})
@@ -306,7 +306,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
@@ -325,7 +325,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 				})
@@ -344,7 +344,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products[0].quantity).to.equal(2)
 				})
@@ -367,7 +367,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
 					expect(order?.products[0].quantity).to.equal(3)
@@ -388,7 +388,7 @@ describe('Orders routes', function () {
 							quantity: 2
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(2)
 					expect(order?.products[0].quantity).to.equal(1)
@@ -409,7 +409,7 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.products.length).to.equal(1)
 					expect(order?.products[0].quantity).to.equal(1)
@@ -428,7 +428,7 @@ describe('Orders routes', function () {
 							id: testProduct2.id
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.not.exist
 				})
@@ -462,7 +462,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
@@ -481,7 +481,7 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.exist
 				})
@@ -500,7 +500,7 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(0)
 				})
@@ -523,7 +523,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 				})
@@ -546,7 +546,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(2)
 				})
@@ -569,7 +569,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.[0].quantity).to.equal(3)
 				})
@@ -596,7 +596,7 @@ describe('Orders routes', function () {
 							quantity: 1
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
 					expect(order?.options?.[0].quantity).to.equal(3)
@@ -621,7 +621,7 @@ describe('Orders routes', function () {
 							quantity: 2
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(2)
 					expect(order?.options?.[0].quantity).to.equal(1)
@@ -646,7 +646,7 @@ describe('Orders routes', function () {
 							quantity: 0
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order?.options?.length).to.equal(1)
 					expect(order?.options?.[0].quantity).to.equal(1)
@@ -669,7 +669,7 @@ describe('Orders routes', function () {
 							id: testOption2.id
 						}],
 						checkoutMethod: 'later'
-					}).set('Cookie', adminSessionCookie)
+					}).set('Cookie', kioskSessionCookie)
 					const order = await OrderModel.findOne({})
 					expect(order).to.not.exist
 				})
@@ -692,7 +692,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(order?.paymentId).to.exist
 			})
@@ -712,7 +712,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment).to.exist
@@ -733,7 +733,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
 			})
@@ -753,7 +753,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
@@ -774,7 +774,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.paymentStatus).to.equal('pending')
@@ -795,7 +795,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.clientTransactionId).to.exist
@@ -818,7 +818,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(order?.paymentId).to.exist
 			})
@@ -838,7 +838,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment).to.exist
@@ -859,7 +859,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
 			})
@@ -879,7 +879,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
@@ -900,7 +900,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.paymentStatus).to.equal('successful')
@@ -921,7 +921,7 @@ describe('Orders routes', function () {
 						quantity: 1
 					}],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
 				const payment = await PaymentModel.findById(order?.paymentId)
 				expect(payment?.clientTransactionId).to.not.exist
@@ -987,7 +987,7 @@ describe('Orders routes', function () {
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
@@ -1000,7 +1000,7 @@ describe('Orders routes', function () {
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', kioskSessionCookie)
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
