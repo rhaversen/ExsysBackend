@@ -40,15 +40,12 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 		})
 		logger.debug('Reader checkout created', { response })
 		return response.data.data.client_transaction_id
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	} catch (error: any) {
+	} catch (error: unknown) {
 		logger.error('Error creating reader checkout', { error })
-		console.error(error)
-		console.error('SumUp checkout error:', error.response.data)
-		console.error('SumUp checkout error:', error.response.data.errors)
-		console.error('SumUp checkout error:', error.response.data.errors[0])
-		console.error('SumUp checkout error:', JSON.stringify(error.response.data.errors))
-		console.error('SumUp checkout error:', error.response.data.errors.toString())
+		if (axios.isAxiosError(error) && error.response != null) {
+			const sumUpError = error.response.data
+			logger.error('SumUp checkout error:', sumUpError)
+		}
 		return undefined
 	}
 }
@@ -70,8 +67,13 @@ export async function pairReader (pairingCode: string): Promise<string | undefin
 			}
 		})
 		return response.data.id
-	} catch (error) {
-		logger.error('Error pairing reader', { error })
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error) && error.response?.status === 422) {
+			const sumUpError = error.response.data as { errors: { detail: string; type: 'READER_OFFLINE' } }
+			logger.error('Reader pairing error:', sumUpError)
+		} else if (error instanceof Error) {
+			logger.error('Error pairing reader', { error })
+		}
 		return undefined
 	}
 }

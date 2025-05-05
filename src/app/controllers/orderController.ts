@@ -149,10 +149,6 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 
 		logger.debug(`Found Reader API Ref: ${reader.apiReferenceId} for Kiosk ID: ${kioskId}`)
 
-		console.log(reader)
-		console.log(reader.apiReferenceId)
-		console.log(subtotal)
-
 		// Create a checkout for the reader
 		const clientTransactionId = await createReaderCheckout(reader.apiReferenceId, subtotal)
 
