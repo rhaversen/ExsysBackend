@@ -42,6 +42,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 		return response.data.data.client_transaction_id
 	} catch (error) {
 		logger.error('Error creating reader checkout', { error })
+		console.error(error)
 		return undefined
 	}
 }
