@@ -37,7 +37,8 @@ describe('Orders routes', function () {
 
 		// Create and log in kiosk user
 		const kioskFields = {
-			name: 'Test Kiosk'
+			name: 'Test Kiosk',
+			password: 'Password'
 		}
 		const testReader = await ReaderModel.create({
 			apiReferenceId: 'test',
