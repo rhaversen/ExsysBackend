@@ -988,7 +988,7 @@ describe('Orders routes', function () {
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
+				}).set('Cookie', adminSessionCookie)
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
@@ -1001,7 +1001,7 @@ describe('Orders routes', function () {
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
+				}).set('Cookie', adminSessionCookie)
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
