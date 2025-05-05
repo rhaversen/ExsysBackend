@@ -47,11 +47,11 @@ export function transformOrder (order: IOrderPopulated): IOrderFrontend {
 			options,
 			activityId: order.activityId,
 			roomId: order.roomId,
-			kioskId: order.kioskId,
+			kioskId: order.kioskId ?? null,
 			status: order.status ?? 'pending',
 			paymentId: order.paymentId._id.toString(), // Use _id.toString() for lean objects
 			paymentStatus: order.paymentId.paymentStatus,
-			checkoutMethod: order.paymentId.clientTransactionId == null ? 'later' : 'sumUp',
+			checkoutMethod: order.checkoutMethod,
 			createdAt: order.createdAt.toISOString(),
 			updatedAt: order.updatedAt.toISOString()
 		}
@@ -185,6 +185,20 @@ async function createLaterCheckout (): Promise<IPayment> {
 	}
 }
 
+async function createManualCheckout (): Promise<IPayment> {
+	logger.info('Creating "Manual Entry" checkout (auto-successful payment)')
+	try {
+		const newPayment = await PaymentModel.create({
+			paymentStatus: 'successful' // Manual entry is considered successful immediately
+		})
+		logger.info(`"Manual Entry" payment record created. Payment ID: ${newPayment.id}`)
+		return newPayment
+	} catch (error) {
+		logger.error('Error creating "Manual Entry" payment record', { error })
+		throw error // Re-throw to be handled by caller
+	}
+}
+
 export async function createOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const {
 		activityId,
@@ -195,10 +209,10 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		checkoutMethod
 	} = req.body as Record<string, unknown>
 
-	logger.info(`Attempting to create order for Kiosk ID: ${kioskId ?? 'N/A'}, Activity ID: ${activityId ?? 'N/A'}, Room ID: ${roomId ?? 'N/A'}, Method: ${checkoutMethod ?? 'N/A'}`)
+	logger.info(`Attempting to create order. Kiosk ID: ${kioskId ?? 'Manual/None'}, Activity ID: ${activityId ?? 'N/A'}, Room ID: ${roomId ?? 'N/A'}, Method: ${checkoutMethod ?? 'N/A'}`)
 
 	// --- Input Validation ---
-	if (!isOrderItemList(products) || products.length === 0) { // Ensure products is a non-empty valid list
+	if (!isOrderItemList(products) || (products.length === 0 && checkoutMethod !== 'manual')) { // Ensure products is a non-empty valid list and only allow empty for manual orders
 		logger.warn('Order creation failed: Invalid or empty product data')
 		res.status(400).json({ error: 'Invalid or empty product data' })
 		return
@@ -208,9 +222,10 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		res.status(400).json({ error: 'Invalid option data' })
 		return
 	}
-	if (typeof kioskId !== 'string' || !mongoose.Types.ObjectId.isValid(kioskId)) {
-		logger.warn('Order creation failed: Invalid or missing kioskId')
-		res.status(400).json({ error: 'Invalid or missing kioskId' })
+	// Validate kioskId only if it's provided and not null
+	if (kioskId != null && (typeof kioskId !== 'string' || !mongoose.Types.ObjectId.isValid(kioskId))) {
+		logger.warn(`Order creation failed: Invalid kioskId provided: ${kioskId}`)
+		res.status(400).json({ error: 'Invalid kioskId provided' })
 		return
 	}
 	if (typeof activityId !== 'string' || !mongoose.Types.ObjectId.isValid(activityId)) {
@@ -223,19 +238,34 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		res.status(400).json({ error: 'Invalid or missing roomId' })
 		return
 	}
-	if (typeof checkoutMethod !== 'string' || !['sumUp', 'later', 'mobilePay'].includes(checkoutMethod)) {
+	if (typeof checkoutMethod !== 'string' || !['sumUp', 'later', 'mobilePay', 'manual'].includes(checkoutMethod)) {
 		logger.warn(`Order creation failed: Invalid or missing checkoutMethod: ${checkoutMethod ?? 'N/A'}`)
 		res.status(400).json({ error: 'Invalid eller manglende checkoutMethod' })
 		return
 	}
+
+	// Specific validation for manual orders: kioskId must be null/undefined
+	if (checkoutMethod === 'manual' && kioskId != null) {
+		logger.warn('Order creation failed: kioskId must be null or omitted for manual checkoutMethod.')
+		res.status(400).json({ error: 'kioskId must not be provided for manual orders' })
+		return
+	}
+	// Specific validation for non-manual orders: kioskId must be provided
+	if (checkoutMethod !== 'manual' && kioskId == null) {
+		logger.warn(`Order creation failed: kioskId is required for checkoutMethod '${checkoutMethod}'.`)
+		res.status(400).json({ error: `kioskId is required for checkoutMethod '${checkoutMethod}'` })
+		return
+	}
+
 	// --- End Input Validation ---
 
 	try {
 		// Remove items with zero quantity
-		const filteredProducts = removeItemsWithZeroQuantity(products)
+		const filteredProducts = removeItemsWithZeroQuantity(products ?? [])
 		const filteredOptions = removeItemsWithZeroQuantity(options ?? [])
 
-		if (filteredProducts.length === 0) {
+		// Skip check if checkout method is manual
+		if (checkoutMethod !== 'manual' && filteredProducts.length === 0) {
 			logger.warn('Order creation failed: Order has no products after filtering zero quantity items.')
 			res.status(400).json({ error: 'Order must contain at least one product' })
 			return
@@ -263,7 +293,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 					res.status(400).json({ error: 'Kan ikke oprette SumUp checkout med subtotal 0' })
 					return
 				}
-				payment = await createSumUpCheckout(kioskId, subtotal)
+				payment = await createSumUpCheckout(kioskId as string, subtotal)
 				if (payment === undefined) {
 					res.status(500).json({ error: 'Kunne ikke oprette SumUp checkout' })
 					return
@@ -272,6 +302,10 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 
 			case 'later':
 				payment = await createLaterCheckout()
+				break
+
+			case 'manual':
+				payment = await createManualCheckout()
 				break
 
 			case 'mobilePay':
@@ -289,10 +323,11 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		const newOrder = await OrderModel.create({
 			activityId,
 			roomId,
-			kioskId,
+			kioskId: kioskId ?? null,
 			products: combinedProducts,
 			options: combinedOptions,
 			paymentId: payment.id,
+			checkoutMethod,
 			status: 'pending'
 		})
 		logger.info(`Order created successfully: ID ${newOrder.id}`)
@@ -301,7 +336,7 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		await newOrder.populate([
 			{
 				path: 'paymentId',
-				select: 'paymentStatus clientTransactionId id'
+				select: 'paymentStatus clientTransactionId id _id'
 			},
 			{
 				path: 'products.id',
@@ -320,9 +355,9 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		const transformedOrder = transformOrder(populatedOrder)
 		res.status(201).json(transformedOrder)
 
-		// Emit event only for immediately paid orders ('later')
-		if (checkoutMethod === 'later') {
-			logger.debug(`Emitting paid order event for 'later' checkout. Order ID: ${newOrder.id}`)
+		// Emit event for immediately paid orders ('later' or 'manual')
+		if (checkoutMethod === 'later' || checkoutMethod === 'manual') {
+			logger.debug(`Emitting paid order event for '${checkoutMethod}' checkout. Order ID: ${newOrder.id}`)
 			await emitPaidOrderPosted(transformedOrder)
 		}
 	} catch (error) {
