@@ -167,13 +167,15 @@ server.listen(expressPort, () => {
 process.on('unhandledRejection', async (reason, promise): Promise<void> => {
 	const errorMessage = reason instanceof Error ? reason.message : String(reason)
 	logger.error(`Unhandled Rejection: ${errorMessage}`, { reason, promise })
-	throw reason // Re-throw the error to allow for process termination
+	// eslint-disable-next-line n/no-process-exit
+	process.exit(1) // Exit the process with failure code
 })
 
 // Handle uncaught exceptions outside middleware
 process.on('uncaughtException', async (err): Promise<void> => {
 	logger.error('Uncaught exception', { error: err })
-	throw err // Re-throw the error to allow for process termination
+	// eslint-disable-next-line n/no-process-exit
+	process.exit(1) // Exit the process with failure code
 })
 
 // Shutdown function
