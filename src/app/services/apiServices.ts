@@ -40,9 +40,15 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 		})
 		logger.debug('Reader checkout created', { response })
 		return response.data.data.client_transaction_id
-	} catch (error) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	} catch (error: any) {
 		logger.error('Error creating reader checkout', { error })
 		console.error(error)
+		console.error('SumUp checkout error:', error.response.data)
+		console.error('SumUp checkout error:', error.response.data.errors)
+		console.error('SumUp checkout error:', error.response.data.errors[0])
+		console.error('SumUp checkout error:', JSON.stringify(error.response.data.errors))
+		console.error('SumUp checkout error:', error.response.data.errors.toString())
 		return undefined
 	}
 }
