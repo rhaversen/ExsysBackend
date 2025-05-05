@@ -38,6 +38,7 @@ describe('Orders routes', function () {
 		// Create and log in kiosk user
 		const kioskFields = {
 			name: 'Test Kiosk',
+			kioskTag: '12345',
 			password: 'Password'
 		}
 		const testReader = await ReaderModel.create({
