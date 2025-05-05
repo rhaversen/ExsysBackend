@@ -37,10 +37,12 @@ describe('Orders routes', function () {
 
 		// Create and log in kiosk user
 		const kioskFields = {
-			name: 'Test Kiosk',
-			password: 'kioskPassword'
+			name: 'Test Kiosk'
 		}
-		const testReader = await ReaderModel.create({ apiReferenceId: 'kiosk-reader', readerTag: 'kiosk-tag' })
+		const testReader = await ReaderModel.create({
+			apiReferenceId: 'test',
+			readerTag: '12345'
+		})
 		await KioskModel.create({ ...kioskFields, readerId: testReader.id })
 
 		const kioskResponse = await agent().post('/api/v1/auth/login-kiosk-local').send(kioskFields)
