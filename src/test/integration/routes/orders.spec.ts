@@ -41,8 +41,8 @@ describe('Orders routes', function () {
 			password: 'Password'
 		}
 		const testReader = await ReaderModel.create({
-			apiReferenceId: 'test',
-			readerTag: '12345'
+			apiReferenceId: 'test-main',
+			readerTag: '12346'
 		})
 		await KioskModel.create({ ...kioskFields, readerId: testReader.id })
 
