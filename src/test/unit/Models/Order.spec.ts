@@ -26,7 +26,7 @@ describe('Order Model', function () {
 	let testOption: IOption
 	let testOrderFields: {
 		paymentId: Types.ObjectId
-		kioskId: Types.ObjectId
+		kioskId?: Types.ObjectId | null
 		activityId: Types.ObjectId
 		roomId: Types.ObjectId
 		products: Array<{
@@ -110,6 +110,37 @@ describe('Order Model', function () {
 		expect(order).to.exist
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
+	})
+
+	it('should allow kioskId to be null', async function () {
+		const order = await OrderModel.create({
+			...testOrderFields,
+			kioskId: null
+		})
+		expect(order).to.exist
+		expect(order.kioskId).to.be.null
+	})
+
+	it('should allow kioskId to be undefined (will default to null)', async function () {
+		const order = await OrderModel.create({
+			...testOrderFields,
+			kioskId: undefined
+		})
+		expect(order).to.exist
+		expect(order.kioskId).to.be.null
+	})
+
+	it('should not allow a non-existent kioskId if provided', async function () {
+		let errorOccurred = false
+		try {
+			await OrderModel.create({
+				...testOrderFields,
+				kioskId: new Types.ObjectId() // Non-existent ID
+			})
+		} catch {
+			errorOccurred = true
+		}
+		expect(errorOccurred).to.be.true
 	})
 
 	it('should set status to pending by default', async function () {
