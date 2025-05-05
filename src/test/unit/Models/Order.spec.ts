@@ -37,6 +37,7 @@ describe('Order Model', function () {
 			id: Types.ObjectId
 			quantity: number
 		}>
+		checkoutMethod: 'sumup' | 'mobilePay' | 'later' | 'manual'
 	}
 
 	beforeEach(async function () {
@@ -101,7 +102,8 @@ describe('Order Model', function () {
 			options: [{
 				id: testOption.id,
 				quantity: 1
-			}]
+			}],
+			checkoutMethod: 'later'
 		}
 	})
 
@@ -110,6 +112,7 @@ describe('Order Model', function () {
 		expect(order).to.exist
 		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
 		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
+		expect(order.checkoutMethod).to.equal(testOrderFields.checkoutMethod)
 	})
 
 	it('should allow kioskId to be null', async function () {
