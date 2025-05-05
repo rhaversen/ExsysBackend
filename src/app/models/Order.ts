@@ -15,7 +15,7 @@ export interface IOrder extends Document {
 	_id: Schema.Types.ObjectId
 	activityId: Schema.Types.ObjectId // The activity the order is for
 	roomId: Schema.Types.ObjectId // The room the order is for
-	kioskId: Schema.Types.ObjectId // The kiosk the order is for
+	kioskId: Schema.Types.ObjectId | null // The kiosk the order is for (optional)
 	products: Array<{
 		id: Schema.Types.ObjectId
 		quantity: number
@@ -25,6 +25,7 @@ export interface IOrder extends Document {
 		quantity: number
 	}> // Additional options for the order
 	status?: 'pending' | 'confirmed' | 'delivered'
+	checkoutMethod: 'sumUp' | 'later' | 'manual' // The checkout method used for the order
 	paymentId: Schema.Types.ObjectId | IPayment
 
 	// Timestamps
@@ -33,10 +34,11 @@ export interface IOrder extends Document {
 }
 
 // Unified type for an order with populated fields
-export type IOrderPopulated = Omit<IOrder, 'paymentId' | 'products' | 'options'> & {
+export type IOrderPopulated = Omit<IOrder, 'paymentId' | 'products' | 'options' | 'kioskId'> & {
 	paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | '_id' | 'id'>
 	products: Array<{ id: IProduct & { name: string }; quantity: number }>
 	options?: Array<{ id: IOption & { name: string }; quantity: number }>
+	kioskId: IKiosk['_id'] | null
 }
 
 export interface IOrderFrontend {
@@ -45,11 +47,11 @@ export interface IOrderFrontend {
 	options: Array<{ _id: IOption['_id'], name: string, quantity: number }>
 	activityId: IActivity['_id']
 	roomId: IRoom['_id']
-	kioskId: IKiosk['_id']
+	kioskId: IKiosk['_id'] | null
 	status: 'pending' | 'confirmed' | 'delivered'
 	paymentId: string
 	paymentStatus: IPayment['paymentStatus']
-	checkoutMethod: 'sumUp' | 'later'
+	checkoutMethod: 'sumUp' | 'later' | 'manual'
 	createdAt: string
 	updatedAt: string
 }
@@ -96,7 +98,7 @@ const orderSchema = new Schema<IOrder>({
 	},
 	kioskId: {
 		type: Schema.Types.ObjectId,
-		required: [true, 'Kiosk er påkrævet'],
+		default: null,
 		ref: 'Kiosk'
 	},
 	products: {
@@ -120,6 +122,11 @@ const orderSchema = new Schema<IOrder>({
 		type: Schema.Types.ObjectId,
 		required: [true, 'Betaling er påkrævet'],
 		ref: 'Payment'
+	},
+	checkoutMethod: {
+		type: Schema.Types.String,
+		enum: ['sumUp', 'later', 'manual'],
+		required: [true, 'Checkout metode er påkrævet']
 	}
 }, {
 	timestamps: true
@@ -140,7 +147,12 @@ orderSchema.path('roomId').validate(async function (value: Schema.Types.ObjectId
 	return !!exists
 }, 'Det valgte rum findes ikke')
 
-orderSchema.path('kioskId').validate(async function (value: Schema.Types.ObjectId) {
+orderSchema.path('kioskId').validate(async function (value: Schema.Types.ObjectId | null) {
+	// Only validate if kioskId is provided (not null or undefined)
+	if (value == null) {
+		logger.silly(`Skipping existence validation for null kioskId, Order ID: ${this._id}`)
+		return true
+	}
 	logger.silly(`Validating existence for kioskId: "${value}", Order ID: ${this._id}`)
 	const exists = await KioskModel.findById(value).lean()
 	if (!exists) { logger.warn(`Validation failed: kioskId "${value}" does not exist. Order ID: ${this._id}`) }
@@ -152,7 +164,13 @@ orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.Obje
 	return unique.size === v.length
 }, 'Produkterne skal være unikke')
 
-orderSchema.path('products').validate(function (v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
+// Modify this validator
+orderSchema.path('products').validate(function (this: IOrder, v: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
+	// Skip check if checkout method is manual
+	if (this.checkoutMethod === 'manual') {
+		return true
+	}
+	// Otherwise, ensure at least one product is present
 	return v.length > 0
 }, 'Mindst et produkt er påkrævet')
 
@@ -161,50 +179,62 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 	return product !== null && product !== undefined
 }, 'Produktet eksisterer ikke')
 
-orderSchema.path('products.id').validate(async function (this: IOrder, v: Schema.Types.ObjectId) { // Allow any for query context
+orderSchema.path('products').validate(async function (this: IOrder, products: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
 	// Skip order window validation if this is an update operation or if the document is not new
 	if (this.isNew === false) {
 		logger.silly(`Skipping order window validation for existing order update: ID ${this._id}`)
 		return true
 	}
 
-	const product = await ProductModel.findById(v).lean()
-
-	if (product == null) {
-		// Validation for product existence is handled by the other validator
-		// If product is null here, let the other validator fail it.
-		logger.warn(`Order window validation skipped: Product not found (ID: ${v}). Relying on existence validator.`)
-		return true // Let the existence validator handle the failure
+	// Skip validation for manual checkout method
+	if (this.checkoutMethod === 'manual') {
+		logger.silly(`Skipping order window validation for checkout method: ${this.checkoutMethod}`)
+		return true
 	}
+
 	const now = new Date()
 	const nowHour = now.getHours()
 	const nowMinute = now.getMinutes()
 
-	const from = product.orderWindow.from
-	const to = product.orderWindow.to
+	for (const p of products) {
+		const product = await ProductModel.findById(p.id).lean()
 
-	let isWithinHour, isStartHour, isEndHour
+		if (product == null) {
+			// Validation for product existence is handled by the other validator
+			// If product is null here, let the other validator fail it.
+			logger.warn(`Order window validation skipped: Product not found (ID: ${p.id}). Relying on existence validator.`)
+			continue // Skip to the next product, existence check will handle this
+		}
 
-	if (from.hour <= to.hour) {
-		// Time window does not cross midnight
-		isWithinHour = from.hour < nowHour && nowHour < to.hour
-		isStartHour = nowHour === from.hour && nowMinute >= from.minute
-		isEndHour = nowHour === to.hour && nowMinute <= to.minute
-	} else {
-		// Time window crosses midnight
-		isWithinHour = from.hour < nowHour || nowHour < to.hour
-		isStartHour = nowHour === from.hour && nowMinute >= from.minute
-		isEndHour = nowHour === to.hour && nowMinute <= to.minute
+		const from = product.orderWindow.from
+		const to = product.orderWindow.to
+
+		let isWithinHour, isStartHour, isEndHour
+
+		if (from.hour <= to.hour) {
+			// Time window does not cross midnight
+			isWithinHour = from.hour < nowHour && nowHour < to.hour
+			isStartHour = nowHour === from.hour && nowMinute >= from.minute
+			isEndHour = nowHour === to.hour && nowMinute <= to.minute
+		} else {
+			// Time window crosses midnight
+			isWithinHour = from.hour < nowHour || nowHour < to.hour
+			isStartHour = nowHour === from.hour && nowMinute >= from.minute
+			isEndHour = nowHour === to.hour && nowMinute <= to.minute
+		}
+
+		const isWithinOrderWindow = isWithinHour || isStartHour || isEndHour
+
+		if (!isWithinOrderWindow) {
+			logger.warn(`Order window validation failed for Product ${p.id} in Order ${this._id}. Now=${now}, Window=[${JSON.stringify(product.orderWindow)}]`)
+			// Use a generic message or customize as needed
+			this.invalidate('products', `Produktet "${product.name ?? p.id}" er uden for bestillingsvinduet.`, p.id)
+			return false // Fail validation
+		}
 	}
 
-	const isWithinOrderWindow = isWithinHour || isStartHour || isEndHour
-
-	if (!isWithinOrderWindow) {
-		logger.warn(`Order window validation failed for Product ${v} in Order. Now=${now}, Window=[${JSON.stringify(product.orderWindow)}]`)
-	}
-
-	return isWithinOrderWindow
-}, 'Bestillingen er uden for bestillingsvinduet')
+	return true // All products are within their order window
+}, 'Et eller flere produkter er uden for deres bestillingsvindue')
 
 orderSchema.path('products.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
@@ -239,7 +269,7 @@ orderSchema.index({ kioskId: 1, createdAt: -1 }) // Index for kiosk-specific que
 // Pre-save middleware
 orderSchema.pre('save', function (next) {
 	if (this.isNew) {
-		logger.info(`Creating new order: Kiosk ${this.kioskId}, Activity ${this.activityId}, Payment ${this.paymentId}`)
+		logger.info(`Creating new order: Kiosk ${this.kioskId ?? 'Manual'}, Activity ${this.activityId}, Payment ${this.paymentId}`)
 	} else {
 		logger.debug(`Updating order: ID ${this.id}`)
 	}

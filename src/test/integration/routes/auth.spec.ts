@@ -256,7 +256,7 @@ describe('Auth routes', function () {
 		const testKioskFields = {
 			name: 'TestKiosk',
 			kioskTag: '12345',
-			password: 'testPassword'
+			password: 'Password'
 		}
 
 		beforeEach(async function () {
@@ -586,7 +586,7 @@ describe('Auth routes', function () {
 			const testKioskFields = {
 				name: 'TestKiosk',
 				kioskTag: '12345',
-				password: 'testPassword'
+				password: 'Password'
 			}
 
 			beforeEach(async function () {
@@ -718,7 +718,7 @@ describe('Auth routes', function () {
 			const testKioskFields = {
 				name: 'TestKiosk',
 				kioskTag: '12345',
-				password: 'testPassword'
+				password: 'Password'
 			}
 
 			beforeEach(async function () {
@@ -936,7 +936,7 @@ describe('Auth routes', function () {
 			const testKioskFields = {
 				name: 'TestKiosk',
 				kioskTag: '12345',
-				password: 'testPassword'
+				password: 'Password'
 			}
 
 			beforeEach(async function () {
@@ -1072,7 +1072,7 @@ describe('Auth routes', function () {
 			const testKioskFields = {
 				name: 'TestKiosk',
 				kioskTag: '12345',
-				password: 'testPassword'
+				password: 'Password'
 			}
 
 			beforeEach(async function () {

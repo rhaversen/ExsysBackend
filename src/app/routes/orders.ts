@@ -6,25 +6,26 @@ import {
 	getPaymentStatus,
 	updateOrderStatus
 } from '../controllers/orderController.js'
-import { isAdmin, isAdminOrKiosk } from '../middleware/authorization.js'
+import { isAdmin, isAdminOrKiosk, canCreateOrder } from '../middleware/authorization.js' // Import canCreateOrder
 
 const router = Router()
 
 /**
  * @route POST /api/v1/orders
- * @description Create a new order.
+ * @description Create a new order. Admins can create 'manual' orders, Kiosks can create 'sumUp' or 'later' orders.
  * @access Private
- * @middleware isAdminOrKiosk
+ * @middleware canCreateOrder - Enforces role-based checkout method restrictions.
  * @param {Types.ObjectId} req.body.activityId - The ID of the activity the order is for.
- * @param {Types.ObjectId} req.body.kioskId - The ID of the kiosk the order is from.
- * @param {'mobilePay' | 'sumUp' | 'later'} req.body.checkoutMethod - The method used for checkout.
- * @param {Array<{product: Types.ObjectId, quantity: number}>} req.body.products - The products and their quantities.
- * @param {Array<{option: Types.ObjectId, quantity: number}>} [req.body.options] - Additional options for the order (optional).
+ * @param {Types.ObjectId} [req.body.kioskId] - The ID of the kiosk the order is from (omit for manual entry, required otherwise).
+ * @param {Types.ObjectId} req.body.roomId - The ID of the room the order is for.
+ * @param {'mobilePay' | 'sumUp' | 'later' | 'manual'} req.body.checkoutMethod - The method used for checkout.
+ * @param {Array<{id: Types.ObjectId, quantity: number}>} req.body.products - The products and their quantities.
+ * @param {Array<{id: Types.ObjectId, quantity: number}>} [req.body.options] - Additional options for the order (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The newly created order.
  */
 router.post('/',
-	isAdminOrKiosk,
+	canCreateOrder,
 	createOrder
 )
 

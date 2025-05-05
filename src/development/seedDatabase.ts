@@ -1108,6 +1108,7 @@ await SessionModel.create({
 
 // Orders
 await OrderModel.create({
+	checkoutMethod: 'sumUp',
 	paymentId: payment1.id,
 	activityId: activity1.id,
 	roomId: room1.id,
@@ -1122,6 +1123,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
+	checkoutMethod: 'sumUp',
 	paymentId: payment2.id,
 	activityId: activity2.id,
 	roomId: room2.id,
@@ -1139,6 +1141,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
+	checkoutMethod: 'sumUp',
 	paymentId: payment3.id,
 	activityId: activity3.id,
 	roomId: room3.id,
@@ -1159,6 +1162,7 @@ await OrderModel.create({
 	}]
 })
 await OrderModel.create({
+	checkoutMethod: 'sumUp',
 	paymentId: payment4.id,
 	activityId: activity4.id,
 	kioskId: kiosk1.id,
@@ -1578,6 +1582,7 @@ for (let i = 0; i < 300; i++) {
 	}
 
 	await OrderModel.create({
+		checkoutMethod: 'sumUp',
 		paymentId: newPayment._id,
 		activityId: activity._id,
 		roomId: room._id,
