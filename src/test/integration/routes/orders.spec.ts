@@ -124,7 +124,6 @@ describe('Orders routes', function () {
 		})
 
 		it('should have status 403 if not logged in', async function () {
-			await agent().post('/api/v1/auth/logout-local').set('Cookie', kioskSessionCookie)
 			const response = await agent().post('/api/v1/orders').send({
 				kioskId: testKiosk.id,
 				activityId: testActivity.id,
@@ -985,28 +984,30 @@ describe('Orders routes', function () {
 			})
 
 			it('should forbid admin from using later checkout (status 403)', async function () {
-				await agent().post('/api/v1/auth/login-admin-local').send(adminFields).set('Cookie', adminSessionCookie)
+				const res = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
+				const newAdminSessionCookie = extractConnectSid(res.headers['Set-Cookie'])
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Required for 'later'
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'later'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', newAdminSessionCookie)
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
 			})
 
 			it('should forbid admin from using sumUp checkout (status 403)', async function () {
-				await agent().post('/api/v1/auth/login-admin-local').send(adminFields).set('Cookie', adminSessionCookie)
+				const res = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
+				const newAdminSessionCookie = extractConnectSid(res.headers['Set-Cookie'])
 				const response = await agent().post('/api/v1/orders').send({
 					kioskId: testKiosk.id, // Required for 'sumUp'
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					products: [{ id: testProduct1.id, quantity: 1 }],
 					checkoutMethod: 'sumUp'
-				}).set('Cookie', adminSessionCookie)
+				}).set('Cookie', newAdminSessionCookie)
 
 				expect(response).to.have.status(403)
 				expect(response.body.error).to.contain('Forbidden: Admins can only create orders with checkoutMethod \'manual\'')
