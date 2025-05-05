@@ -37,7 +37,7 @@ describe('Order Model', function () {
 			id: Types.ObjectId
 			quantity: number
 		}>
-		checkoutMethod: 'sumup' | 'mobilePay' | 'later' | 'manual'
+		checkoutMethod: 'sumUp' | 'mobilePay' | 'later' | 'manual'
 	}
 
 	beforeEach(async function () {
