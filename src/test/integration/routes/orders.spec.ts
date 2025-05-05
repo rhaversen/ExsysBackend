@@ -1173,7 +1173,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'later'
 			})
 
 			await OrderModel.create({
@@ -1188,7 +1189,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'later'
 			})
 		})
 
@@ -1255,7 +1257,8 @@ describe('Orders routes', function () {
 						id: testOption.id,
 						quantity: 1
 					}],
-					status: 'pending'
+					status: 'pending',
+					checkoutMethod: 'later'
 				})
 				await OrderModel.create({
 					paymentId: testPayment2.id,
@@ -1270,7 +1273,8 @@ describe('Orders routes', function () {
 						id: testOption.id,
 						quantity: 1
 					}],
-					status: 'confirmed'
+					status: 'confirmed',
+					checkoutMethod: 'later'
 				})
 			})
 
@@ -1321,7 +1325,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'later'
 				})
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by another 24 hours
 				await OrderModel.create({
@@ -1336,7 +1341,8 @@ describe('Orders routes', function () {
 					options: [{
 						id: testOption.id,
 						quantity: 1
-					}]
+					}],
+					checkoutMethod: 'later'
 				})
 			})
 
@@ -1498,7 +1504,8 @@ describe('Orders routes', function () {
 						id: testOption.id,
 						quantity: 1
 					}],
-					status: 'pending'
+					status: 'pending',
+					checkoutMethod: 'later'
 				})
 				await OrderModel.create({
 					paymentId: testPayment2.id,
@@ -1513,7 +1520,8 @@ describe('Orders routes', function () {
 						id: testOption.id,
 						quantity: 1
 					}],
-					status: 'confirmed'
+					status: 'confirmed',
+					checkoutMethod: 'later'
 				})
 			})
 
@@ -1616,7 +1624,8 @@ describe('Orders routes', function () {
 				options: [{
 					id: testOption1.id,
 					quantity: 1
-				}]
+				}],
+				checkoutMethod: 'later'
 			})
 		})
 
