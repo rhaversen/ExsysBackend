@@ -75,8 +75,20 @@ const logToBetterStackNonBlocking = (
 		betterStackLogger = new Logtail(BETTERSTACK_LOG_TOKEN)
 	}
 
+	// Sanitize context, especially Error objects
+	let sanitizedContext = context
+	if (context?.error instanceof Error) {
+		sanitizedContext = { ...context }
+		const err = context.error
+		sanitizedContext.error = {
+			message: err.message,
+			stack: err.stack,
+			name: err.name
+		}
+	}
+
 	// Use a non-blocking approach with .catch()
-	betterStackLogger[level](message, context).catch((error) => {
+	betterStackLogger[level](message, sanitizedContext).catch((error) => {
 		// Log BetterStack errors to Winston to avoid infinite loops
 		winstonLogger.error(`Error logging to BetterStack: ${error instanceof Error ? error.toString() : String(error)}`, { error })
 	})
