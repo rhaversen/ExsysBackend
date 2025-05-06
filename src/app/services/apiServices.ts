@@ -50,6 +50,30 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	}
 }
 
+export async function cancelReaderCheckout (readerId: string): Promise<boolean> {
+	logger.silly('Cancelling reader checkout')
+
+	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+		return true // In test or development mode, we don't want to make real API calls
+	}
+
+	try {
+		await axios.delete(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/terminate`, {
+			headers: {
+				'Authorization': `Bearer ${SUMUP_API_KEY}`
+			}
+		})
+		return true
+	} catch (error: unknown) {
+		logger.error('Error cancelling reader checkout', { error })
+		if (axios.isAxiosError(error) && error.response != null) {
+			const sumUpError = error.response.data
+			logger.error('SumUp checkout error:', sumUpError)
+		}
+		return false
+	}
+}
+
 export async function pairReader (pairingCode: string): Promise<string | undefined> {
 	logger.silly('Pairing reader')
 

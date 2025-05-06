@@ -7,7 +7,7 @@ import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Orde
 import PaymentModel, { IPayment } from '../models/Payment.js'
 import ProductModel, { IProduct } from '../models/Product.js'
 import ReaderModel from '../models/Reader.js'
-import { createReaderCheckout } from '../services/apiServices.js'
+import { createReaderCheckout, cancelReaderCheckout } from '../services/apiServices.js'
 import logger from '../utils/logger.js'
 import { emitOrderStatusUpdated, emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
 
@@ -594,5 +594,46 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		}
 	} finally {
 		await session.endSession()
+	}
+}
+
+export async function cancelOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const orderId = req.params.id
+	if (!mongoose.Types.ObjectId.isValid(orderId)) {
+		res.status(400).json({ error: 'Invalid Order ID format' })
+		return
+	}
+	try {
+		const order = await OrderModel.findById(orderId)
+			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | '_id'> }>({
+				path: 'paymentId',
+				select: 'paymentStatus clientTransactionId'
+			})
+			.exec()
+		if (!order) {
+			res.status(404).json({ error: 'Order not found' })
+			return
+		}
+		if (order.paymentId == null) {
+			res.status(500).json({ error: 'No payment associated with this order' })
+			return
+		}
+		if (order.checkoutMethod === 'sumUp') {
+			if (typeof order.paymentId.clientTransactionId === 'string') {
+				await cancelReaderCheckout(order.paymentId.clientTransactionId)
+			} else {
+				res.status(500).json({ error: 'No clientTransactionId available for SumUp cancellation' })
+				return
+			}
+		}
+		const updatedPayment = await PaymentModel.findByIdAndUpdate(
+			order.paymentId._id,
+			{ paymentStatus: 'failed' },
+			{ new: true }
+		).lean()
+		emitOrderStatusUpdated(transformOrder(order as unknown as IOrderPopulated))
+		res.status(200).json({ paymentStatus: updatedPayment?.paymentStatus })
+	} catch (error) {
+		next(error)
 	}
 }
