@@ -14,7 +14,8 @@ const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
 export async function createReaderCheckout (readerId: string, totalAmount: number): Promise<string | undefined> {
 	logger.silly('Creating reader checkout')
 
-	if (process.env.NODE_ENV === 'test') {
+	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+		// In test or development mode, we don't want to make real API calls
 		return nanoid() // Return a random string
 	}
 
