@@ -179,68 +179,6 @@ orderSchema.path('products.id').validate(async function (v: Schema.Types.ObjectI
 	return product !== null && product !== undefined
 }, 'Produktet eksisterer ikke')
 
-orderSchema.path('products').validate(async function (this: IOrder, products: Array<{ id: Schema.Types.ObjectId, quantity: number }>) {
-	// Skip order window validation if this is an update operation or if the document is not new
-	if (this.isNew === false) {
-		logger.silly(`Skipping order window validation for existing order update: ID ${this._id}`)
-		return true
-	}
-
-	// Skip validation for manual checkout method
-	if (this.checkoutMethod === 'manual') {
-		logger.silly(`Skipping order window validation for checkout method: ${this.checkoutMethod}`)
-		return true
-	}
-
-	const now = new Date()
-	const nowHour = now.getHours()
-	const nowMinute = now.getMinutes()
-
-	for (const p of products) {
-		const product = await ProductModel.findById(p.id).lean()
-
-		if (product == null) {
-			// Validation for product existence is handled by the other validator
-			// If product is null here, let the other validator fail it.
-			logger.warn(`Order window validation skipped: Product not found (ID: ${p.id}). Relying on existence validator.`)
-			continue // Skip to the next product, existence check will handle this
-		}
-
-		const fromHour = product.orderWindow.from.hour
-		const fromMinute = product.orderWindow.from.minute
-		const toHour = product.orderWindow.to.hour
-		const toMinute = product.orderWindow.to.minute
-
-		let isWithinOrderWindow: boolean
-
-		const spansMidnight = fromHour > toHour || (fromHour === toHour && fromMinute > toMinute)
-
-		// Condition for current time being at or after 'from'
-		const isAtOrAfterFrom = nowHour > fromHour || (nowHour === fromHour && nowMinute >= fromMinute)
-		// Condition for current time being at or before 'to' (inclusive 'to')
-		const isAtOrBeforeTo = nowHour < toHour || (nowHour === toHour && nowMinute <= toMinute)
-
-		if (spansMidnight) {
-			// For a window spanning midnight (e.g., 22:00 to 02:00):
-			// Current time is valid if it's (at or after 'from') OR (at or before 'to')
-			isWithinOrderWindow = isAtOrAfterFrom || isAtOrBeforeTo
-		} else {
-			// For a window not spanning midnight (e.g., 09:00 to 17:00):
-			// Current time is valid if it's (at or after 'from') AND (at or before 'to')
-			isWithinOrderWindow = isAtOrAfterFrom && isAtOrBeforeTo
-		}
-
-		if (!isWithinOrderWindow) {
-			logger.warn(`Order window validation failed for Product ${p.id} in Order ${this._id}. Now=${now}, Window=[${JSON.stringify(product.orderWindow)}]`)
-			// Use a generic message or customize as needed
-			this.invalidate('products', `Produktet "${product.name ?? p.id}" er uden for bestillingsvinduet.`, p.id)
-			return false // Fail validation
-		}
-	}
-
-	return true // All products are within their order window
-}, 'Et eller flere produkter er uden for deres bestillingsvindue')
-
 orderSchema.path('products.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Produkt mængde skal være et heltal')
