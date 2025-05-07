@@ -61,7 +61,7 @@ export async function cancelReaderCheckout (apiReferenceId: string): Promise<boo
 
 	try {
 		// post https://api.sumup.com/v0.1/merchants/{merchant_code}/readers/{id}/terminate
-		await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${apiReferenceId}/terminate`, {
+		await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${apiReferenceId}/terminate`, {}, {
 			headers: {
 				'Authorization': `Bearer ${SUMUP_API_KEY}`
 			}
