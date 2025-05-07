@@ -51,15 +51,16 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	}
 }
 
-export async function cancelReaderCheckout (readerId: string): Promise<boolean> {
-	logger.silly(`Cancelling reader checkout for readerId: ${readerId}`)
+export async function cancelReaderCheckout (apiReferenceId: string): Promise<boolean> {
+	logger.silly(`Cancelling reader checkout for apiReferenceId: ${apiReferenceId}`)
 
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
 		return true // In test or development mode, we don't want to make real API calls
 	}
 
 	try {
-		await axios.delete(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/terminate`, {
+		// api.sumup.com/v0.1/merchants/{merchant_code}/readers/{id}/terminate
+		await axios.delete(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${apiReferenceId}/terminate`, {
 			headers: {
 				'Authorization': `Bearer ${SUMUP_API_KEY}`
 			}

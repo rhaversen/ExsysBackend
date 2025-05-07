@@ -6,7 +6,7 @@ import OptionModel, { IOption } from '../models/Option.js'
 import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Order.js'
 import PaymentModel, { IPayment } from '../models/Payment.js'
 import ProductModel, { IProduct } from '../models/Product.js'
-import ReaderModel from '../models/Reader.js'
+import ReaderModel, { IReader } from '../models/Reader.js'
 import { createReaderCheckout, cancelReaderCheckout } from '../services/apiServices.js'
 import logger from '../utils/logger.js'
 import { emitOrderStatusUpdated, emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
@@ -618,10 +618,18 @@ export async function cancelOrder (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
+		// Populate readerId to get apiReferenceId
+		const populatedKiosk = await kiosk.populate<{ readerId: IReader }>('readerId')
+		if (populatedKiosk == null || populatedKiosk.readerId == null || populatedKiosk.readerId.apiReferenceId == null) {
+			logger.warn('Cancel order failed: Could not populate readerId with apiReferenceId.')
+			res.status(400).json({ error: 'Kiosk reader information could not be retrieved.' })
+			return
+		}
+
 		const order = await OrderModel.findById(orderId)
-			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | '_id'> }>({
+			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | '_id'> }>({
 				path: 'paymentId',
-				select: 'paymentStatus clientTransactionId _id'
+				select: 'paymentStatus _id'
 			})
 			.exec()
 
@@ -645,8 +653,8 @@ export async function cancelOrder (req: Request, res: Response, next: NextFuncti
 			res.status(500).json({ error: 'Fejl ved annullering af ordre: Kiosk ID mangler.' })
 			return
 		}
-		if (order.kioskId.toString() != kiosk.id) {
-			logger.warn(`Cancel order failed: Order ID ${orderId} does not belong to the current kiosk. Kiosk ID: ${kiosk.id}`)
+		if (order.kioskId.toString() != populatedKiosk.id) {
+			logger.warn(`Cancel order failed: Order ID ${orderId} does not belong to the current kiosk. Kiosk ID: ${populatedKiosk.id}`)
 			res.status(403).json({ error: 'Ordren tilhører ikke denne kiosk' })
 			return
 		}
@@ -660,7 +668,7 @@ export async function cancelOrder (req: Request, res: Response, next: NextFuncti
 			res.status(400).json({ error: 'Ordren kan kun annulleres, hvis den er en SumUp checkout' })
 			return
 		}
-		await cancelReaderCheckout(kiosk.readerId.toString())
+		await cancelReaderCheckout(populatedKiosk.readerId.apiReferenceId)
 		res.status(200).json({ message: 'Checkout cancelled successfully' })
 	} catch (error) {
 		logger.error(`Error during order cancellation for Order ID ${orderId}`, { error })
