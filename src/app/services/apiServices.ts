@@ -26,6 +26,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 	}
 
 	try {
+		// post https://api.sumup.com/v0.1/merchants/{merchant_code}/readers/{id}/checkout
 		const response = await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/checkout`, {
 			total_amount: {
 				value: Math.round(totalAmount * 100),
@@ -59,8 +60,8 @@ export async function cancelReaderCheckout (apiReferenceId: string): Promise<boo
 	}
 
 	try {
-		// api.sumup.com/v0.1/merchants/{merchant_code}/readers/{id}/terminate
-		await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${apiReferenceId}/terminate`, {
+		// post https://api.sumup.com/v0.1/merchants/{merchant_code}/readers/{id}/terminate
+		await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${apiReferenceId}/terminate`, {}, {
 			headers: {
 				'Authorization': `Bearer ${SUMUP_API_KEY}`
 			}
@@ -84,6 +85,7 @@ export async function pairReader (pairingCode: string): Promise<string | undefin
 	}
 
 	try {
+		// post https://api.sumup.com/v0.1/merchants/{merchant_code}/readers
 		const response = await axios.post(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers`, {
 			pairing_code: pairingCode
 		}, {
@@ -112,6 +114,7 @@ export async function unpairReader (readerId: string): Promise<boolean> {
 	}
 
 	try {
+		// delete https://api.sumup.com/v0.1/merchants/{merchant_code}/readers/{id}
 		await axios.delete(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}`, {
 			headers: {
 				Authorization: `Bearer ${SUMUP_API_KEY}`
