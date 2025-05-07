@@ -14,7 +14,8 @@ const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
 export async function createReaderCheckout (readerId: string, totalAmount: number): Promise<string | undefined> {
 	logger.silly('Creating reader checkout')
 
-	if (process.env.NODE_ENV === 'test') {
+	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+		// In test or development mode, we don't want to make real API calls
 		return nanoid() // Return a random string
 	}
 
@@ -47,6 +48,30 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 			logger.error('SumUp checkout error:', sumUpError)
 		}
 		return undefined
+	}
+}
+
+export async function cancelReaderCheckout (readerId: string): Promise<boolean> {
+	logger.silly('Cancelling reader checkout')
+
+	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+		return true // In test or development mode, we don't want to make real API calls
+	}
+
+	try {
+		await axios.delete(`https://api.sumup.com/v0.1/merchants/${SUMUP_MERCHANT_CODE}/readers/${readerId}/terminate`, {
+			headers: {
+				'Authorization': `Bearer ${SUMUP_API_KEY}`
+			}
+		})
+		return true
+	} catch (error: unknown) {
+		logger.error('Error cancelling reader checkout', { error })
+		if (axios.isAxiosError(error) && error.response != null) {
+			const sumUpError = error.response.data
+			logger.error('SumUp checkout error:', sumUpError)
+		}
+		return false
 	}
 }
 

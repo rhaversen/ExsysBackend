@@ -5,7 +5,7 @@ import { emitSocketEvent } from '../utils/socket.js'
 // Function to notify all clients about payment status updates
 export async function emitPaymentStatusUpdate (payment: IPayment, order: IOrderPopulated): Promise<void> {
 	const payload = {
-		orderId: order.id,
+		orderId: order._id.toString(),
 		paymentStatus: payment.paymentStatus
 	}
 
