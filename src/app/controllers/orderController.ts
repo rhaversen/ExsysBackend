@@ -1,7 +1,7 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import KioskModel from '../models/Kiosk.js'
+import KioskModel, { IKiosk } from '../models/Kiosk.js'
 import OptionModel, { IOption } from '../models/Option.js'
 import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Order.js'
 import PaymentModel, { IPayment } from '../models/Payment.js'
@@ -598,42 +598,72 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 }
 
 export async function cancelOrder (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const kiosk = req.user as IKiosk
 	const orderId = req.params.id
+	logger.info(`Attempting to cancel order. Order ID: ${orderId}, Kiosk ID: ${kiosk._id}`)
+	if (kiosk == null) {
+		logger.warn('Cancel order failed: Kiosk not found in request.')
+		res.status(400).json({ error: 'Kiosk not found in request.' })
+		return
+	}
+	if (kiosk.readerId == null) {
+		logger.warn('Cancel order failed: Kiosk has no associated reader.')
+		res.status(400).json({ error: 'Kiosk has no associated reader.' })
+		return
+	}
 	if (!mongoose.Types.ObjectId.isValid(orderId)) {
+		logger.warn(`Cancel order failed: Invalid Order ID format: ${orderId}`)
 		res.status(400).json({ error: 'Invalid Order ID format' })
 		return
 	}
+
 	try {
 		const order = await OrderModel.findById(orderId)
 			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | '_id'> }>({
 				path: 'paymentId',
-				select: 'paymentStatus clientTransactionId'
+				select: 'paymentStatus clientTransactionId _id'
 			})
 			.exec()
-		if (!order) {
-			res.status(404).json({ error: 'Order not found' })
+
+		if (order == null) {
+			logger.warn(`Cancel order failed: Order not found. ID: ${orderId}`)
+			res.status(404).json({ error: 'Ordre ikke fundet' })
 			return
 		}
 		if (order.paymentId == null) {
-			res.status(500).json({ error: 'No payment associated with this order' })
+			logger.warn(`Cancel order failed: Order ID ${orderId} has no associated payment details or paymentId could not be populated.`)
+			res.status(500).json({ error: 'Fejl ved annullering af ordre: Betalingsdetaljer mangler eller kunne ikke hentes.' })
 			return
 		}
-		if (order.checkoutMethod === 'sumUp') {
-			if (typeof order.paymentId.clientTransactionId === 'string') {
-				await cancelReaderCheckout(order.paymentId.clientTransactionId)
-			} else {
-				res.status(500).json({ error: 'No clientTransactionId available for SumUp cancellation' })
-				return
-			}
+		if (order.checkoutMethod !== 'sumUp') {
+			logger.warn(`Cancel order failed: Order ID ${orderId} is not a SumUp checkout. Checkout method: ${order.checkoutMethod}`)
+			res.status(400).json({ error: 'Ordren kan kun annulleres, hvis den er en SumUp checkout' })
+			return
 		}
-		const updatedPayment = await PaymentModel.findByIdAndUpdate(
-			order.paymentId._id,
-			{ paymentStatus: 'failed' },
-			{ new: true }
-		).lean()
-		emitOrderStatusUpdated(transformOrder(order as unknown as IOrderPopulated))
-		res.status(200).json({ paymentStatus: updatedPayment?.paymentStatus })
+		if (order.kioskId == null) {
+			logger.warn(`Cancel order failed: Order ID ${orderId} has no associated kioskId.`)
+			res.status(500).json({ error: 'Fejl ved annullering af ordre: Kiosk ID mangler.' })
+			return
+		}
+		if (order.kioskId.toString() != kiosk.id) {
+			logger.warn(`Cancel order failed: Order ID ${orderId} does not belong to the current kiosk. Kiosk ID: ${kiosk.id}`)
+			res.status(403).json({ error: 'Ordren tilhører ikke denne kiosk' })
+			return
+		}
+		if (order.paymentId.paymentStatus !== 'pending') {
+			logger.warn(`Cancel order failed: Order ID ${orderId} is not in a cancellable state. Current payment status: ${order.paymentId.paymentStatus}`)
+			res.status(400).json({ error: 'Ordren kan ikke annulleres i sin nuværende tilstand' })
+			return
+		}
+		if (order.checkoutMethod !== 'sumUp') {
+			logger.warn(`Cancel order failed: Order ID ${orderId} is not a SumUp checkout. Checkout method: ${order.checkoutMethod}`)
+			res.status(400).json({ error: 'Ordren kan kun annulleres, hvis den er en SumUp checkout' })
+			return
+		}
+		await cancelReaderCheckout(kiosk.readerId.toString())
+		res.status(200).json({ message: 'Checkout cancelled successfully' })
 	} catch (error) {
+		logger.error(`Error during order cancellation for Order ID ${orderId}`, { error })
 		next(error)
 	}
 }
