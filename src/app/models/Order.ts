@@ -206,24 +206,29 @@ orderSchema.path('products').validate(async function (this: IOrder, products: Ar
 			continue // Skip to the next product, existence check will handle this
 		}
 
-		const from = product.orderWindow.from
-		const to = product.orderWindow.to
+		const fromHour = product.orderWindow.from.hour
+		const fromMinute = product.orderWindow.from.minute
+		const toHour = product.orderWindow.to.hour
+		const toMinute = product.orderWindow.to.minute
 
-		let isWithinHour, isStartHour, isEndHour
+		let isWithinOrderWindow: boolean
 
-		if (from.hour <= to.hour) {
-			// Time window does not cross midnight
-			isWithinHour = from.hour < nowHour && nowHour < to.hour
-			isStartHour = nowHour === from.hour && nowMinute >= from.minute
-			isEndHour = nowHour === to.hour && nowMinute <= to.minute
+		const spansMidnight = fromHour > toHour || (fromHour === toHour && fromMinute > toMinute)
+
+		// Condition for current time being at or after 'from'
+		const isAtOrAfterFrom = nowHour > fromHour || (nowHour === fromHour && nowMinute >= fromMinute)
+		// Condition for current time being at or before 'to' (inclusive 'to')
+		const isAtOrBeforeTo = nowHour < toHour || (nowHour === toHour && nowMinute <= toMinute)
+
+		if (spansMidnight) {
+			// For a window spanning midnight (e.g., 22:00 to 02:00):
+			// Current time is valid if it's (at or after 'from') OR (at or before 'to')
+			isWithinOrderWindow = isAtOrAfterFrom || isAtOrBeforeTo
 		} else {
-			// Time window crosses midnight
-			isWithinHour = from.hour < nowHour || nowHour < to.hour
-			isStartHour = nowHour === from.hour && nowMinute >= from.minute
-			isEndHour = nowHour === to.hour && nowMinute <= to.minute
+			// For a window not spanning midnight (e.g., 09:00 to 17:00):
+			// Current time is valid if it's (at or after 'from') AND (at or before 'to')
+			isWithinOrderWindow = isAtOrAfterFrom && isAtOrBeforeTo
 		}
-
-		const isWithinOrderWindow = isWithinHour || isStartHour || isEndHour
 
 		if (!isWithinOrderWindow) {
 			logger.warn(`Order window validation failed for Product ${p.id} in Order ${this._id}. Now=${now}, Window=[${JSON.stringify(product.orderWindow)}]`)
