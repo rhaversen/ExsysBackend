@@ -21,6 +21,7 @@
     "ignoreWords": [
         "KHTML",
         "SUMUP",
+        "sumup",
         "BETTERSTACK",
         "Logtail",
         "logtail",
