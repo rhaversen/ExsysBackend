@@ -12,7 +12,7 @@ const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE
 // Destructuring and global variables
 
 export async function createReaderCheckout (readerId: string, totalAmount: number): Promise<string | undefined> {
-	logger.silly('Creating reader checkout')
+	logger.silly(`Creating reader checkout for readerId: ${readerId}, totalAmount: ${totalAmount}`)
 
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
 		// In test or development mode, we don't want to make real API calls
@@ -52,7 +52,7 @@ export async function createReaderCheckout (readerId: string, totalAmount: numbe
 }
 
 export async function cancelReaderCheckout (readerId: string): Promise<boolean> {
-	logger.silly('Cancelling reader checkout')
+	logger.silly(`Cancelling reader checkout for readerId: ${readerId}`)
 
 	if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
 		return true // In test or development mode, we don't want to make real API calls
