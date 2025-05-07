@@ -557,19 +557,19 @@ const room5 = await RoomModel.create({
 	name: 'Kitchen Room',
 	description: 'A room for cooking'
 })
-await RoomModel.create({
+const room6 = await RoomModel.create({
 	name: 'Ballroom Room',
 	description: 'A room for dancing'
 })
-await RoomModel.create({
+const room7 = await RoomModel.create({
 	name: 'Hall Room',
 	description: 'A room for entering'
 })
-await RoomModel.create({
+const room8 = await RoomModel.create({
 	name: 'Study Room',
 	description: 'A room for studying'
 })
-await RoomModel.create({
+const room9 = await RoomModel.create({
 	name: 'Lounge Room',
 	description: 'A room for lounging'
 })
@@ -702,6 +702,18 @@ await ActivityModel.updateMany(
 	{ _id: { $in: [activityWithTimestamp1._id, activityWithTimestamp2._id, activityWithTimestamp3._id, activityWithTimestamp4._id] } },
 	{ $set: { rooms: [room2.id] } }
 )
+
+await ActivityModel.create({
+	rooms: [room1.id],
+	name: 'Activity with Single Room',
+	disabledRooms: [room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
+})
+
+await ActivityModel.create({
+	rooms: [],
+	name: 'Activity with all rooms disabled',
+	disabledRooms: [room1.id, room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
+})
 
 // Payments
 const payment1 = await PaymentModel.create({

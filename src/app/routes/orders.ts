@@ -4,7 +4,8 @@ import {
 	createOrder,
 	getOrdersWithQuery,
 	getPaymentStatus,
-	updateOrderStatus
+	updateOrderStatus,
+	cancelOrder
 } from '../controllers/orderController.js'
 import { isAdmin, isAdminOrKiosk, canCreateOrder } from '../middleware/authorization.js' // Import canCreateOrder
 
@@ -73,6 +74,20 @@ router.get('/',
 router.patch('/',
 	isAdmin,
 	updateOrderStatus
+)
+
+/**
+ * @route POST /api/v1/orders/:id/cancel
+ * @description Cancel an order.
+ * @access Private
+ * @middleware isAdminOrKiosk
+ * @param {Types.ObjectId} req.params.id - The ID of the order to cancel.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - The cancelled order.
+ */
+router.post('/:id/cancel',
+	isAdminOrKiosk,
+	cancelOrder
 )
 
 export default router
