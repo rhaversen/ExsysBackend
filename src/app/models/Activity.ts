@@ -10,7 +10,7 @@ import RoomModel, { IRoom } from './Room.js'
 export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	rooms: Schema.Types.ObjectId[] | IRoom[] // Rooms which are promoted for this activity
+	priorityRooms: Schema.Types.ObjectId[] | IRoom[] // Rooms which are promoted for this activity
 	disabledProducts: Schema.Types.ObjectId[] | IProduct[] // Products that are disabled for this activity
 	disabledRooms: Schema.Types.ObjectId[] | IRoom[] // Rooms that are disabled for this activity
 	name: string
@@ -21,13 +21,13 @@ export interface IActivity extends Document {
 }
 
 export interface IActivityPopulated extends IActivity {
-	rooms: IRoom[]
+	priorityRooms: IRoom[]
 	disabledProducts: IProduct[]
 }
 
 // Schema
 const activitySchema = new Schema<IActivity>({
-	rooms: [{
+	priorityRooms: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Room',
 		default: []
@@ -63,12 +63,12 @@ activitySchema.path('name').validate(async function (value: string) {
 	return !foundActivity
 }, 'Navnet er allerede i brug')
 
-activitySchema.path('rooms').validate(async function (v: Schema.Types.ObjectId[]) {
+activitySchema.path('priorityRooms').validate(async function (v: Schema.Types.ObjectId[]) {
 	const foundRooms = await RoomModel.find({ _id: { $in: v } })
 	return foundRooms.length === v.length
 }, 'Et eller flere spisested findes ikke')
 
-activitySchema.path('rooms').validate(async function (v: Schema.Types.ObjectId[]) {
+activitySchema.path('priorityRooms').validate(async function (v: Schema.Types.ObjectId[]) {
 	const uniqueRooms = new Set(v)
 	return uniqueRooms.size === v.length
 }, 'Spisestederne skal være unikke')
@@ -128,11 +128,11 @@ activitySchema.pre('deleteOne', async function (next) {
 		const activityId = docToDelete._id
 		logger.info(`Pre-deleteOne hook: Found Activity to delete: ID ${activityId}, Name "${docToDelete.name}"`)
 
-		// Remove activity from Kiosk.activities and Kiosk.disabledActivities
-		logger.debug(`Removing activity ID ${activityId} from Kiosk activities/disabledActivities`)
+		// Remove activity from Kiosk.priorityActivities and Kiosk.disabledActivities
+		logger.debug(`Removing activity ID ${activityId} from Kiosk priorityActivities/disabledActivities`)
 		await KioskModel.updateMany(
-			{ $or: [{ activities: activityId }, { disabledActivities: activityId }] }, // Find kiosks containing the activity in either list
-			{ $pull: { activities: activityId, disabledActivities: activityId } } // Pull from both fields
+			{ $or: [{ priorityActivities: activityId }, { disabledActivities: activityId }] }, // Find kiosks containing the activity in either list
+			{ $pull: { priorityActivities: activityId, disabledActivities: activityId } } // Pull from both fields
 		)
 		logger.debug(`Activity ID ${activityId} removal attempt from relevant Kiosks completed`)
 		next()
@@ -156,11 +156,11 @@ activitySchema.pre('deleteMany', async function (next) {
 		if (docIds.length > 0) {
 			logger.info(`Preparing to delete ${docIds.length} activities: IDs [${docIds.join(', ')}]`)
 
-			// Remove activities from Kiosk.activities and Kiosk.disabledActivities
-			logger.debug(`Removing activity IDs [${docIds.join(', ')}] from Kiosk activities/disabledActivities`)
+			// Remove activities from Kiosk.priorityActivities and Kiosk.disabledActivities
+			logger.debug(`Removing activity IDs [${docIds.join(', ')}] from Kiosk priorityActivities/disabledActivities`)
 			await KioskModel.updateMany(
-				{ $or: [{ activities: { $in: docIds } }, { disabledActivities: { $in: docIds } }] }, // Find kiosks containing any of the activities
-				{ $pull: { activities: { $in: docIds }, disabledActivities: { $in: docIds } } } // Pull from both fields
+				{ $or: [{ priorityActivities: { $in: docIds } }, { disabledActivities: { $in: docIds } }] }, // Find kiosks containing any of the priorityActivities
+				{ $pull: { priorityActivities: { $in: docIds }, disabledActivities: { $in: docIds } } } // Pull from both fields
 			)
 			logger.debug(`Activity IDs [${docIds.join(', ')}] removed from relevant Kiosks`)
 		} else {

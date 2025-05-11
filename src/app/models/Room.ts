@@ -79,11 +79,11 @@ roomSchema.pre('deleteOne', async function (next) {
 		const roomId = docToDelete._id
 		logger.info(`Pre-deleteOne hook: Found Room to delete: ID ${roomId}, Name "${docToDelete.name}"`)
 
-		// Remove room from Activity.rooms and Activity.disabledRooms
-		logger.debug(`Removing room ID ${roomId} from Activity rooms/disabledRooms`)
+		// Remove room from Activity.priorityRooms and Activity.disabledRooms
+		logger.debug(`Removing room ID ${roomId} from Activity priorityRooms/disabledRooms`)
 		await ActivityModel.updateMany(
-			{ $or: [{ rooms: roomId }, { disabledRooms: roomId }] }, // Find activities containing the room in either list
-			{ $pull: { rooms: roomId, disabledRooms: roomId } } // Pull from both fields
+			{ $or: [{ priorityRooms: roomId }, { disabledRooms: roomId }] }, // Find priorityActivities containing the room in either list
+			{ $pull: { priorityRooms: roomId, disabledRooms: roomId } } // Pull from both fields
 		)
 		logger.debug(`Room ID ${roomId} removal attempt from relevant Activities completed`)
 
@@ -107,11 +107,11 @@ roomSchema.pre('deleteMany', async function (next) {
 		if (docIds.length > 0) {
 			logger.info(`Preparing to delete ${docIds.length} rooms via deleteMany: IDs [${docIds.join(', ')}]`)
 
-			// Remove rooms from Activity.rooms and Activity.disabledRooms
-			logger.debug(`Removing room IDs [${docIds.join(', ')}] from Activity rooms/disabledRooms`)
+			// Remove rooms from Activity.priorityRooms and Activity.disabledRooms
+			logger.debug(`Removing room IDs [${docIds.join(', ')}] from Activity priorityRooms/disabledRooms`)
 			await ActivityModel.updateMany(
-				{ $or: [{ rooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }] }, // Find activities containing any of the rooms
-				{ $pull: { rooms: { $in: docIds }, disabledRooms: { $in: docIds } } } // Pull from both fields
+				{ $or: [{ priorityRooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }] }, // Find priorityActivities containing any of the priorityRooms
+				{ $pull: { priorityRooms: { $in: docIds }, disabledRooms: { $in: docIds } } } // Pull from both fields
 			)
 			logger.debug(`Room IDs [${docIds.join(', ')}] removed from relevant Activities`)
 		} else {

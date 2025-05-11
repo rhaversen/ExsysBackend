@@ -11,13 +11,13 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		rooms: req.body.rooms,
+		priorityRooms: req.body.priorityRooms,
 		disabledProducts: req.body.disabledProducts,
 		disabledRooms: req.body.disabledRooms
 	}
 
 	try {
-		const newActivity = await (await ActivityModel.create(allowedFields)).populate('rooms')
+		const newActivity = await (await ActivityModel.create(allowedFields)).populate('priorityRooms')
 		logger.debug(`Activity created successfully: ID ${newActivity.id}`)
 		res.status(201).json(newActivity)
 
@@ -37,7 +37,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 	logger.debug(`Getting activity: ID ${activityId}`)
 
 	try {
-		const activity = await ActivityModel.findById(activityId).populate('rooms')
+		const activity = await ActivityModel.findById(activityId).populate('priorityRooms')
 
 		if (activity === null || activity === undefined) {
 			logger.warn(`Get activity failed: Activity not found. ID: ${activityId}`)
@@ -61,7 +61,7 @@ export async function getActivities (req: Request, res: Response, next: NextFunc
 	logger.debug('Getting all activities')
 
 	try {
-		const activities = await ActivityModel.find({}).populate('rooms')
+		const activities = await ActivityModel.find({}).populate('priorityRooms')
 		logger.debug(`Retrieved ${activities.length} activities`)
 		res.status(200).json(activities)
 	} catch (error) {
@@ -99,9 +99,9 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 			activity.name = req.body.name
 			updateApplied = true
 		}
-		if (req.body.rooms !== undefined) {
-			logger.debug(`Updating rooms for activity ID ${activityId}`)
-			activity.rooms = req.body.rooms
+		if (req.body.priorityRooms !== undefined) {
+			logger.debug(`Updating priorityRooms for activity ID ${activityId}`)
+			activity.priorityRooms = req.body.priorityRooms
 			updateApplied = true
 		}
 		if (req.body.disabledProducts !== undefined) {
@@ -117,7 +117,7 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 
 		if (!updateApplied) {
 			logger.info(`Patch activity: No changes detected for activity ID ${activityId}`)
-			await activity.populate('rooms') // Populate before sending response
+			await activity.populate('priorityRooms') // Populate before sending response
 			res.status(200).json(activity) // Return current state if no changes
 			await session.commitTransaction()
 			await session.endSession()
@@ -128,7 +128,7 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 		await activity.validate()
 		await activity.save({ session })
 
-		await activity.populate('rooms')
+		await activity.populate('priorityRooms')
 
 		await session.commitTransaction()
 		logger.info(`Activity patched successfully: ID ${activityId}`)

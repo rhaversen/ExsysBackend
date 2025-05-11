@@ -16,7 +16,7 @@ export interface IKiosk extends Document {
 	_id: Schema.Types.ObjectId
 	name: string // Name of the kiosk
 	kioskTag: string // Unique identifier generated with nanoid
-	activities: Schema.Types.ObjectId[] | [] // Promoted activities for this kiosk
+	priorityActivities: Schema.Types.ObjectId[] | [] // Promoted priorityActivities for this kiosk
 	disabledActivities: Schema.Types.ObjectId[] | [] // Activities that are disabled for this kiosk
 	readerId: Schema.Types.ObjectId | undefined // The pay station the kiosk is connected to
 	deactivated: boolean; // true: Deactivated until manually activated, false: use deactivatedUntil date if set
@@ -34,7 +34,7 @@ export interface IKioskFrontend {
 	_id: string
 	name: string
 	kioskTag: string
-	activities: IActivity[]
+	priorityActivities: IActivity[]
 	disabledActivities: Schema.Types.ObjectId[]
 	readerId: IReader | null
 	deactivated: boolean
@@ -61,7 +61,7 @@ const kioskSchema = new Schema<IKiosk>({
 		ref: 'Reader',
 		default: null
 	},
-	activities: [{
+	priorityActivities: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Activity',
 		default: []
@@ -111,7 +111,7 @@ kioskSchema.path('readerId').validate(async function (value: Schema.Types.Object
 	return !!foundReader
 }, 'Den valgte kortlæser findes ikke')
 
-kioskSchema.path('activities').validate(async function (v: Schema.Types.ObjectId[]) {
+kioskSchema.path('priorityActivities').validate(async function (v: Schema.Types.ObjectId[]) {
 	for (const activity of v) {
 		const foundActivity = await ActivityModel.findOne({ _id: activity })
 		if (foundActivity === null || foundActivity === undefined) {

@@ -12,9 +12,9 @@ export async function transformKiosk (
 	kiosk: IKiosk
 ): Promise<IKioskFrontend> {
 	try {
-		// Populate activities and readerId
-		const populatedKiosk = await kiosk.populate<{ activities: IActivity[], readerId: IReader | null }>([
-			{ path: 'activities' },
+		// Populate priorityActivities and readerId
+		const populatedKiosk = await kiosk.populate<{ priorityActivities: IActivity[], readerId: IReader | null }>([
+			{ path: 'priorityActivities' },
 			{ path: 'readerId' }
 		])
 
@@ -23,7 +23,7 @@ export async function transformKiosk (
 			name: populatedKiosk.name,
 			readerId: populatedKiosk.readerId,
 			kioskTag: populatedKiosk.kioskTag,
-			activities: populatedKiosk.activities,
+			priorityActivities: populatedKiosk.priorityActivities,
 			disabledActivities: populatedKiosk.disabledActivities,
 			deactivated: populatedKiosk.deactivated,
 			deactivatedUntil: populatedKiosk.deactivatedUntil,
@@ -45,7 +45,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		readerId: req.body.readerId,
-		activities: req.body.activities,
+		priorityActivities: req.body.priorityActivities,
 		disabledActivities: req.body.disabledActivities,
 		deactivated: req.body.deactivated,
 		deactivatedUntil: req.body.deactivatedUntil
@@ -194,9 +194,9 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 			kiosk.readerId = req.body.readerId
 			updateApplied = true
 		}
-		if (req.body.activities !== undefined) { // Array comparison is complex, log if provided
-			logger.debug(`Updating activities for kiosk ID ${kioskId}`)
-			kiosk.activities = req.body.activities
+		if (req.body.priorityActivities !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating priorityActivities for kiosk ID ${kioskId}`)
+			kiosk.priorityActivities = req.body.priorityActivities
 			updateApplied = true
 		}
 		if (req.body.disabledActivities !== undefined) { // Array comparison is complex, log if provided
