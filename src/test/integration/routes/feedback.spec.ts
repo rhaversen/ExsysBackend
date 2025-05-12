@@ -169,10 +169,10 @@ describe('Feedback routes', function () {
 			const updates = { name: null }
 			const response = await agent().patch(`/api/v1/feedback/${testFeedback.id}`).send(updates).set('Cookie', adminSessionCookie)
 			expect(response).to.have.status(200)
-			expect(response.body.name).to.be.undefined
+			expect(response.body.name).to.be.null
 
 			const dbFeedback = await FeedbackModel.findById(testFeedback.id)
-			expect(dbFeedback?.name).to.be.undefined
+			expect(dbFeedback?.name).to.be.null
 		})
 
 		it('should have status 403 if not admin', async function () {
