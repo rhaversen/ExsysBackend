@@ -10,6 +10,7 @@ export interface IConfigs extends Document {
 	kioskOrderConfirmationTimeoutMs: number
 	disabledWeekdays: number[] // 0=Monday, 6=Sunday
 	kioskPassword: string
+	kioskFeedbackBannerDelayMs: number
 
 	// Timestamps
 	createdAt: Date
@@ -24,6 +25,7 @@ export interface IConfigsFrontend {
 		kioskOrderConfirmationTimeoutMs: number
 		disabledWeekdays: number[] // 0=Monday, 6=Sunday
 		kioskPassword: string
+		kioskFeedbackBannerDelayMs: number
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -68,6 +70,15 @@ const configsSchema = new Schema<IConfigs>({
 		default: 'Password',
 		minlength: [4, 'Adgangskode skal være mindst 4 tegn'],
 		maxLength: [100, 'Adgangskode kan højest være 100 tegn']
+	},
+	kioskFeedbackBannerDelayMs: {
+		type: Schema.Types.Number,
+		default: 5000, // 5 seconds
+		min: [0, 'Kiosk feedback banner forsinkelse skal være et positivt tal'],
+		validate: {
+			validator: Number.isInteger,
+			message: 'Kiosk feedback banner forsinkelse skal være et heltal'
+		}
 	}
 }, {
 	timestamps: true

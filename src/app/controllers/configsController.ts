@@ -15,7 +15,8 @@ export function transformConfigs (
 			kioskInactivityTimeoutWarningMs: configsDoc.kioskInactivityTimeoutWarningMs,
 			kioskOrderConfirmationTimeoutMs: configsDoc.kioskOrderConfirmationTimeoutMs,
 			disabledWeekdays: configsDoc.disabledWeekdays,
-			kioskPassword: configsDoc.kioskPassword
+			kioskPassword: configsDoc.kioskPassword,
+			kioskFeedbackBannerDelayMs: configsDoc.kioskFeedbackBannerDelayMs
 		},
 		createdAt: configsDoc.createdAt,
 		updatedAt: configsDoc.updatedAt
@@ -93,6 +94,11 @@ export async function patchConfigs (req: Request, res: Response, next: NextFunct
 		if (req.body.kioskPassword !== undefined && req.body.kioskPassword !== '') { // Don't update if password is empty string
 			logger.debug(`Updating kioskPassword for configs ID ${configs.id}`)
 			configs.kioskPassword = req.body.kioskPassword
+			updateApplied = true
+		}
+		if (req.body.kioskFeedbackBannerDelayMs !== undefined && configs.kioskFeedbackBannerDelayMs !== req.body.kioskFeedbackBannerDelayMs) {
+			logger.debug(`Updating kioskFeedbackBannerDelayMs for configs ID ${configs.id}`)
+			configs.kioskFeedbackBannerDelayMs = req.body.kioskFeedbackBannerDelayMs
 			updateApplied = true
 		}
 
