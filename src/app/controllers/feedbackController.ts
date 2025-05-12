@@ -106,9 +106,9 @@ export async function patchFeedback (req: Request, res: Response, next: NextFunc
 			updateApplied = true
 		}
 
-		if (req.body.read !== undefined && feedback.read !== req.body.read) {
-			logger.debug(`Updating read status for feedback ID ${feedbackId}`)
-			feedback.read = req.body.read
+		if (req.body.isRead !== undefined && feedback.isRead !== req.body.isRead) {
+			logger.debug(`Updating isRead status for feedback ID ${feedbackId}`)
+			feedback.isRead = req.body.isRead
 			updateApplied = true
 		}
 

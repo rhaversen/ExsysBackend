@@ -38,7 +38,7 @@ describe('Feedback routes', function () {
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('feedback', testFeedbackFields1.feedback)
 			expect(response.body).to.not.have.property('name')
-			expect(response.body).to.have.property('read', false)
+			expect(response.body).to.have.property('isRead', false)
 
 			const feedback = await FeedbackModel.findById(response.body._id)
 			expect(feedback).to.exist
@@ -128,7 +128,7 @@ describe('Feedback routes', function () {
 	describe('GET /v1/feedback', function () {
 		beforeEach(async function () {
 			await FeedbackModel.create({ feedback: 'Feedback 1', name: 'User A' })
-			await FeedbackModel.create({ feedback: 'Feedback 2', read: true })
+			await FeedbackModel.create({ feedback: 'Feedback 2', isRead: true })
 		})
 
 		it('should have status 200 and return all feedbacks if admin', async function () {
@@ -152,16 +152,16 @@ describe('Feedback routes', function () {
 		})
 
 		it('should have status 200 and update feedback if admin', async function () {
-			const updates = { feedback: 'Updated feedback text', read: true, name: 'Updated Name' }
+			const updates = { feedback: 'Updated feedback text', isRead: true, name: 'Updated Name' }
 			const response = await agent().patch(`/api/v1/feedback/${testFeedback.id}`).send(updates).set('Cookie', adminSessionCookie)
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('feedback', updates.feedback)
-			expect(response.body).to.have.property('read', updates.read)
+			expect(response.body).to.have.property('isRead', updates.isRead)
 			expect(response.body).to.have.property('name', updates.name)
 
 			const dbFeedback = await FeedbackModel.findById(testFeedback.id)
 			expect(dbFeedback?.feedback).to.equal(updates.feedback)
-			expect(dbFeedback?.read).to.equal(updates.read)
+			expect(dbFeedback?.isRead).to.equal(updates.isRead)
 			expect(dbFeedback?.name).to.equal(updates.name)
 		})
 

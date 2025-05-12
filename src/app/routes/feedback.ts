@@ -50,7 +50,7 @@ router.get('/:id', isAdmin, getFeedback)
  * @middleware isAdmin
  * @param {string} req.params.id - The ID of the feedback to update.
  * @param {string} [req.body.feedback] - The updated feedback text (optional).
- * @param {boolean} [req.body.read] - The updated read status (optional).
+ * @param {boolean} [req.body.isRead] - The updated isRead status (optional).
  * @param {string} [req.body.name] - The updated name (optional, send null to remove).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated feedback object.

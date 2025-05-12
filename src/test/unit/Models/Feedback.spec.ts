@@ -21,7 +21,7 @@ describe('Feedback Model', function () {
 		expect(feedback).to.exist
 		expect(feedback.feedback).to.equal(validFeedbackData.feedback)
 		expect(feedback.name).to.be.undefined
-		expect(feedback.read).to.be.false
+		expect(feedback.isRead).to.be.false
 		expect(feedback.createdAt).to.exist
 		expect(feedback.updatedAt).to.exist
 	})
@@ -31,7 +31,7 @@ describe('Feedback Model', function () {
 		expect(feedback).to.exist
 		expect(feedback.feedback).to.equal(validFeedbackDataWithName.feedback)
 		expect(feedback.name).to.equal(validFeedbackDataWithName.name)
-		expect(feedback.read).to.be.false
+		expect(feedback.isRead).to.be.false
 	})
 
 	it('should trim the feedback text', async function () {
@@ -78,14 +78,14 @@ describe('Feedback Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should default "read" to false', async function () {
+	it('should default "isRead" to false', async function () {
 		const feedback = await FeedbackModel.create(validFeedbackData)
-		expect(feedback.read).to.be.false
+		expect(feedback.isRead).to.be.false
 	})
 
-	it('should allow setting "read" to true', async function () {
-		const feedbackData = { ...validFeedbackData, read: true }
+	it('should allow setting "isRead" to true', async function () {
+		const feedbackData = { ...validFeedbackData, isRead: true }
 		const feedback = await FeedbackModel.create(feedbackData)
-		expect(feedback.read).to.be.true
+		expect(feedback.isRead).to.be.true
 	})
 })

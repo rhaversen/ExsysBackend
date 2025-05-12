@@ -7,7 +7,7 @@ export interface IFeedback extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
 	feedback: string // The feedback text
-	read: boolean // Indicates if the feedback has been read
+	isRead: boolean // Indicates if the feedback has been isRead
 	name?: string // Optional name of the person giving feedback
 
 	// Timestamps
@@ -23,7 +23,7 @@ const feedbackSchema = new Schema<IFeedback>({
 		required: [true, 'Feedback er påkrævet'],
 		maxLength: [1000, 'Feedback kan højest være 1000 tegn']
 	},
-	read: {
+	isRead: {
 		type: Schema.Types.Boolean,
 		default: false
 	},
