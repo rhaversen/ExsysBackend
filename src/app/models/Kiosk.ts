@@ -1,10 +1,12 @@
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
+import { transformKiosk } from '../controllers/kioskController.js' // Import transformer
 import logger from '../utils/logger.js'
+import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
-import ActivityModel, { IActivity } from './Activity.js'
-import ReaderModel, { IReader } from './Reader.js'
+import ActivityModel, { IActivityFrontend } from './Activity.js'
+import ReaderModel, { IReaderFrontend } from './Reader.js'
 
 const nanoidAlphabet = '123465789'
 const nanoidLength = 5
@@ -26,6 +28,9 @@ export interface IKiosk extends Document {
 	createdAt: Date
 	updatedAt: Date
 
+	// Internal flag for middleware
+	_wasNew?: boolean
+
 	// Methods
 	generateNewKioskTag: () => Promise<string>
 }
@@ -34,11 +39,11 @@ export interface IKioskFrontend {
 	_id: string
 	name: string
 	kioskTag: string
-	priorityActivities: IActivity[]
-	disabledActivities: Schema.Types.ObjectId[]
-	readerId: IReader | null
+	readerId: IReaderFrontend['_id'] | null
+	priorityActivities: Array<IActivityFrontend['_id']>
+	disabledActivities: Array<IActivityFrontend['_id']>
+	deactivatedUntil: string | null
 	deactivated: boolean
-	deactivatedUntil: Date | null
 	createdAt: Date
 	updatedAt: Date
 }
@@ -142,6 +147,8 @@ kioskSchema.path('disabledActivities').validate(async function (v: Schema.Types.
 
 // Pre-save middleware for generating kioskTag
 kioskSchema.pre('save', async function (next) {
+	this._wasNew = this.isNew // Set _wasNew flag
+
 	if (this.isNew) {
 		logger.debug(`Creating new kiosk: Name "${this.name}"`)
 		if (!this.kioskTag) { // Generate tag only if not provided and is new
@@ -158,8 +165,20 @@ kioskSchema.pre('save', async function (next) {
 })
 
 // Post-save middleware
-kioskSchema.post('save', function (doc, next) {
+kioskSchema.post('save', async function (doc: IKiosk, next) {
 	logger.debug(`Kiosk saved successfully: ID ${doc.id}, Name "${doc.name}", Tag "${doc.kioskTag}"`)
+	try {
+		// transformKiosk handles necessary populations
+		const transformed = await transformKiosk(doc)
+		if (doc._wasNew ?? false) {
+			emitKioskCreated(transformed)
+		} else {
+			emitKioskUpdated(transformed)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Kiosk ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew } // Clean up
 	next()
 })
 
@@ -182,6 +201,11 @@ kioskSchema.pre('deleteMany', async function (next) {
 // Post-delete middleware
 kioskSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	logger.info(`Kiosk deleted successfully: ID ${doc._id}, Name "${doc.name}", Tag "${doc.kioskTag}"`)
+	try {
+		emitKioskDeleted(doc.id) // Emit with ID
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Kiosk ID ${doc.id} in post-delete hook:`, { error })
+	}
 	next()
 })
 

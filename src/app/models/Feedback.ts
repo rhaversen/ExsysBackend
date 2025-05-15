@@ -1,6 +1,8 @@
 import { type Document, model, Schema } from 'mongoose'
 
+import { transformFeedback } from '../controllers/feedbackController.js' // Import transformer
 import logger from '../utils/logger.js'
+import { emitFeedbackCreated, emitFeedbackDeleted, emitFeedbackUpdated } from '../webSockets/feedbackHandlers.js'
 
 // Interfaces
 export interface IFeedback extends Document {
@@ -11,6 +13,18 @@ export interface IFeedback extends Document {
 	name?: string // Optional name of the person giving feedback
 
 	// Timestamps
+	createdAt: Date
+	updatedAt: Date
+
+	// Internal flag for middleware
+	_wasNew?: boolean
+}
+
+export interface IFeedbackFrontend {
+	_id: string
+	name?: string // Optional name
+	feedback: string // Required feedback text
+	isRead: boolean // Whether the feedback has been read
 	createdAt: Date
 	updatedAt: Date
 }
@@ -40,6 +54,7 @@ const feedbackSchema = new Schema<IFeedback>({
 
 // Pre-save middleware
 feedbackSchema.pre('save', function (next) {
+	this._wasNew = this.isNew // Set _wasNew flag
 	const logDetails: Record<string, unknown> = { feedback: this.feedback }
 	if (this.name !== undefined) {
 		logDetails.name = this.name
@@ -53,12 +68,25 @@ feedbackSchema.pre('save', function (next) {
 })
 
 // Post-save middleware
-feedbackSchema.post('save', function (doc, next) {
+feedbackSchema.post('save', function (doc: IFeedback, next) {
 	const logDetails: Record<string, unknown> = { feedback: doc.feedback }
 	if (doc.name !== undefined) {
 		logDetails.name = doc.name
 	}
 	logger.debug(`Feedback saved successfully: ID ${doc.id}`, logDetails)
+
+	try {
+		const transformedFeedback = transformFeedback(doc)
+		if (doc._wasNew ?? false) {
+			emitFeedbackCreated(transformedFeedback)
+		} else {
+			emitFeedbackUpdated(transformedFeedback)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Feedback ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew } // Clean up
+
 	next()
 })
 
@@ -116,6 +144,11 @@ feedbackSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: 
 		logDetails.name = doc.name
 	}
 	logger.info(`Feedback deleted successfully: ID ${doc.id}`, logDetails)
+	try {
+		emitFeedbackDeleted(doc.id) // Emit with ID
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Feedback ID ${doc.id} in post-delete hook:`, { error })
+	}
 	next()
 })
 

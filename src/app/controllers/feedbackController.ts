@@ -1,9 +1,21 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import FeedbackModel from '../models/Feedback.js'
+import FeedbackModel, { IFeedback, IFeedbackFrontend } from '../models/Feedback.js'
 import logger from '../utils/logger.js'
-import { emitFeedbackCreated, emitFeedbackUpdated, emitFeedbackDeleted } from '../webSockets/feedbackHandlers.js'
+
+export function transformFeedback (
+	feedbackDoc: IFeedback
+): IFeedbackFrontend {
+	return {
+		_id: feedbackDoc.id,
+		feedback: feedbackDoc.feedback,
+		name: feedbackDoc.name,
+		isRead: feedbackDoc.isRead,
+		createdAt: feedbackDoc.createdAt,
+		updatedAt: feedbackDoc.updatedAt
+	}
+}
 
 export async function createFeedback (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const feedbackText = req.body.feedback ?? 'N/A'
@@ -26,8 +38,7 @@ export async function createFeedback (req: Request, res: Response, next: NextFun
 	try {
 		const newFeedback = await FeedbackModel.create(allowedFields)
 		logger.debug(`Feedback created successfully: ID ${newFeedback.id}, Text: ${newFeedback.feedback}${newFeedback.name !== undefined ? `, Name: ${newFeedback.name}` : ''}`)
-		res.status(201).json(newFeedback)
-		emitFeedbackCreated(newFeedback)
+		res.status(201).json(transformFeedback(newFeedback))
 	} catch (error) {
 		logger.error(`Feedback creation failed for text: ${feedbackText}${feedbackName !== undefined ? ` by ${feedbackName as string}` : ''}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -52,7 +63,7 @@ export async function getFeedback (req: Request, res: Response, next: NextFuncti
 		}
 
 		logger.debug(`Retrieved feedback successfully: ID ${feedbackId}`)
-		res.status(200).json(feedback)
+		res.status(200).json(transformFeedback(feedback))
 	} catch (error) {
 		logger.error(`Get feedback failed: Error retrieving feedback ID ${feedbackId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -69,7 +80,7 @@ export async function getFeedbacks (req: Request, res: Response, next: NextFunct
 	try {
 		const feedbacks = await FeedbackModel.find()
 		logger.debug(`Retrieved ${feedbacks.length} feedbacks successfully`)
-		res.status(200).json(feedbacks)
+		res.status(200).json(feedbacks.map(transformFeedback))
 	} catch (error) {
 		logger.error('Get feedbacks failed: Error retrieving all feedbacks', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -124,7 +135,7 @@ export async function patchFeedback (req: Request, res: Response, next: NextFunc
 
 		if (!updateApplied) {
 			logger.info(`Patch feedback: No changes detected for feedback ID ${feedbackId}`)
-			res.status(200).json(feedback) // Return current state if no changes
+			res.status(200).json(transformFeedback(feedback)) // Return current state if no changes
 			await session.commitTransaction()
 			await session.endSession()
 			return
@@ -136,8 +147,7 @@ export async function patchFeedback (req: Request, res: Response, next: NextFunc
 		await session.commitTransaction()
 
 		logger.info(`Feedback updated successfully: ID ${updatedFeedback.id}`)
-		res.status(200).json(updatedFeedback)
-		emitFeedbackUpdated(updatedFeedback)
+		res.status(200).json(transformFeedback(updatedFeedback))
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch feedback failed: Error updating feedback ID ${feedbackId}`, { error })
@@ -156,7 +166,8 @@ export async function deleteFeedback (req: Request, res: Response, next: NextFun
 	logger.info(`Attempting to delete feedback: ID ${feedbackId}`)
 
 	try {
-		const deletedFeedback = await FeedbackModel.findByIdAndDelete(feedbackId)
+		const deletedFeedback = await FeedbackModel.findById(feedbackId)
+		await deletedFeedback?.deleteOne()
 
 		if (deletedFeedback === null || deletedFeedback === undefined) {
 			logger.warn(`Delete feedback failed: Feedback not found. ID: ${feedbackId}`)
@@ -166,7 +177,6 @@ export async function deleteFeedback (req: Request, res: Response, next: NextFun
 
 		logger.info(`Feedback deleted successfully: ID ${deletedFeedback.id}`)
 		res.status(200).json({ message: 'Feedback deleted successfully', id: deletedFeedback.id })
-		emitFeedbackDeleted(deletedFeedback.id) // Send ID or the deleted object
 	} catch (error) {
 		logger.error(`Delete feedback failed: Error deleting feedback ID ${feedbackId}`, { error })
 		if (error instanceof mongoose.Error.CastError) { // CastError can happen if ID format is invalid

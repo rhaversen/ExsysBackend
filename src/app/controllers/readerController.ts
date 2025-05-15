@@ -4,7 +4,6 @@ import mongoose from 'mongoose'
 import ReaderModel, { type IReader, type IReaderFrontend } from '../models/Reader.js'
 import { pairReader, unpairReader } from '../services/apiServices.js'
 import logger from '../utils/logger.js'
-import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webSockets/readerHandlers.js'
 
 export function transformReader (
 	readerDoc: IReader
@@ -59,8 +58,6 @@ export async function createReader (req: Request, res: Response, next: NextFunct
 		logger.info(`Reader created successfully: ID ${newReader.id}, Tag: ${newReader.readerTag ?? 'N/A'}`)
 
 		res.status(201).json(transformedReader)
-
-		emitReaderCreated(transformedReader)
 	} catch (error) {
 		logger.error(`Reader creation failed: Error saving reader to database. Tag: ${readerTag ?? 'N/A'}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -134,8 +131,6 @@ export async function patchReader (req: Request, res: Response, next: NextFuncti
 		logger.info(`Reader patched successfully: ID ${readerId}`)
 
 		res.status(200).json(transformedReader)
-
-		emitReaderUpdated(transformedReader)
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch reader failed: Error updating reader ID ${readerId}`, { error })
@@ -180,13 +175,12 @@ export async function deleteReader (req: Request, res: Response, next: NextFunct
 
 		logger.debug(`Reader unpaired successfully from external service. API Reference ID: ${reader.apiReferenceId}`)
 
-		await ReaderModel.findByIdAndDelete(readerId)
+		const deletedReader = await ReaderModel.findById(readerId)
+		await deletedReader?.deleteOne()
 
 		logger.info(`Reader deleted successfully: ID ${readerId}`)
 
 		res.status(204).send()
-
-		emitReaderDeleted(readerId)
 	} catch (error) {
 		logger.error(`Reader deletion failed: Error during deletion process for ID ${readerId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

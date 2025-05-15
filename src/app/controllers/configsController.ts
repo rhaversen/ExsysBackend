@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import ConfigsModel, { type IConfigs, type IConfigsFrontend } from '../models/Configs.js'
 import logger from '../utils/logger.js'
-import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 export function transformConfigs (
 	configsDoc: IConfigs
@@ -119,8 +118,6 @@ export async function patchConfigs (req: Request, res: Response, next: NextFunct
 		const transformedConfigs = transformConfigs(savedConfigs)
 		logger.info(`Configs patched successfully: ID ${configs.id}`)
 		res.status(200).json(transformedConfigs)
-
-		emitConfigsUpdated(transformedConfigs)
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error('Patch configs failed', { error })

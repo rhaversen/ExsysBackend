@@ -1,7 +1,11 @@
 import { type Document, model, Schema } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
+import { transformKiosk } from '../controllers/kioskController.js'
+import { transformReader } from '../controllers/readerController.js' // Import transformer
 import logger from '../utils/logger.js'
+import { emitKioskUpdated } from '../webSockets/kioskHandlers.js'
+import { emitReaderCreated, emitReaderDeleted, emitReaderUpdated } from '../webSockets/readerHandlers.js'
 
 import KioskModel from './Kiosk.js'
 
@@ -22,6 +26,9 @@ export interface IReader extends Document {
 
 	// Methods
 	generateNewReaderTag: () => Promise<string>
+
+	// Internal flag for middleware
+	_wasNew?: boolean
 }
 
 export interface IReaderFrontend {
@@ -79,6 +86,7 @@ readerSchema.path('apiReferenceId').validate(async function (value: string) {
 
 // Pre-save middleware
 readerSchema.pre('save', async function (next) {
+	this._wasNew = this.isNew // Set _wasNew flag
 	if (this.isNew) {
 		logger.debug(`Creating new reader: API Ref "${this.apiReferenceId}"`)
 		if (this.readerTag === undefined || this.readerTag === null || this.readerTag === '') {
@@ -97,8 +105,19 @@ readerSchema.pre('save', async function (next) {
 })
 
 // Post-save middleware
-readerSchema.post('save', function (doc, next) {
-	logger.debug(`Reader saved successfully: ID ${doc.id}, API Ref "${doc.apiReferenceId}", Tag "${doc.readerTag}"`)
+readerSchema.post('save', function (doc: IReader, next) {
+	logger.debug(`Reader saved successfully: ID ${doc.id}, API Ref ID ${doc.apiReferenceId}`)
+	try {
+		const transformedReader = transformReader(doc)
+		if (doc._wasNew ?? false) {
+			emitReaderCreated(transformedReader)
+		} else {
+			emitReaderUpdated(transformedReader)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Reader ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew } // Clean up
 	next()
 })
 
@@ -120,10 +139,21 @@ readerSchema.pre('deleteOne', async function (next) {
 		const readerId = docToDelete._id
 		logger.info(`Pre-deleteOne hook: Found Reader to delete: ID ${readerId}, API Ref "${docToDelete.apiReferenceId}", Tag "${docToDelete.readerTag}"`)
 
+		// Find kiosks that will be affected BEFORE the update
+		const affectedKiosksBeforeUpdate = await KioskModel.find({ readerId }).lean()
+
 		// Set readerId to null in associated Kiosks
 		logger.debug(`Setting readerId ${readerId} to null in associated Kiosks`)
 		const updateResult = await KioskModel.updateMany({ readerId }, { $set: { readerId: null } })
 		logger.debug(`Set readerId to null in ${updateResult.modifiedCount} Kiosks`)
+
+		// Emit updates for affected kiosks
+		for (const kioskDoc of affectedKiosksBeforeUpdate) {
+			const updatedKiosk = await KioskModel.findById(kioskDoc._id)
+			if (updatedKiosk) {
+				emitKioskUpdated(await transformKiosk(updatedKiosk))
+			}
+		}
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Reader filter:', { filter, error })
@@ -144,10 +174,21 @@ readerSchema.pre('deleteMany', async function (next) {
 		if (docIds.length > 0) {
 			logger.info(`Preparing to delete ${docIds.length} readers via deleteMany: IDs [${docIds.join(', ')}]`)
 
+			// Find kiosks that will be affected BEFORE the update
+			const affectedKiosksBeforeUpdate = await KioskModel.find({ readerId: { $in: docIds } }).lean()
+
 			// Set readerId to null in associated Kiosks
 			logger.debug(`Setting reader IDs [${docIds.join(', ')}] to null in associated Kiosks`)
 			const updateResult = await KioskModel.updateMany({ readerId: { $in: docIds } }, { $set: { readerId: null } })
 			logger.debug(`Set reader IDs to null in ${updateResult.modifiedCount} Kiosks`)
+
+			// Emit updates for affected kiosks
+			for (const kioskDoc of affectedKiosksBeforeUpdate) {
+				const updatedKiosk = await KioskModel.findById(kioskDoc._id)
+				if (updatedKiosk) {
+					emitKioskUpdated(await transformKiosk(updatedKiosk))
+				}
+			}
 		} else {
 			logger.info('deleteMany on Readers: No documents matched the filter.')
 		}
@@ -161,6 +202,11 @@ readerSchema.pre('deleteMany', async function (next) {
 // Post-delete middleware
 readerSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	logger.info(`Reader deleted successfully: ID ${doc._id}, API Ref "${doc.apiReferenceId}", Tag "${doc.readerTag}"`)
+	try {
+		emitReaderDeleted(doc.id) // Emit with ID
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Reader ID ${doc.id} in post-delete hook:`, { error })
+	}
 	next()
 })
 

@@ -1,6 +1,8 @@
 import { type Document, model, Schema } from 'mongoose'
 
+import { transformConfigs } from '../controllers/configsController.js'
 import logger from '../utils/logger.js'
+import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 export interface IConfigs extends Document {
 	// Properties
@@ -94,6 +96,12 @@ configsSchema.pre('save', async function (next) {
 configsSchema.post('save', function (doc, next) {
 	// Avoid logging password hash
 	logger.debug(`Configs saved successfully: ID ${doc.id}`)
+	try {
+		const transformedConfigs = transformConfigs(doc)
+		emitConfigsUpdated(transformedConfigs)
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Configs ID ${doc.id} in post-save hook:`, { error })
+	}
 	next()
 })
 

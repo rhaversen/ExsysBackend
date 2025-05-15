@@ -2,14 +2,12 @@ import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
 import KioskModel, { IKiosk } from '../models/Kiosk.js'
-import OptionModel, { IOption } from '../models/Option.js'
-import OrderModel, { IOrderFrontend, type IOrderPopulated } from '../models/Order.js'
-import PaymentModel, { IPayment } from '../models/Payment.js'
-import ProductModel, { IProduct } from '../models/Product.js'
+import OptionModel from '../models/Option.js'
+import OrderModel, { IOrder, IOrderFrontend, IPayment } from '../models/Order.js' // Import IPayment from Order.js
+import ProductModel from '../models/Product.js'
 import ReaderModel, { IReader } from '../models/Reader.js'
 import { createReaderCheckout, cancelReaderCheckout } from '../services/apiServices.js'
 import logger from '../utils/logger.js'
-import { emitOrderStatusUpdated, emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
 
 interface OrderItem {
 	id: string
@@ -26,18 +24,20 @@ interface GetOrdersWithDateRangeRequest extends Request {
 	}
 }
 
-export function transformOrder (order: IOrderPopulated): IOrderFrontend {
+export const transformOrder = (
+	order: IOrder
+): IOrderFrontend => {
 	try {
 		const products = order.products
 			.filter(item => item.id != null) // Filter out items where product might have been deleted
-			.map(item => ({ _id: item.id._id, name: item.id.name, quantity: item.quantity }))
+			.map(item => ({ _id: item.id.toString(), quantity: item.quantity }))
 
 		const options = (order.options ?? [])
 			.filter(item => item.id != null) // Filter out items where option might have been deleted
-			.map(item => ({ _id: item.id._id, name: item.id.name, quantity: item.quantity }))
+			.map(item => ({ _id: item.id.toString(), quantity: item.quantity }))
 
-		if (order.paymentId == null) {
-			logger.error(`Order transformation failed: paymentId is missing or not populated for order ID ${order._id}`)
+		if (order.payment == null) {
+			logger.error(`Order transformation failed: payment object is missing for order ID ${order._id}`)
 			throw new Error('Payment details are missing for order transformation.')
 		}
 
@@ -45,15 +45,14 @@ export function transformOrder (order: IOrderPopulated): IOrderFrontend {
 			_id: order._id.toString(),
 			products,
 			options,
-			activityId: order.activityId,
-			roomId: order.roomId,
-			kioskId: order.kioskId ?? null,
+			activityId: order.activityId.toString(),
+			roomId: order.roomId.toString(),
+			kioskId: order.kioskId?.toString() ?? null,
 			status: order.status ?? 'pending',
-			paymentId: order.paymentId._id.toString(), // Use _id.toString() for lean objects
-			paymentStatus: order.paymentId.paymentStatus,
+			paymentStatus: order.payment.paymentStatus,
 			checkoutMethod: order.checkoutMethod,
-			createdAt: order.createdAt.toISOString(),
-			updatedAt: order.updatedAt.toISOString()
+			createdAt: order.createdAt,
+			updatedAt: order.updatedAt
 		}
 	} catch (error) {
 		logger.error(`Error transforming order ID ${order._id}`, { error })
@@ -158,13 +157,12 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 		}
 		logger.debug(`SumUp checkout created externally. Client Transaction ID: ${clientTransactionId}`)
 
-		// Create a new payment
-		const newPayment = await PaymentModel.create({
+		const paymentData: IPayment = {
 			clientTransactionId,
 			paymentStatus: 'pending'
-		})
-		logger.info(`Pending payment record created for SumUp checkout. Payment ID: ${newPayment.id}, Client Transaction ID: ${clientTransactionId}`)
-		return newPayment
+		}
+		logger.info(`Pending payment data prepared for SumUp checkout. Client Transaction ID: ${clientTransactionId}`)
+		return paymentData
 	} catch (error) {
 		logger.error(`Error creating SumUp checkout for Kiosk ID ${kioskId}`, { error })
 		return undefined
@@ -174,13 +172,13 @@ async function createSumUpCheckout (kioskId: string, subtotal: number): Promise<
 async function createLaterCheckout (): Promise<IPayment> {
 	logger.info('Creating "Pay Later" checkout (auto-successful payment)')
 	try {
-		const newPayment = await PaymentModel.create({
+		const paymentData: IPayment = {
 			paymentStatus: 'successful' // Pay Later is considered successful immediately
-		})
-		logger.info(`"Pay Later" payment record created. Payment ID: ${newPayment.id}`)
-		return newPayment
+		}
+		logger.info('"Pay Later" payment data prepared.')
+		return paymentData
 	} catch (error) {
-		logger.error('Error creating "Pay Later" payment record', { error })
+		logger.error('Error creating "Pay Later" payment data', { error })
 		throw error // Re-throw to be handled by caller
 	}
 }
@@ -188,13 +186,13 @@ async function createLaterCheckout (): Promise<IPayment> {
 async function createManualCheckout (): Promise<IPayment> {
 	logger.info('Creating "Manual Entry" checkout (auto-successful payment)')
 	try {
-		const newPayment = await PaymentModel.create({
+		const paymentData: IPayment = {
 			paymentStatus: 'successful' // Manual entry is considered successful immediately
-		})
-		logger.info(`"Manual Entry" payment record created. Payment ID: ${newPayment.id}`)
-		return newPayment
+		}
+		logger.info('"Manual Entry" payment data prepared.')
+		return paymentData
 	} catch (error) {
-		logger.error('Error creating "Manual Entry" payment record', { error })
+		logger.error('Error creating "Manual Entry" payment data', { error })
 		throw error // Re-throw to be handled by caller
 	}
 }
@@ -319,47 +317,22 @@ export async function createOrder (req: Request, res: Response, next: NextFuncti
 		}
 
 		// Create the order
-		logger.debug(`Creating order record with Payment ID: ${payment.id}`)
+		logger.debug(`Creating order record with embedded payment data. Status: ${payment.paymentStatus}`)
 		const newOrder = await OrderModel.create({
 			activityId,
 			roomId,
 			kioskId: kioskId ?? null,
 			products: combinedProducts,
 			options: combinedOptions,
-			paymentId: payment.id,
+			payment,
 			checkoutMethod,
 			status: 'pending'
 		})
 		logger.info(`Order created successfully: ID ${newOrder.id}`)
 
-		// Populate the necessary fields for transformation
-		await newOrder.populate([
-			{
-				path: 'paymentId',
-				select: 'paymentStatus clientTransactionId id _id'
-			},
-			{
-				path: 'products.id',
-				select: 'name _id'
-			},
-			{
-				path: 'options.id',
-				select: 'name _id'
-			}
-		])
-		logger.debug(`Order populated for transformation: ID ${newOrder.id}`)
-
-		// Cast to the populated type
-		const populatedOrder = newOrder as unknown as IOrderPopulated
 		// Transform and respond
-		const transformedOrder = transformOrder(populatedOrder)
+		const transformedOrder = transformOrder(newOrder)
 		res.status(201).json(transformedOrder)
-
-		// Emit event for immediately paid orders ('later' or 'manual')
-		if (checkoutMethod === 'later' || checkoutMethod === 'manual') {
-			logger.debug(`Emitting paid order event for '${checkoutMethod}' checkout. Order ID: ${newOrder.id}`)
-			await emitPaidOrderPosted(transformedOrder)
-		}
 	} catch (error) {
 		logger.error('Order creation failed: Unexpected error', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -382,10 +355,6 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 
 	try {
 		const order = await OrderModel.findById(orderId)
-			.populate<{ paymentId: Pick<IPayment, 'paymentStatus'> }>({
-				path: 'paymentId',
-				select: 'paymentStatus' // Select only the status
-			})
 			.lean() // Use lean as we only need the status
 
 		if (order === null) {
@@ -394,15 +363,15 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 			return
 		}
 
-		if (order.paymentId == null) {
-			// This indicates a data inconsistency
-			logger.error(`Get payment status failed: Order ID ${orderId} has no associated paymentId.`)
+		if (order.payment == null) {
+			// This indicates a data inconsistency, though less likely with embedded doc
+			logger.error(`Get payment status failed: Order ID ${orderId} has no embedded payment object.`)
 			res.status(500).json({ error: 'Fejl ved hentning af betalingsstatus' })
 			return
 		}
 
-		logger.debug(`Retrieved payment status for Order ID ${orderId}: ${order.paymentId.paymentStatus}`)
-		res.status(200).json({ paymentStatus: order.paymentId.paymentStatus })
+		logger.debug(`Retrieved payment status for Order ID ${orderId}: ${order.payment.paymentStatus}`)
+		res.status(200).json({ paymentStatus: order.payment.paymentStatus })
 	} catch (error) {
 		logger.error(`Get payment status failed for Order ID ${orderId}`, { error })
 		// Avoid sending Mongoose validation/cast errors here, should be caught earlier
@@ -421,7 +390,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 	} = req.query
 
 	// Build the Mongoose query object dynamically
-	const query: mongoose.FilterQuery<IOrderPopulated> = {} // Use FilterQuery type
+	const query: mongoose.FilterQuery<IOrder> = {} // Base query object
 	const dateQuery: { $gte?: Date, $lte?: Date } = {} // Separate date query
 
 	if (fromDate != null) {
@@ -459,44 +428,28 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 
 	try {
 		logger.debug('Executing order query:', { query: JSON.stringify(query) })
-		// Fetch and populate orders
+		// Fetch orders
 		const orders = await OrderModel.find(query)
-			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | 'id'> }>({ // Type the population result
-				path: 'paymentId',
-				select: 'paymentStatus clientTransactionId id' // Select fields needed for filtering and transformation
-			})
-			.populate<{ 'products.id': Pick<IProduct, 'name' | '_id'> }>({ // Type population
-				path: 'products.id',
-				select: 'name _id'
-			})
-			.populate<{ 'options.id': Pick<IOption, 'name' | '_id'> }>({ // Type population
-				path: 'options.id',
-				select: 'name _id'
-			})
 			.sort({ createdAt: -1 }) // Sort by creation date descending
-			.lean() // Use lean for performance if not modifying documents
-			.exec() as unknown as IOrderPopulated[] // Cast needed with lean
+			.lean()
+			.exec()
 
 		logger.debug(`Initial query returned ${orders?.length ?? 0} orders`)
 
-		// Filter by paymentStatus after population
+		// Filter by paymentStatus directly on the embedded payment object
 		const filteredOrders = orders?.filter(order => {
-			// Ensure paymentId is populated and exists (lean() can return null for failed population)
-			if (order.paymentId == null) {
-				logger.warn(`Order ID ${order._id} skipped during payment status filtering: paymentId not populated or null.`)
+			if (order.payment == null) { // Should not happen if schema enforces payment
+				logger.warn(`Order ID ${order._id} skipped during payment status filtering: payment object is missing.`)
 				return false
 			}
 			// Apply filter if paymentStatusFilter is provided
-			return !paymentStatusFilter || paymentStatusFilter.includes(order.paymentId.paymentStatus)
+			return !paymentStatusFilter || paymentStatusFilter.includes(order.payment.paymentStatus)
 		}) ?? []
 
 		logger.debug(`${filteredOrders.length} orders remaining after payment status filter`)
 
-		// Transform orders
-		const transformedOrders = filteredOrders.map(order => transformOrder(order))
-
-		logger.info(`Successfully retrieved ${transformedOrders.length} orders matching query.`)
-		res.status(200).json(transformedOrders)
+		logger.info(`Successfully retrieved ${filteredOrders.length} orders matching query.`)
+		res.status(200).json(filteredOrders.map(transformOrder))
 	} catch (error) {
 		logger.error('Failed to get orders with query', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -536,20 +489,7 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 	try {
 		// Fetch and populate orders within the transaction session
 		const ordersToUpdate = await OrderModel.find({ _id: { $in: orderIds } })
-			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | 'id' | '_id'> }>({
-				path: 'paymentId',
-				select: 'paymentStatus clientTransactionId id _id' // Ensure _id is selected if needed by transformOrder or IPayment type
-			})
-			.populate<{ 'products.id': Pick<IProduct, 'name' | '_id'> }>({
-				path: 'products.id',
-				select: 'name _id'
-			})
-			.populate<{ 'options.id': Pick<IOption, 'name' | '_id'> }>({
-				path: 'options.id',
-				select: 'name _id'
-			})
-			.session(session) // Apply session after population
-			.exec() as unknown as Array<IOrderPopulated & mongoose.Document> // Cast to populated type + Document for save()
+			.session(session)
 
 		if (ordersToUpdate.length === 0) {
 			logger.warn(`Update order status: No orders found matching provided IDs: [${orderIds.join(', ')}]`)
@@ -561,7 +501,7 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 
 		logger.debug(`Found ${ordersToUpdate.length} orders to update status to "${status}"`)
 
-		const updatedOrderDocs = [] // Collect updated docs for response
+		const updatedOrderDocs: IOrder[] = [] // Collect updated docs for response
 
 		for (const order of ordersToUpdate) {
 			if (order.status !== status) {
@@ -580,10 +520,7 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		await session.commitTransaction()
 		logger.info(`Successfully updated status to "${status}" for ${updatedCount} out of ${ordersToUpdate.length} found orders. IDs: [${orderIds.join(', ')}]`)
 
-		res.status(200).json(updatedOrderDocs) // Respond with the (potentially modified) documents
-
-		// TODO: Emit events for updated orders if necessary
-		updatedOrderDocs.forEach(order => emitOrderStatusUpdated(transformOrder(order)))
+		res.status(200).json(updatedOrderDocs.map(transformOrder)) // Respond with the (potentially modified) documents
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Update order status failed during transaction for status "${status}", IDs: [${orderIds.join(', ')}]`, { error })
@@ -627,20 +564,14 @@ export async function cancelOrder (req: Request, res: Response, next: NextFuncti
 		}
 
 		const order = await OrderModel.findById(orderId)
-			.populate<{ paymentId: Pick<IPayment, 'paymentStatus' | '_id'> }>({
-				path: 'paymentId',
-				select: 'paymentStatus _id'
-			})
-			.exec()
-
 		if (order == null) {
 			logger.warn(`Cancel order failed: Order not found. ID: ${orderId}`)
 			res.status(404).json({ error: 'Ordre ikke fundet' })
 			return
 		}
-		if (order.paymentId == null) {
-			logger.warn(`Cancel order failed: Order ID ${orderId} has no associated payment details or paymentId could not be populated.`)
-			res.status(500).json({ error: 'Fejl ved annullering af ordre: Betalingsdetaljer mangler eller kunne ikke hentes.' })
+		if (order.payment == null) {
+			logger.warn(`Cancel order failed: Order ID ${orderId} has no associated payment details.`)
+			res.status(500).json({ error: 'Fejl ved annullering af ordre: Betalingsdetaljer mangler.' })
 			return
 		}
 		if (order.checkoutMethod !== 'sumUp') {
@@ -658,8 +589,8 @@ export async function cancelOrder (req: Request, res: Response, next: NextFuncti
 			res.status(403).json({ error: 'Ordren tilhører ikke denne kiosk' })
 			return
 		}
-		if (order.paymentId.paymentStatus !== 'pending') {
-			logger.warn(`Cancel order failed: Order ID ${orderId} is not in a cancellable state. Current payment status: ${order.paymentId.paymentStatus}`)
+		if (order.payment.paymentStatus !== 'pending') {
+			logger.warn(`Cancel order failed: Order ID ${orderId} is not in a cancellable state. Current payment status: ${order.payment.paymentStatus}`)
 			res.status(400).json({ error: 'Ordren kan ikke annulleres i sin nuværende tilstand' })
 			return
 		}

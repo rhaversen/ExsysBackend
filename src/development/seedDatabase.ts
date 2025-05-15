@@ -9,7 +9,6 @@ import AdminModel from '../app/models/Admin.js'
 import KioskModel from '../app/models/Kiosk.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'
-import PaymentModel from '../app/models/Payment.js'
 import ProductModel from '../app/models/Product.js'
 import ReaderModel from '../app/models/Reader.js'
 import RoomModel from '../app/models/Room.js'
@@ -715,20 +714,6 @@ await ActivityModel.create({
 	disabledRooms: [room1.id, room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
 })
 
-// Payments
-const payment1 = await PaymentModel.create({
-	paymentStatus: 'successful'
-})
-const payment2 = await PaymentModel.create({
-	paymentStatus: 'successful'
-})
-const payment3 = await PaymentModel.create({
-	paymentStatus: 'successful'
-})
-const payment4 = await PaymentModel.create({
-	paymentStatus: 'pending'
-})
-
 // Readers
 const reader1 = await ReaderModel.create({ apiReferenceId: '12345' })
 const reader2 = await ReaderModel.create({ apiReferenceId: '54321' })
@@ -1121,7 +1106,7 @@ await SessionModel.create({
 // Orders
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment1.id,
+	payment: { paymentStatus: 'successful' },
 	activityId: activity1.id,
 	roomId: room1.id,
 	kioskId: kiosk1.id,
@@ -1136,7 +1121,7 @@ await OrderModel.create({
 })
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment2.id,
+	payment: { paymentStatus: 'successful' },
 	activityId: activity2.id,
 	roomId: room2.id,
 	kioskId: kiosk1.id,
@@ -1154,7 +1139,7 @@ await OrderModel.create({
 })
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment3.id,
+	payment: { paymentStatus: 'successful' },
 	activityId: activity3.id,
 	roomId: room3.id,
 	kioskId: kiosk1.id,
@@ -1175,7 +1160,7 @@ await OrderModel.create({
 })
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment4.id,
+	payment: { paymentStatus: 'pending' },
 	activityId: activity4.id,
 	kioskId: kiosk1.id,
 	roomId: room4.id,
@@ -1576,10 +1561,13 @@ for (let i = 0; i < 300; i++) {
 	const activity = getRandom(allActivities)[0]
 	const room = getRandom(allRooms)[0]
 	const kiosk = getRandom(allKiosks)[0]
-	// Create a new payment for each order instead of reusing existing ones
-	const newPayment = await PaymentModel.create({
-		paymentStatus: Math.random() < 0.95 ? 'successful' : 'pending' // ~5% pending
-	})
+
+	const paymentStatuses = ['successful', 'pending', 'failed']
+	const bias = Math.random() ** 2 // Bias towards successful payments
+	// ~90% successful, ~5% pending, ~5% failed
+	const paymentData = {
+		paymentStatus: paymentStatuses[Math.floor(bias * paymentStatuses.length)]
+	}
 	const createdAt = randomDate(monthsAgo, now)
 	const updatedAt = randomDate(createdAt, now)
 
@@ -1595,7 +1583,7 @@ for (let i = 0; i < 300; i++) {
 
 	await OrderModel.create({
 		checkoutMethod: 'sumUp',
-		paymentId: newPayment._id,
+		payment: paymentData,
 		activityId: activity._id,
 		roomId: room._id,
 		kioskId: kiosk._id,

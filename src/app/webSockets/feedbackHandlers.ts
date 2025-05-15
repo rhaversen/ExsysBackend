@@ -1,16 +1,16 @@
-import { type IFeedback } from '../models/Feedback'
+import { IFeedbackFrontend } from '../models/Feedback'
 import { emitSocketEvent } from '../utils/socket.js'
 
-export function emitFeedbackCreated (feedback: IFeedback): void {
-	emitSocketEvent<IFeedback>(
+export function emitFeedbackCreated (feedback: IFeedbackFrontend): void {
+	emitSocketEvent<IFeedbackFrontend>(
 		'feedbackCreated',
 		feedback,
 		`Broadcasted feedback created for feedback ${feedback._id}`
 	)
 }
 
-export function emitFeedbackUpdated (feedback: IFeedback): void {
-	emitSocketEvent<IFeedback>(
+export function emitFeedbackUpdated (feedback: IFeedbackFrontend): void {
+	emitSocketEvent<IFeedbackFrontend>(
 		'feedbackUpdated',
 		feedback,
 		`Broadcasted feedback updated for feedback ${feedback._id}`

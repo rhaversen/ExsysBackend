@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import Session, { type ISession, type ISessionFrontend } from '../models/Session.js'
 import logger from '../utils/logger.js'
-import { emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 
 export interface ParsedSessionData {
 	cookie: {
@@ -142,9 +141,6 @@ export async function deleteSession (req: Request, res: Response, next: NextFunc
 
 		// Respond 204 No Content
 		res.status(204).send()
-
-		// Emit WebSocket event after successful deletion and response
-		emitSessionDeleted(sessionId)
 	} catch (error) {
 		logger.error(`Delete session failed: Error during deletion process for ID ${sessionId}`, { error })
 		next(error)

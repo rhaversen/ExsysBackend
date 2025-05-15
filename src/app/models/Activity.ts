@@ -1,6 +1,10 @@
-import { type Document, model, Schema } from 'mongoose'
+import { Document, model, Schema } from 'mongoose'
 
+import { transformActivity } from '../controllers/activityController.js' // Import transformer
+import { transformKiosk } from '../controllers/kioskController.js'
 import logger from '../utils/logger.js'
+import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
+import { emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 import KioskModel from './Kiosk.js'
 import ProductModel, { IProduct } from './Product.js'
@@ -10,19 +14,27 @@ import RoomModel, { IRoom } from './Room.js'
 export interface IActivity extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
-	priorityRooms: Schema.Types.ObjectId[] | IRoom[] // Rooms which are promoted for this activity
-	disabledProducts: Schema.Types.ObjectId[] | IProduct[] // Products that are disabled for this activity
-	disabledRooms: Schema.Types.ObjectId[] | IRoom[] // Rooms that are disabled for this activity
+	priorityRooms: Schema.Types.ObjectId[] // Rooms which are promoted for this activity
+	disabledProducts: Schema.Types.ObjectId[] // Products that are disabled for this activity
+	disabledRooms: Schema.Types.ObjectId[] // Rooms that are disabled for this activity
 	name: string
 
 	// Timestamps
 	createdAt: Date
 	updatedAt: Date
+
+	// Internal flag for middleware
+	_wasNew?: boolean
 }
 
-export interface IActivityPopulated extends IActivity {
-	priorityRooms: IRoom[]
-	disabledProducts: IProduct[]
+export interface IActivityFrontend {
+	_id: string
+	priorityRooms: Array<IRoom['_id']>
+	disabledProducts: Array<IProduct['_id']>
+	disabledRooms: Array<IRoom['_id']>
+	name: string
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Schema
@@ -95,7 +107,7 @@ activitySchema.path('disabledRooms').validate(async function (v: Schema.Types.Ob
 
 // Pre-save middleware
 activitySchema.pre('save', function (next) {
-	// Log before saving, especially useful for tracking updates vs creates
+	this._wasNew = this.isNew
 	if (this.isNew) {
 		logger.debug(`Saving new activity: Name "${this.name}"`)
 	} else {
@@ -105,8 +117,19 @@ activitySchema.pre('save', function (next) {
 })
 
 // Post-save middleware
-activitySchema.post('save', function (doc, next) {
+activitySchema.post('save', async function (doc: IActivity, next) {
 	logger.debug(`Activity saved successfully: ID ${doc.id}, Name "${doc.name}"`)
+	try {
+		const transformedActivity = transformActivity(doc)
+		if (doc._wasNew ?? false) {
+			emitActivityPosted(transformedActivity)
+		} else {
+			emitActivityUpdated(transformedActivity)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Activity ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew } // Clean up
 	next()
 })
 
@@ -117,28 +140,40 @@ activitySchema.pre('deleteOne', async function (next) {
 	logger.info('Preparing to delete Activity matching filter:', filter)
 
 	try {
-		// Find the document that WILL be deleted to get its ID
 		const docToDelete = await ActivityModel.findOne(filter).select('_id name').lean()
 
 		if (!docToDelete) {
 			logger.warn('Pre-deleteOne hook (Activity): No document found matching filter:', filter)
-			return next() // Document might have been deleted already
+			return next()
 		}
 
 		const activityId = docToDelete._id
 		logger.info(`Pre-deleteOne hook: Found Activity to delete: ID ${activityId}, Name "${docToDelete.name}"`)
 
+		// Find Kiosks that will be affected BEFORE the update
+		const affectedKiosksBeforeUpdate = await KioskModel.find({
+			$or: [{ priorityActivities: activityId }, { disabledActivities: activityId }]
+		}).lean()
+
 		// Remove activity from Kiosk.priorityActivities and Kiosk.disabledActivities
 		logger.debug(`Removing activity ID ${activityId} from Kiosk priorityActivities/disabledActivities`)
 		await KioskModel.updateMany(
-			{ $or: [{ priorityActivities: activityId }, { disabledActivities: activityId }] }, // Find kiosks containing the activity in either list
-			{ $pull: { priorityActivities: activityId, disabledActivities: activityId } } // Pull from both fields
+			{ $or: [{ priorityActivities: activityId }, { disabledActivities: activityId }] },
+			{ $pull: { priorityActivities: activityId, disabledActivities: activityId } }
 		)
 		logger.debug(`Activity ID ${activityId} removal attempt from relevant Kiosks completed`)
+
+		// Emit updates for affected kiosks
+		for (const kioskDoc of affectedKiosksBeforeUpdate) {
+			const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
+			if (updatedKiosk) {
+				emitKioskUpdated(await transformKiosk(updatedKiosk))
+			}
+		}
+
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Activity filter:', { filter, error })
-		// Pass the error to the next middleware
 		next(error instanceof Error ? error : new Error('Pre-deleteOne hook failed'))
 	}
 })
@@ -154,15 +189,28 @@ activitySchema.pre('deleteMany', async function (next) {
 		const docIds = docsToDelete.map(doc => doc._id)
 
 		if (docIds.length > 0) {
-			logger.info(`Preparing to delete ${docIds.length} activities: IDs [${docIds.join(', ')}]`)
+			logger.info(`Preparing to delete ${docIds.length} activities via deleteMany: IDs [${docIds.join(', ')}]`)
+
+			// Find Kiosks that will be affected BEFORE the update
+			const affectedKiosksBeforeUpdate = await KioskModel.find({
+				$or: [{ priorityActivities: { $in: docIds } }, { disabledActivities: { $in: docIds } }]
+			}).lean()
 
 			// Remove activities from Kiosk.priorityActivities and Kiosk.disabledActivities
 			logger.debug(`Removing activity IDs [${docIds.join(', ')}] from Kiosk priorityActivities/disabledActivities`)
 			await KioskModel.updateMany(
-				{ $or: [{ priorityActivities: { $in: docIds } }, { disabledActivities: { $in: docIds } }] }, // Find kiosks containing any of the priorityActivities
-				{ $pull: { priorityActivities: { $in: docIds }, disabledActivities: { $in: docIds } } } // Pull from both fields
+				{ $or: [{ priorityActivities: { $in: docIds } }, { disabledActivities: { $in: docIds } }] },
+				{ $pull: { priorityActivities: { $in: docIds }, disabledActivities: { $in: docIds } } }
 			)
 			logger.debug(`Activity IDs [${docIds.join(', ')}] removed from relevant Kiosks`)
+
+			// Emit updates for affected kiosks
+			for (const kioskDoc of affectedKiosksBeforeUpdate) {
+				const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
+				if (updatedKiosk) {
+					emitKioskUpdated(await transformKiosk(updatedKiosk))
+				}
+			}
 		} else {
 			logger.info('deleteMany on Activities: No documents matched the filter.')
 		}
@@ -177,6 +225,11 @@ activitySchema.pre('deleteMany', async function (next) {
 activitySchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	// 'doc' is the deleted document
 	logger.info(`Activity deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
+	try {
+		emitActivityDeleted(doc.id) // Emit with ID
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Activity ID ${doc.id} in post-delete hook:`, { error })
+	}
 	next()
 })
 
