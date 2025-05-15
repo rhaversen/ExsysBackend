@@ -7,7 +7,7 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
-import ActivityModel, { IActivityPopulated, type IActivity } from '../../../app/models/Activity.js'
+import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import AdminModel from '../../../app/models/Admin.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
@@ -72,21 +72,12 @@ describe('Activities routes', function () {
 			expect(activity).to.have.property('updatedAt')
 		})
 
-		it('should return the newly created object with populated priorityRooms', async function () {
+		it('should return the newly created object with priorityRooms', async function () {
 			const response = await agent().post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testActivityFields1.name)
-			expect(response.body.priorityRooms[0]).to.have.property('_id', testActivityFields1.priorityRooms[0])
-		})
-
-		it('should populate the priorityRooms', async function () {
-			const response = await agent().post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
-
-			expect(response.body).to.have.property('priorityRooms')
-			expect(response.body.priorityRooms).to.be.an('array')
-			expect(response.body.priorityRooms[0]).to.have.property('name', 'Room 1')
-			expect(response.body.priorityRooms[0]).to.have.property('description', 'Description for Room 1')
+			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
 		})
 
 		it('should create an activity with multiple priorityRooms', async function () {
@@ -174,20 +165,10 @@ describe('Activities routes', function () {
 			expect(response.body).to.have.property('name', testActivityFields1.name)
 			expect(response.body).to.have.property('priorityRooms')
 			expect(response.body.priorityRooms).to.be.an('array')
-			expect(response.body.priorityRooms[0]._id).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
 			expect(response.body).to.have.property('createdAt')
 			expect(response.body).to.have.property('updatedAt')
 			expect(response.body).to.have.property('_id', testActivity1.id)
-		})
-
-		it('should populate the priorityRooms', async function () {
-			const response = await agent().get(`/api/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
-
-			expect(response.body).to.have.property('priorityRooms')
-			expect(response.body.priorityRooms).to.be.an('array')
-			expect(response.body.priorityRooms[0]).to.have.property('_id', testActivityFields1.priorityRooms[0])
-			expect(response.body.priorityRooms[0]).to.have.property('name', 'Room 1')
-			expect(response.body.priorityRooms[0]).to.have.property('description', 'Description for Room 1')
 		})
 
 		it('should return 404 if the activity does not exist', async function () {
@@ -258,27 +239,10 @@ describe('Activities routes', function () {
 				.to.have.members(['Activity 1', 'Activity 2'])
 			expect(response.body.map((activity: {
 				priorityRooms: IRoom[]
-			}) => activity.priorityRooms[0]._id))
+			}) => activity.priorityRooms[0].toString()))
 				.to.have.members([testActivityFields1.priorityRooms[0], testActivityFields2.priorityRooms[0]])
 			expect(response.body.map((activity: IActivity) => activity.createdAt)).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity.updatedAt)).to.have.lengthOf(2)
-		})
-
-		it('should populate the priorityRooms', async function () {
-			const response = await agent().get('/api/v1/activities').set('Cookie', sessionCookie)
-
-			expect(response.body).to.be.an('array')
-			expect(response.body).to.have.lengthOf(2)
-			expect(response.body.map((activity: {
-				priorityRooms: IRoom[]
-			}) => activity.priorityRooms[0]._id))
-				.to.have.members([testActivityFields1.priorityRooms[0], testActivityFields2.priorityRooms[0]])
-			const roomNames = response.body.map((activity: { priorityRooms: { name: string }[] }) => activity.priorityRooms[0].name)
-			expect(roomNames).to.have.members(['Room 1', 'Room 2'])
-			const roomDescriptions = response.body.map((activity: {
-				priorityRooms: { description: string }[]
-			}) => activity.priorityRooms[0].description)
-			expect(roomDescriptions).to.have.members(['Description for Room 1', 'Description for Room 2'])
 		})
 	})
 
@@ -339,8 +303,7 @@ describe('Activities routes', function () {
 			await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
 			expect(activity).to.have.property('name', updatedFields.name)
-			const populatedActivity = await activity?.populate('priorityRooms') as IActivityPopulated
-			expect(populatedActivity?.priorityRooms[0].id).to.equal(testRoom2.id.toString())
+			expect(activity?.priorityRooms[0].toString()).to.equal(testRoom2.id.toString())
 		})
 
 		it('should return the updated activity', async function () {
@@ -357,7 +320,7 @@ describe('Activities routes', function () {
 
 			expect(response.body).to.have.property('name', updatedFields.name)
 			expect(response.body).to.have.property('priorityRooms').that.is.an('array')
-			expect(response.body.priorityRooms[0]).to.have.property('_id', testRoom2.id.toString())
+			expect(response.body.priorityRooms[0].toString()).to.equal(testRoom2.id.toString())
 		})
 
 		it('should unset the priorityRooms when setting to null', async function () {
@@ -373,22 +336,6 @@ describe('Activities routes', function () {
 			expect(activity?.priorityRooms).to.have.lengthOf(0)
 		})
 
-		it('should populate the priorityRooms', async function () {
-			const testRoom2 = await RoomModel.create({
-				name: 'Room 2',
-				description: 'Description for Room 2'
-			})
-			const updatedFields = {
-				priorityRooms: [testRoom2.id.toString()]
-			}
-
-			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
-
-			expect(response.body.priorityRooms[0]).to.have.property('_id', testRoom2.id.toString())
-			expect(response.body.priorityRooms[0]).to.have.property('name', 'Room 2')
-			expect(response.body.priorityRooms[0]).to.have.property('description', 'Description for Room 2')
-		})
-
 		it('should allow updating name to current name', async function () {
 			const updatedFields = {
 				name: 'Activity 1'
@@ -397,7 +344,7 @@ describe('Activities routes', function () {
 
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body.priorityRooms[0]._id).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
 		})
 
 		it('should allow updating to current priorityRooms', async function () {
@@ -408,7 +355,7 @@ describe('Activities routes', function () {
 			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
-			expect(response.body.priorityRooms[0]._id).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
 		})
 
 		it('should allow a partial update', async function () {
@@ -428,8 +375,7 @@ describe('Activities routes', function () {
 
 			await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
-			const populatedActivity = await activity?.populate('priorityRooms') as IActivityPopulated
-			expect(populatedActivity?.priorityRooms[0].id).to.equal(testActivityFields1.priorityRooms[0])
+			expect(activity?.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
 		})
 
 		it('should not update other priorityActivities', async function () {
@@ -450,8 +396,7 @@ describe('Activities routes', function () {
 			await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity2.id)
 			expect(activity).to.have.property('name', 'Activity 2')
-			const populatedActivity = await activity?.populate('priorityRooms') as IActivityPopulated
-			expect(populatedActivity?.priorityRooms[0].id).to.equal(testRoom2.id.toString())
+			expect(activity?.priorityRooms[0].toString()).to.equal(testRoom2.id.toString())
 		})
 
 		it('should not allow updating the _id', async function () {
@@ -492,8 +437,7 @@ describe('Activities routes', function () {
 
 			expect(response).to.have.status(200)
 			expect(response.body.priorityRooms).to.be.an('array').that.has.lengthOf(2)
-			const roomIds = response.body.priorityRooms.map((room: { _id: string }) => room._id)
-			expect(roomIds).to.have.members([testActivityFields1.priorityRooms[0], testRoom2.id.toString()])
+			expect(response.body.priorityRooms).to.have.members([testActivityFields1.priorityRooms[0], testRoom2.id.toString()])
 		})
 
 		it('should clear priorityRooms when setting to empty array', async function () {

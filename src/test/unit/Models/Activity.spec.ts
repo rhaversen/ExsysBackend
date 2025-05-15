@@ -7,7 +7,7 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
-import ActivityModel, { IActivityPopulated } from '../../../app/models/Activity.js'
+import ActivityModel from '../../../app/models/Activity.js'
 import KioskModel from '../../../app/models/Kiosk.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
 
@@ -36,9 +36,8 @@ describe('Activity Model', function () {
 		const activity = await ActivityModel.create(testActivityField)
 		expect(activity).to.exist
 		expect(activity.name).to.equal(testActivityField.name)
-		const populatedActivity = await activity?.populate('priorityRooms') as IActivityPopulated
-		expect(populatedActivity?.priorityRooms).to.be.an('array')
-		expect(populatedActivity?.priorityRooms[0].id).to.equal(testActivityField.priorityRooms[0])
+		expect(activity.priorityRooms).to.be.an('array')
+		expect(activity?.priorityRooms[0].toString()).to.equal(testActivityField.priorityRooms[0])
 	})
 
 	it('should trim the name', async function () {
