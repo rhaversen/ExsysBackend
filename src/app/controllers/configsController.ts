@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import ConfigsModel, { type IConfigs, type IConfigsFrontend } from '../models/Configs.js'
 import logger from '../utils/logger.js'
-import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 export function transformConfigs (
 	configsDoc: IConfigs
@@ -15,7 +14,8 @@ export function transformConfigs (
 			kioskInactivityTimeoutWarningMs: configsDoc.kioskInactivityTimeoutWarningMs,
 			kioskOrderConfirmationTimeoutMs: configsDoc.kioskOrderConfirmationTimeoutMs,
 			disabledWeekdays: configsDoc.disabledWeekdays,
-			kioskPassword: configsDoc.kioskPassword
+			kioskPassword: configsDoc.kioskPassword,
+			kioskFeedbackBannerDelayMs: configsDoc.kioskFeedbackBannerDelayMs
 		},
 		createdAt: configsDoc.createdAt,
 		updatedAt: configsDoc.updatedAt
@@ -95,6 +95,11 @@ export async function patchConfigs (req: Request, res: Response, next: NextFunct
 			configs.kioskPassword = req.body.kioskPassword
 			updateApplied = true
 		}
+		if (req.body.kioskFeedbackBannerDelayMs !== undefined && configs.kioskFeedbackBannerDelayMs !== req.body.kioskFeedbackBannerDelayMs) {
+			logger.debug(`Updating kioskFeedbackBannerDelayMs for configs ID ${configs.id}`)
+			configs.kioskFeedbackBannerDelayMs = req.body.kioskFeedbackBannerDelayMs
+			updateApplied = true
+		}
 
 		if (!updateApplied) {
 			logger.info(`Patch configs: No changes detected for configs ID ${configs.id}`)
@@ -113,8 +118,6 @@ export async function patchConfigs (req: Request, res: Response, next: NextFunct
 		const transformedConfigs = transformConfigs(savedConfigs)
 		logger.info(`Configs patched successfully: ID ${configs.id}`)
 		res.status(200).json(transformedConfigs)
-
-		emitConfigsUpdated(transformedConfigs)
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error('Patch configs failed', { error })

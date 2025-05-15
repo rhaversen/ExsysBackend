@@ -1,6 +1,8 @@
 import { type Document, model, Schema } from 'mongoose'
 
+import { transformConfigs } from '../controllers/configsController.js'
 import logger from '../utils/logger.js'
+import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 export interface IConfigs extends Document {
 	// Properties
@@ -10,6 +12,7 @@ export interface IConfigs extends Document {
 	kioskOrderConfirmationTimeoutMs: number
 	disabledWeekdays: number[] // 0=Monday, 6=Sunday
 	kioskPassword: string
+	kioskFeedbackBannerDelayMs: number
 
 	// Timestamps
 	createdAt: Date
@@ -24,6 +27,7 @@ export interface IConfigsFrontend {
 		kioskOrderConfirmationTimeoutMs: number
 		disabledWeekdays: number[] // 0=Monday, 6=Sunday
 		kioskPassword: string
+		kioskFeedbackBannerDelayMs: number
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -68,6 +72,15 @@ const configsSchema = new Schema<IConfigs>({
 		default: 'Password',
 		minlength: [4, 'Adgangskode skal være mindst 4 tegn'],
 		maxLength: [100, 'Adgangskode kan højest være 100 tegn']
+	},
+	kioskFeedbackBannerDelayMs: {
+		type: Schema.Types.Number,
+		default: 5000, // 5 seconds
+		min: [0, 'Kiosk feedback banner forsinkelse skal være et positivt tal'],
+		validate: {
+			validator: Number.isInteger,
+			message: 'Kiosk feedback banner forsinkelse skal være et heltal'
+		}
 	}
 }, {
 	timestamps: true
@@ -83,6 +96,12 @@ configsSchema.pre('save', async function (next) {
 configsSchema.post('save', function (doc, next) {
 	// Avoid logging password hash
 	logger.debug(`Configs saved successfully: ID ${doc.id}`)
+	try {
+		const transformedConfigs = transformConfigs(doc)
+		emitConfigsUpdated(transformedConfigs)
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Configs ID ${doc.id} in post-save hook:`, { error })
+	}
 	next()
 })
 

@@ -1,19 +1,19 @@
-import { type IActivity } from '../models/Activity.js'
+import { IActivityFrontend } from '../models/Activity.js'
 import { emitSocketEvent } from '../utils/socket.js'
 
-export function emitActivityPosted (activity: IActivity): void {
-	emitSocketEvent<IActivity>(
+export function emitActivityPosted (activity: IActivityFrontend): void {
+	emitSocketEvent<IActivityFrontend>(
 		'activityCreated',
 		activity,
-		`Broadcasted activity created for activity ${activity.id}`
+		`Broadcasted activity created for activity ${activity._id}`
 	)
 }
 
-export function emitActivityUpdated (activity: IActivity): void {
-	emitSocketEvent<IActivity>(
+export function emitActivityUpdated (activity: IActivityFrontend): void {
+	emitSocketEvent<IActivityFrontend>(
 		'activityUpdated',
 		activity,
-		`Broadcasted activity updated for activity ${activity.id}`
+		`Broadcasted activity updated for activity ${activity._id}`
 	)
 }
 

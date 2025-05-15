@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import AdminModel, { type IAdmin, type IAdminFrontend } from '../models/Admin.js'
 import logger from '../utils/logger.js'
-import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSockets/adminHandlers.js'
 
 export function transformAdmin (
 	adminDoc: IAdmin
@@ -35,8 +34,6 @@ export async function createAdmin (req: Request, res: Response, next: NextFuncti
 		const transformedAdmin = transformAdmin(newAdmin)
 		logger.debug(`Admin created successfully: ID ${newAdmin.id}, Name: ${newAdmin.name}`)
 		res.status(201).json(transformedAdmin)
-
-		emitAdminCreated(transformedAdmin)
 	} catch (error) {
 		logger.error(`Admin creation failed for name: ${adminName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -139,8 +136,6 @@ export async function patchAdmin (req: Request, res: Response, next: NextFunctio
 		const transformedAdmin = transformAdmin(admin)
 		logger.info(`Admin patched successfully: ID ${adminId}`)
 		res.status(200).json(transformedAdmin)
-
-		emitAdminUpdated(transformedAdmin)
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch admin failed: Error updating admin ID ${adminId}`, { error })
@@ -179,7 +174,8 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 			return
 		}
 
-		const admin = await AdminModel.findByIdAndDelete(adminIdToDelete)
+		const admin = await AdminModel.findById(adminIdToDelete)
+		await admin?.deleteOne()
 
 		if (admin === null || admin === undefined) {
 			logger.warn(`Admin deletion failed: Admin not found. ID: ${adminIdToDelete}`)
@@ -189,8 +185,6 @@ export async function deleteAdmin (req: Request, res: Response, next: NextFuncti
 
 		logger.info(`Admin deleted successfully: ID ${adminIdToDelete} by Admin ID ${requestingAdmin.id}`)
 		res.status(204).send()
-
-		emitAdminDeleted(adminIdToDelete)
 	} catch (error) {
 		logger.error(`Admin deletion failed: Error during deletion process for ID ${adminIdToDelete}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

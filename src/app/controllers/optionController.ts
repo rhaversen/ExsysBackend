@@ -1,9 +1,21 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import OptionModel from '../models/Option.js'
+import OptionModel, { IOption, IOptionFrontend } from '../models/Option.js'
 import logger from '../utils/logger.js'
-import { emitOptionCreated, emitOptionDeleted, emitOptionUpdated } from '../webSockets/optionHandlers.js'
+
+export const transformOption = (
+	optionDoc: IOption
+): IOptionFrontend => {
+	return {
+		_id: optionDoc.id,
+		name: optionDoc.name,
+		imageURL: optionDoc.imageURL,
+		price: optionDoc.price,
+		createdAt: optionDoc.createdAt,
+		updatedAt: optionDoc.updatedAt
+	}
+}
 
 export async function createOption (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const optionName = req.body.name ?? 'N/A'
@@ -19,9 +31,7 @@ export async function createOption (req: Request, res: Response, next: NextFunct
 	try {
 		const newOption = await OptionModel.create(allowedFields)
 		logger.debug(`Option created successfully: ID ${newOption.id}, Name: ${newOption.name}`)
-		res.status(201).json(newOption)
-
-		emitOptionCreated(newOption)
+		res.status(201).json(transformOption(newOption))
 	} catch (error) {
 		logger.error(`Option creation failed for name: ${optionName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -38,7 +48,7 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 	try {
 		const options = await OptionModel.find({})
 		logger.debug(`Retrieved ${options.length} options`)
-		res.status(200).json(options)
+		res.status(200).json(options.map(transformOption))
 	} catch (error) {
 		logger.error('Failed to get options', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -88,7 +98,7 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 
 		if (!updateApplied) {
 			logger.info(`Patch option: No changes detected for option ID ${optionId}`)
-			res.status(200).json(option) // Return current state if no changes
+			res.status(200).json(transformOption(option)) // Return current state if no changes
 			await session.commitTransaction()
 			await session.endSession()
 			return
@@ -100,9 +110,7 @@ export async function patchOption (req: Request, res: Response, next: NextFuncti
 
 		await session.commitTransaction()
 		logger.info(`Option patched successfully: ID ${optionId}`)
-		res.json(option)
-
-		emitOptionUpdated(option)
+		res.json(transformOption(option))
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch option failed: Error updating option ID ${optionId}`, { error })
@@ -127,7 +135,8 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 	}
 
 	try {
-		const option = await OptionModel.findByIdAndDelete(optionId)
+		const option = await OptionModel.findById(optionId)
+		await option?.deleteOne()
 
 		if (option === null || option === undefined) {
 			logger.warn(`Option deletion failed: Option not found. ID: ${optionId}`)
@@ -137,8 +146,6 @@ export async function deleteOption (req: Request, res: Response, next: NextFunct
 
 		logger.info(`Option deleted successfully: ID ${optionId}, Name: ${option.name}`)
 		res.status(204).send()
-
-		emitOptionDeleted(optionId)
 	} catch (error) {
 		logger.error(`Option deletion failed: Error during deletion process for ID ${optionId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

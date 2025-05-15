@@ -9,7 +9,6 @@ import AdminModel from '../app/models/Admin.js'
 import KioskModel from '../app/models/Kiosk.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'
-import PaymentModel from '../app/models/Payment.js'
 import ProductModel from '../app/models/Product.js'
 import ReaderModel from '../app/models/Reader.js'
 import RoomModel from '../app/models/Room.js'
@@ -576,123 +575,123 @@ const room9 = await RoomModel.create({
 
 // Activities
 const activity1 = await ActivityModel.create({
-	rooms: [room1.id],
-	name: '1 room'
+	priorityRooms: [room1.id],
+	name: '1 priorityRoom'
 })
 const activity2 = await ActivityModel.create({
-	rooms: [room1.id, room2.id, room3.id],
-	name: '3 rooms'
+	priorityRooms: [room1.id, room2.id, room3.id],
+	name: '3 priorityRooms'
 })
 const activity3 = await ActivityModel.create({
-	rooms: [],
-	name: 'no rooms'
+	priorityRooms: [],
+	name: 'no priorityRooms'
 })
 const activity4 = await ActivityModel.create({
-	rooms: [room4.id],
+	priorityRooms: [room4.id],
 	name: 'Yoga'
 })
 const activity5 = await ActivityModel.create({
-	rooms: [room4.id],
+	priorityRooms: [room4.id],
 	name: 'Basket'
 })
 await ActivityModel.create({
-	rooms: [room4.id],
+	priorityRooms: [room4.id],
 	name: 'Football'
 })
 await ActivityModel.create({
-	rooms: [room5.id],
+	priorityRooms: [room5.id],
 	name: 'Cooking'
 })
 await ActivityModel.create({
-	rooms: [],
+	priorityRooms: [],
 	name: 'No Room'
 })
 await ActivityModel.create({
-	rooms: [room1.id, room2.id],
+	priorityRooms: [room1.id, room2.id],
 	name: 'Multi-room Sports'
 })
 
 // Activities with custom timestamps
 // Created today
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created today',
 	createdAt: new Date()
 })
 
 // Created yesterday
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created yesterday',
 	createdAt: new Date(Date.now() - 86400000)
 })
 
 // Created 2 days ago
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 2 days ago',
 	createdAt: new Date(Date.now() - 172800000)
 })
 
 // Created 1 week ago
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 1 week ago',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 1 month ago',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 2 months ago
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 2 months ago',
 	createdAt: new Date(Date.now() - 5184000000)
 })
 
 // Created and updated 1 year ago
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 1 year ago',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 2 years ago',
 	createdAt: new Date(Date.now() - 63072000000)
 })
 
 // Created 1 week ago and updated now
 const activityWithTimestamp1 = await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 1 week ago, updated now',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago and updated now
 const activityWithTimestamp2 = await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 1 month ago, updated now',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 1 year ago and updated now
 const activityWithTimestamp3 = await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 1 year ago, updated now',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago and updated now
 const activityWithTimestamp4 = await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Created 2 years ago, updated now',
 	createdAt: new Date(Date.now() - 63072000000)
 })
@@ -700,33 +699,19 @@ const activityWithTimestamp4 = await ActivityModel.create({
 // Updating activities
 await ActivityModel.updateMany(
 	{ _id: { $in: [activityWithTimestamp1._id, activityWithTimestamp2._id, activityWithTimestamp3._id, activityWithTimestamp4._id] } },
-	{ $set: { rooms: [room2.id] } }
+	{ $set: { priorityRooms: [room2.id] } }
 )
 
 await ActivityModel.create({
-	rooms: [room1.id],
+	priorityRooms: [room1.id],
 	name: 'Activity with Single Room',
 	disabledRooms: [room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
 })
 
 await ActivityModel.create({
-	rooms: [],
+	priorityRooms: [],
 	name: 'Activity with all rooms disabled',
 	disabledRooms: [room1.id, room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
-})
-
-// Payments
-const payment1 = await PaymentModel.create({
-	paymentStatus: 'successful'
-})
-const payment2 = await PaymentModel.create({
-	paymentStatus: 'successful'
-})
-const payment3 = await PaymentModel.create({
-	paymentStatus: 'successful'
-})
-const payment4 = await PaymentModel.create({
-	paymentStatus: 'pending'
 })
 
 // Readers
@@ -736,7 +721,7 @@ const reader3 = await ReaderModel.create({ apiReferenceId: '67890' })
 
 // Kiosks
 const kiosk1 = await KioskModel.create({
-	name: 'Kiosk without activities',
+	name: 'Kiosk without priorityActivities',
 	kioskTag: '00000',
 	password: 'password'
 })
@@ -764,7 +749,7 @@ await SessionModel.create({
 })
 
 const kiosk2 = await KioskModel.create({
-	name: 'Kiosk without activities and reader',
+	name: 'Kiosk without priorityActivities and reader',
 	readerId: reader1.id,
 	kioskTag: '00001',
 	password: 'password'
@@ -796,7 +781,7 @@ const kiosk3 = await KioskModel.create({
 	name: 'Kiosk with one activity',
 	kioskTag: '11111',
 	password: 'password',
-	activities: [activity1.id]
+	priorityActivities: [activity1.id]
 })
 // Session for kiosk3
 await SessionModel.create({
@@ -826,7 +811,7 @@ const kiosk4 = await KioskModel.create({
 	readerId: reader2.id,
 	kioskTag: '11112',
 	password: 'password',
-	activities: [activity2.id]
+	priorityActivities: [activity2.id]
 })
 // Session for kiosk4
 await SessionModel.create({
@@ -852,10 +837,10 @@ await SessionModel.create({
 })
 
 const kiosk5 = await KioskModel.create({
-	name: 'Kiosk with activities',
+	name: 'Kiosk with priorityActivities',
 	kioskTag: '22222',
 	password: 'password',
-	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+	priorityActivities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 // Session for kiosk5
 await SessionModel.create({
@@ -881,11 +866,11 @@ await SessionModel.create({
 })
 
 const kiosk6 = await KioskModel.create({
-	name: 'Kiosk with activities and reader',
+	name: 'Kiosk with priorityActivities and reader',
 	readerId: reader3.id,
 	kioskTag: '22223',
 	password: 'password',
-	activities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+	priorityActivities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 // Session for kiosk6
 await SessionModel.create({
@@ -1121,7 +1106,7 @@ await SessionModel.create({
 // Orders
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment1.id,
+	payment: { paymentStatus: 'successful' },
 	activityId: activity1.id,
 	roomId: room1.id,
 	kioskId: kiosk1.id,
@@ -1136,7 +1121,7 @@ await OrderModel.create({
 })
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment2.id,
+	payment: { paymentStatus: 'successful' },
 	activityId: activity2.id,
 	roomId: room2.id,
 	kioskId: kiosk1.id,
@@ -1154,7 +1139,7 @@ await OrderModel.create({
 })
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment3.id,
+	payment: { paymentStatus: 'successful' },
 	activityId: activity3.id,
 	roomId: room3.id,
 	kioskId: kiosk1.id,
@@ -1175,7 +1160,7 @@ await OrderModel.create({
 })
 await OrderModel.create({
 	checkoutMethod: 'sumUp',
-	paymentId: payment4.id,
+	payment: { paymentStatus: 'pending' },
 	activityId: activity4.id,
 	kioskId: kiosk1.id,
 	roomId: room4.id,
@@ -1576,10 +1561,13 @@ for (let i = 0; i < 300; i++) {
 	const activity = getRandom(allActivities)[0]
 	const room = getRandom(allRooms)[0]
 	const kiosk = getRandom(allKiosks)[0]
-	// Create a new payment for each order instead of reusing existing ones
-	const newPayment = await PaymentModel.create({
-		paymentStatus: Math.random() < 0.95 ? 'successful' : 'pending' // ~5% pending
-	})
+
+	const paymentStatuses = ['successful', 'pending', 'failed']
+	const bias = Math.random() ** 2 // Bias towards successful payments
+	// ~90% successful, ~5% pending, ~5% failed
+	const paymentData = {
+		paymentStatus: paymentStatuses[Math.floor(bias * paymentStatuses.length)]
+	}
 	const createdAt = randomDate(monthsAgo, now)
 	const updatedAt = randomDate(createdAt, now)
 
@@ -1595,7 +1583,7 @@ for (let i = 0; i < 300; i++) {
 
 	await OrderModel.create({
 		checkoutMethod: 'sumUp',
-		paymentId: newPayment._id,
+		payment: paymentData,
 		activityId: activity._id,
 		roomId: room._id,
 		kioskId: kiosk._id,

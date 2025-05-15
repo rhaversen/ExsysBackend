@@ -1,19 +1,19 @@
-import { type IRoom } from '../models/Room.js'
+import { IRoomFrontend } from '../models/Room.js'
 import { emitSocketEvent } from '../utils/socket.js'
 
-export function emitRoomCreated (room: IRoom): void {
-	emitSocketEvent<IRoom>(
+export function emitRoomCreated (room: IRoomFrontend): void {
+	emitSocketEvent<IRoomFrontend>(
 		'roomCreated',
 		room,
-		`Broadcasted room created for room ${room.id}`
+		`Broadcasted room created for room ${room._id}`
 	)
 }
 
-export function emitRoomUpdated (room: IRoom): void {
-	emitSocketEvent<IRoom>(
+export function emitRoomUpdated (room: IRoomFrontend): void {
+	emitSocketEvent<IRoomFrontend>(
 		'roomUpdated',
 		room,
-		`Broadcasted room updated for room ${room.id}`
+		`Broadcasted room updated for room ${room._id}`
 	)
 }
 

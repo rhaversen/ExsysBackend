@@ -1,19 +1,19 @@
-import { type IProduct } from '../models/Product.js'
+import { IProductFrontend } from '../models/Product.js'
 import { emitSocketEvent } from '../utils/socket.js'
 
-export function emitProductCreated (product: IProduct): void {
-	emitSocketEvent<IProduct>(
+export function emitProductCreated (product: IProductFrontend): void {
+	emitSocketEvent<IProductFrontend>(
 		'productCreated',
 		product,
-		`Broadcasted product created for product ${product.id}`
+		`Broadcasted product created for product ${product._id}`
 	)
 }
 
-export function emitProductUpdated (product: IProduct): void {
-	emitSocketEvent<IProduct>(
+export function emitProductUpdated (product: IProductFrontend): void {
+	emitSocketEvent<IProductFrontend>(
 		'productUpdated',
 		product,
-		`Broadcasted product updated for product ${product.id}`
+		`Broadcasted product updated for product ${product._id}`
 	)
 }
 

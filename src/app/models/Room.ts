@@ -1,6 +1,10 @@
 import { type Document, model, Schema } from 'mongoose'
 
+import { transformActivity } from '../controllers/activityController.js'
+import { transformRoom } from '../controllers/roomController.js'
 import logger from '../utils/logger.js'
+import { emitActivityUpdated } from '../webSockets/activityHandlers.js'
+import { emitRoomCreated, emitRoomDeleted, emitRoomUpdated } from '../webSockets/roomHandlers.js'
 
 import ActivityModel from './Activity.js'
 
@@ -12,6 +16,17 @@ export interface IRoom extends Document {
 	description: string // A description of the room
 
 	// Timestamps
+	createdAt: Date
+	updatedAt: Date
+
+	// Internal flag for middleware
+	_wasNew?: boolean
+}
+
+export interface IRoomFrontend {
+	_id: string
+	name: string
+	description: string
 	createdAt: Date
 	updatedAt: Date
 }
@@ -47,6 +62,7 @@ roomSchema.path('name').validate(async function (value: string) {
 
 // Pre-save middleware
 roomSchema.pre('save', function (next) {
+	this._wasNew = this.isNew
 	if (this.isNew) {
 		logger.debug(`Creating new room: Name "${this.name}"`)
 	} else {
@@ -56,8 +72,19 @@ roomSchema.pre('save', function (next) {
 })
 
 // Post-save middleware
-roomSchema.post('save', function (doc, next) {
+roomSchema.post('save', function (doc: IRoom, next) {
 	logger.debug(`Room saved successfully: ID ${doc.id}, Name "${doc.name}"`)
+	try {
+		const transformedRoom = transformRoom(doc)
+		if (doc._wasNew ?? false) {
+			emitRoomCreated(transformedRoom)
+		} else {
+			emitRoomUpdated(transformedRoom)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Room ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew }
 	next()
 })
 
@@ -79,13 +106,26 @@ roomSchema.pre('deleteOne', async function (next) {
 		const roomId = docToDelete._id
 		logger.info(`Pre-deleteOne hook: Found Room to delete: ID ${roomId}, Name "${docToDelete.name}"`)
 
-		// Remove room from Activity.rooms and Activity.disabledRooms
-		logger.debug(`Removing room ID ${roomId} from Activity rooms/disabledRooms`)
+		// Find activities that will be affected BEFORE the update
+		const affectedActivitiesBeforeUpdate = await ActivityModel.find({
+			$or: [{ priorityRooms: roomId }, { disabledRooms: roomId }]
+		}).lean()
+
+		// Remove room from Activity.priorityRooms and Activity.disabledRooms
+		logger.debug(`Removing room ID ${roomId} from Activity priorityRooms/disabledRooms`)
 		await ActivityModel.updateMany(
-			{ $or: [{ rooms: roomId }, { disabledRooms: roomId }] }, // Find activities containing the room in either list
-			{ $pull: { rooms: roomId, disabledRooms: roomId } } // Pull from both fields
+			{ $or: [{ priorityRooms: roomId }, { disabledRooms: roomId }] }, // Find priorityActivities containing the room in either list
+			{ $pull: { priorityRooms: roomId, disabledRooms: roomId } } // Pull from both fields
 		)
 		logger.debug(`Room ID ${roomId} removal attempt from relevant Activities completed`)
+
+		// Emit updates for affected activities
+		for (const activityDoc of affectedActivitiesBeforeUpdate) {
+			const updatedActivity = await ActivityModel.findById(activityDoc._id)
+			if (updatedActivity) {
+				emitActivityUpdated(transformActivity(updatedActivity))
+			}
+		}
 
 		next()
 	} catch (error) {
@@ -107,13 +147,26 @@ roomSchema.pre('deleteMany', async function (next) {
 		if (docIds.length > 0) {
 			logger.info(`Preparing to delete ${docIds.length} rooms via deleteMany: IDs [${docIds.join(', ')}]`)
 
-			// Remove rooms from Activity.rooms and Activity.disabledRooms
-			logger.debug(`Removing room IDs [${docIds.join(', ')}] from Activity rooms/disabledRooms`)
+			// Find activities that will be affected BEFORE the update
+			const affectedActivitiesBeforeUpdate = await ActivityModel.find({
+				$or: [{ priorityRooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }]
+			}).lean()
+
+			// Remove rooms from Activity.priorityRooms and Activity.disabledRooms
+			logger.debug(`Removing room IDs [${docIds.join(', ')}] from Activity priorityRooms/disabledRooms`)
 			await ActivityModel.updateMany(
-				{ $or: [{ rooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }] }, // Find activities containing any of the rooms
-				{ $pull: { rooms: { $in: docIds }, disabledRooms: { $in: docIds } } } // Pull from both fields
+				{ $or: [{ priorityRooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }] },
+				{ $pull: { priorityRooms: { $in: docIds }, disabledRooms: { $in: docIds } } }
 			)
 			logger.debug(`Room IDs [${docIds.join(', ')}] removed from relevant Activities`)
+
+			// Emit updates for affected activities
+			for (const activityDoc of affectedActivitiesBeforeUpdate) {
+				const updatedActivity = await ActivityModel.findById(activityDoc._id)
+				if (updatedActivity) {
+					emitActivityUpdated(transformActivity(updatedActivity))
+				}
+			}
 		} else {
 			logger.info('deleteMany on Rooms: No documents matched the filter.')
 		}
@@ -127,6 +180,11 @@ roomSchema.pre('deleteMany', async function (next) {
 // Post-delete middleware
 roomSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	logger.info(`Room deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
+	try {
+		emitRoomDeleted(doc.id) // Emit with ID
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Room ID ${doc.id} in post-delete hook:`, { error })
+	}
 	next()
 })
 

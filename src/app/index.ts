@@ -24,6 +24,7 @@ import activityRoutes from './routes/activities.js'
 import adminRoutes from './routes/admins.js'
 import authRoutes from './routes/auth.js'
 import configRoutes from './routes/configs.js'
+import feedbackRoutes from './routes/feedback.js'
 import kioskRoutes from './routes/kiosks.js'
 import optionRoutes from './routes/options.js'
 import orderRoutes from './routes/orders.js'
@@ -141,6 +142,7 @@ app.use('/api/v1/kiosks', kioskRoutes)
 app.use('/api/v1/readers', readerRoutes)
 app.use('/api/v1/sessions', sessionRoutes)
 app.use('/api/v1/configs', configRoutes)
+app.use('/api/v1/feedback', feedbackRoutes)
 app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes

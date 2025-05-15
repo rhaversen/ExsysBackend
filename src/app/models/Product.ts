@@ -1,11 +1,25 @@
 import { type Document, model, Schema } from 'mongoose'
 
+import { transformActivity } from '../controllers/activityController.js'
+import { transformProduct } from '../controllers/productController.js'
 import logger from '../utils/logger.js'
+import { emitActivityUpdated } from '../webSockets/activityHandlers.js'
+import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
 
 import ActivityModel from './Activity.js'
-import OptionModel from './Option.js'
+import OptionModel, { IOptionFrontend } from './Option.js'
 
 // Interfaces
+export interface Time {
+	hour: number
+	minute: number
+}
+
+export interface OrderWindow {
+	from: Time
+	to: Time
+}
+
 export interface IProduct extends Document {
 	// Properties
 	_id: Schema.Types.ObjectId
@@ -13,19 +27,25 @@ export interface IProduct extends Document {
 	price: number
 	imageURL?: string
 	isActive: boolean
-	orderWindow: {
-		from: {
-			hour: number
-			minute: number
-		}
-		to: {
-			hour: number
-			minute: number
-		}
-	}
+	orderWindow: OrderWindow
 	options?: Schema.Types.ObjectId[]
 
 	// Timestamps
+	createdAt: Date
+	updatedAt: Date
+
+	// Internal flag for middleware
+	_wasNew?: boolean
+}
+
+export interface IProductFrontend {
+	_id: string
+	name: string
+	price: number
+	orderWindow: OrderWindow
+	options: Array<IOptionFrontend['_id']>
+	isActive: boolean
+	imageURL?: string
 	createdAt: Date
 	updatedAt: Date
 }
@@ -80,18 +100,18 @@ const productSchema = new Schema<IProduct>({
 		type: Schema.Types.String,
 		trim: true,
 		unique: true,
-		required: [true, 'Navn er påkrævet'],
-		maxLength: [15, 'Navnet må max være 15 tegn lang']
+		required: [true, 'Navnet er påkrævet'],
+		maxLength: [50, 'Navnet kan højest have 50 tegn']
 	},
 	price: {
 		type: Schema.Types.Number,
-		required: [true, 'Pris er påkrævet'],
-		min: [0, 'prisen skal være større end eller lig 0']
+		required: [true, 'Prisen er påkrævet'],
+		min: [0, 'Prisen skal være større eller lig med 0']
 	},
 	imageURL: {
 		type: Schema.Types.String,
 		trim: true,
-		maxLength: [200, 'Billede URL må max være 200 tegn lang']
+		maxLength: [200, 'Billede URL kan højest have 200 tegn']
 	},
 	isActive: {
 		type: Schema.Types.Boolean,
@@ -109,9 +129,6 @@ const productSchema = new Schema<IProduct>({
 }, {
 	timestamps: true
 })
-
-// Indexes
-productSchema.index({ isActive: 1 }) // Index for querying active products
 
 // Validations
 productSchema.path('name').validate(async function (value: string) {
@@ -158,6 +175,7 @@ productSchema.path('options').validate(function (v: Schema.Types.ObjectId[]) {
 
 // Pre-save middleware
 productSchema.pre('save', function (next) {
+	this._wasNew = this.isNew
 	if (this.isNew) {
 		logger.debug(`Creating new product: Name "${this.name}"`)
 	} else {
@@ -167,8 +185,19 @@ productSchema.pre('save', function (next) {
 })
 
 // Post-save middleware
-productSchema.post('save', function (doc, next) {
+productSchema.post('save', function (doc: IProduct, next) {
 	logger.debug(`Product saved successfully: ID ${doc.id}, Name "${doc.name}"`)
+	try {
+		const transformedProduct = transformProduct(doc)
+		if (doc._wasNew ?? false) {
+			emitProductCreated(transformedProduct)
+		} else {
+			emitProductUpdated(transformedProduct)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Product ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew }
 	next()
 })
 
@@ -190,6 +219,9 @@ productSchema.pre('deleteOne', async function (next) {
 		const productId = docToDelete._id
 		logger.info(`Pre-deleteOne hook: Found Product to delete: ID ${productId}, Name "${docToDelete.name}"`)
 
+		// Find activities that will be affected BEFORE the update
+		const affectedActivitiesBeforeUpdate = await ActivityModel.find({ disabledProducts: productId }).lean()
+
 		// Remove product from Activity.disabledProducts
 		logger.debug(`Removing product ID ${productId} from Activity disabledProducts`)
 		await ActivityModel.updateMany(
@@ -197,6 +229,14 @@ productSchema.pre('deleteOne', async function (next) {
 			{ $pull: { disabledProducts: productId } }
 		)
 		logger.debug(`Product ID ${productId} removal attempt from relevant Activities completed`)
+
+		// Emit updates for affected activities
+		for (const activityDoc of affectedActivitiesBeforeUpdate) {
+			const updatedActivity = await ActivityModel.findById(activityDoc._id)
+			if (updatedActivity) {
+				emitActivityUpdated(transformActivity(updatedActivity))
+			}
+		}
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Product filter:', { filter, error })
@@ -217,13 +257,24 @@ productSchema.pre('deleteMany', async function (next) {
 		if (docIds.length > 0) {
 			logger.info(`Preparing to delete ${docIds.length} products via deleteMany: IDs [${docIds.join(', ')}]`)
 
+			// Find activities that will be affected BEFORE the update
+			const affectedActivitiesBeforeUpdate = await ActivityModel.find({ disabledProducts: { $in: docIds } }).lean()
+
 			// Remove products from Activity.disabledProducts
-			logger.debug(`Removing product IDs [${docIds.join(', ')}] from Activity disabledProducts`)
+			logger.debug(`Removing product IDs [${docIds.join(', ')}] from Activity.disabledProducts`)
 			await ActivityModel.updateMany(
 				{ disabledProducts: { $in: docIds } },
 				{ $pull: { disabledProducts: { $in: docIds } } }
 			)
 			logger.debug(`Product IDs [${docIds.join(', ')}] removed from relevant Activities`)
+
+			// Emit updates for affected activities
+			for (const activityDoc of affectedActivitiesBeforeUpdate) {
+				const updatedActivity = await ActivityModel.findById(activityDoc._id)
+				if (updatedActivity) {
+					emitActivityUpdated(transformActivity(updatedActivity))
+				}
+			}
 		} else {
 			logger.info('deleteMany on Products: No documents matched the filter.')
 		}
@@ -235,6 +286,16 @@ productSchema.pre('deleteMany', async function (next) {
 })
 
 // Post-delete middleware
+productSchema.post('deleteOne', { document: true, query: false }, function (doc: IProduct, next) {
+	logger.info(`Product deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
+	try {
+		emitProductDeleted(doc.id)
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Product ID ${doc.id}:`, { error })
+	}
+	next()
+})
+
 productSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	logger.info(`Product deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
 	next()
@@ -247,6 +308,4 @@ productSchema.post('deleteMany', function (result, next) {
 
 // Compile the schema into a model
 const ProductModel = model<IProduct>('Product', productSchema)
-
-// Export the model
 export default ProductModel

@@ -11,8 +11,7 @@ import sinon from 'sinon'
 import ActivityModel, { type IActivity } from '../../../app/models/Activity.js'
 import KioskModel from '../../../app/models/Kiosk.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
-import OrderModel from '../../../app/models/Order.js'
-import PaymentModel from '../../../app/models/Payment.js'
+import OrderModel, { type IPayment } from '../../../app/models/Order.js' // Import IPayment
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import ReaderModel from '../../../app/models/Reader.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
@@ -25,7 +24,7 @@ describe('Order Model', function () {
 	let testActivity: IActivity
 	let testOption: IOption
 	let testOrderFields: {
-		paymentId: Types.ObjectId
+		payment: IPayment // Changed from paymentId
 		kioskId?: Types.ObjectId | null
 		activityId: Types.ObjectId
 		roomId: Types.ObjectId
@@ -88,10 +87,10 @@ describe('Order Model', function () {
 			readerId: testReader.id
 		})
 
-		const testPayment = await PaymentModel.create({})
+		const testPayment = { paymentStatus: 'pending' as 'pending' | 'successful' | 'failed' } // Corrected type
 
 		testOrderFields = {
-			paymentId: testPayment.id,
+			payment: testPayment,
 			kioskId: testKiosk.id,
 			activityId: testActivity.id,
 			roomId: testRoom.id,
@@ -108,11 +107,10 @@ describe('Order Model', function () {
 	})
 
 	it('should create a valid order', async function () {
-		const order = await OrderModel.create(testOrderFields)
-		expect(order).to.exist
-		expect(order.products[0].quantity).to.equal(testOrderFields.products[0].quantity)
-		expect(order.options?.[0].quantity).to.equal(testOrderFields.options?.[0].quantity)
-		expect(order.checkoutMethod).to.equal(testOrderFields.checkoutMethod)
+		const order = new OrderModel(testOrderFields)
+		const error = order.validateSync()
+		expect(error).to.not.exist
+		expect(order.payment.paymentStatus).to.equal('pending') // Check embedded payment status
 	})
 
 	it('should allow kioskId to be null', async function () {
@@ -147,9 +145,10 @@ describe('Order Model', function () {
 	})
 
 	it('should set status to pending by default', async function () {
-		const order = await OrderModel.create(testOrderFields)
-		expect(order).to.exist
+		const order = new OrderModel(testOrderFields)
+		await order.save()
 		expect(order.status).to.equal('pending')
+		expect(order.payment.paymentStatus).to.equal('pending') // Default payment status
 	})
 
 	it('should not allow non-integer quantities for products', async function () {

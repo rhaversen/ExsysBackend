@@ -1,12 +1,7 @@
 import { type Request, type Response } from 'express'
 
-import OrderModel, { IOrderPopulated } from '../models/Order.js'
-import PaymentModel from '../models/Payment.js'
+import OrderModel from '../models/Order.js'
 import logger from '../utils/logger.js'
-import { emitPaidOrderPosted } from '../webSockets/orderStatusHandlers.js'
-import { emitPaymentStatusUpdate } from '../webSockets/paymentHandlers.js'
-
-import { transformOrder } from './orderController.js'
 
 interface ICreateReaderCallback extends Request {
 	body: {
@@ -51,61 +46,32 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 	// --- End Input Validation ---
 
 	try {
-		// Find the payment using our ID (clientTransactionId from SumUp's perspective)
-		const payment = await PaymentModel.findOne({ clientTransactionId })
+		// Find the order containing the payment using clientTransactionId
+		const order = await OrderModel.findOne({ 'payment.clientTransactionId': clientTransactionId })
 
-		if (!payment) {
-			// Payment not found, might be an old/invalid callback or race condition
-			logger.warn(`Reader callback: Payment not found for Client Tx ID ${clientTransactionId}. Event ID: ${eventId}. Ignoring.`)
-			res.status(200).json({ message: 'Payment not found, callback ignored.' }) // Acknowledge receipt
+		if (!order) {
+			// Order not found, might be an old/invalid callback or race condition
+			logger.warn(`Reader callback: Order not found for payment with Client Tx ID ${clientTransactionId}. Event ID: ${eventId}. Ignoring.`)
+			res.status(200).json({ message: 'Order with payment not found, callback ignored.' }) // Acknowledge receipt
 			return
 		}
 
-		// Check if status is already final to prevent redundant updates/events
-		if (payment.paymentStatus === 'successful' || payment.paymentStatus === 'failed') {
-			logger.info(`Reader callback: Payment ID ${payment.id} already has final status "${payment.paymentStatus}". Ignoring update to "${sumUpStatus}". Event ID: ${eventId}`)
+		// Check if payment status is already final to prevent redundant updates/events
+		if (order.payment.paymentStatus === 'successful' || order.payment.paymentStatus === 'failed') {
+			logger.info(`Reader callback: Payment for Order ID ${order._id} already has final status "${order.payment.paymentStatus}". Ignoring update to "${sumUpStatus}". Event ID: ${eventId}`)
 			res.status(200).json({ message: 'Payment already in final state, callback ignored.' }) // Acknowledge receipt
 			return
 		}
 
-		// Update payment status
-		logger.info(`Updating payment status for Payment ID ${payment.id} from "${payment.paymentStatus}" to "${sumUpStatus}". Event ID: ${eventId}`)
-		payment.paymentStatus = sumUpStatus
+		// Update payment status within the order
+		logger.info(`Updating payment status for Order ID ${order._id} from "${order.payment.paymentStatus}" to "${sumUpStatus}". Event ID: ${eventId}`)
+		order.payment.paymentStatus = sumUpStatus
 
-		await payment.save()
-		logger.debug(`Payment status saved successfully for Payment ID ${payment.id}`)
+		await order.save() // Save the updated order document
+		logger.debug(`Order's payment status saved successfully for Order ID ${order._id}`)
 
 		// Respond 200 OK to SumUp immediately after saving
 		res.status(200).send()
-
-		// --- Post-Update Actions (WebSockets, etc.) ---
-		// Find the associated order(s)
-		// Use lean() for performance as we only read data for events
-		const order = await OrderModel.findOne({ paymentId: payment.id })
-			.populate([
-				{ path: 'paymentId', select: 'paymentStatus clientTransactionId id' },
-				{ path: 'products.id', select: 'name _id' },
-				{ path: 'options.id', select: 'name _id' }
-			])
-			.lean() // Use lean
-			.exec() as unknown as IOrderPopulated | null
-
-		if (order) {
-			logger.debug(`Found associated Order ID ${order._id} for Payment ID ${payment.id}`)
-			// Emit payment status update via WebSocket
-			await emitPaymentStatusUpdate(payment, order)
-
-			// If payment was successful, emit the paid order event
-			if (sumUpStatus === 'successful') {
-				logger.info(`Payment successful for Order ID ${order._id}. Emitting paid order event.`)
-				const transformedOrder = transformOrder(order) // Transform the lean object
-				await emitPaidOrderPosted(transformedOrder)
-			}
-		} else {
-			// This might happen if an order was deleted after payment started but before callback
-			logger.warn(`Reader callback: No order found associated with Payment ID ${payment.id}. Event ID: ${eventId}`)
-		}
-		// --- End Post-Update Actions ---
 	} catch (error) {
 		logger.error(`Reader callback processing failed for Client Tx ID ${clientTransactionId}, Event ID ${eventId}`, { error })
 		// Do NOT send error response to SumUp here, as we already sent 200 OK.
