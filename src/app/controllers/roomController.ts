@@ -1,9 +1,20 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import RoomModel from '../models/Room.js'
+import RoomModel, { IRoom, IRoomFrontend } from '../models/Room.js'
 import logger from '../utils/logger.js'
-import { emitRoomCreated, emitRoomDeleted, emitRoomUpdated } from '../webSockets/roomHandlers.js'
+
+export const transformRoom = (
+	roomDoc: IRoom
+): IRoomFrontend => {
+	return {
+		_id: roomDoc.id,
+		name: roomDoc.name,
+		description: roomDoc.description,
+		createdAt: roomDoc.createdAt,
+		updatedAt: roomDoc.updatedAt
+	}
+}
 
 export async function createRoom (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const roomName = req.body.name ?? 'N/A'
@@ -18,8 +29,7 @@ export async function createRoom (req: Request, res: Response, next: NextFunctio
 	try {
 		const newRoom = await RoomModel.create(allowedFields)
 		logger.debug(`Room created successfully: ID ${newRoom.id}, Name: ${newRoom.name}`)
-		res.status(201).json(newRoom)
-		emitRoomCreated(newRoom)
+		res.status(201).json(transformRoom(newRoom))
 	} catch (error) {
 		logger.error(`Room creation failed for name: ${roomName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -44,7 +54,7 @@ export async function getRoom (req: Request, res: Response, next: NextFunction):
 		}
 
 		logger.debug(`Retrieved room successfully: ID ${roomId}`)
-		res.status(200).json(room)
+		res.status(200).json(transformRoom(room))
 	} catch (error) {
 		logger.error(`Get room failed: Error retrieving room ID ${roomId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -61,7 +71,7 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 	try {
 		const rooms = await RoomModel.find({})
 		logger.debug(`Retrieved ${rooms.length} rooms`)
-		res.status(200).json(rooms)
+		res.status(200).json(rooms.map(transformRoom))
 	} catch (error) {
 		logger.error('Failed to get rooms', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -106,7 +116,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 
 		if (!updateApplied) {
 			logger.info(`Patch room: No changes detected for room ID ${roomId}`)
-			res.status(200).json(room) // Return current state if no changes
+			res.status(200).json(transformRoom(room)) // Return current state if no changes
 			await session.commitTransaction()
 			await session.endSession()
 			return
@@ -118,9 +128,7 @@ export async function patchRoom (req: Request, res: Response, next: NextFunction
 
 		await session.commitTransaction()
 		logger.info(`Room patched successfully: ID ${roomId}`)
-		res.status(200).json(room)
-
-		emitRoomUpdated(room)
+		res.status(200).json(transformRoom(room))
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch room failed: Error updating room ID ${roomId}`, { error })
@@ -150,7 +158,8 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 	}
 
 	try {
-		const room = await RoomModel.findByIdAndDelete(roomId)
+		const room = await RoomModel.findById(roomId)
+		await room?.deleteOne()
 
 		if (room === null || room === undefined) {
 			logger.warn(`Room deletion failed: Room not found. ID: ${roomId}`)
@@ -160,8 +169,6 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 
 		logger.info(`Room deleted successfully: ID ${roomId}, Name: ${room.name}`)
 		res.status(204).send()
-
-		emitRoomDeleted(roomId)
 	} catch (error) {
 		logger.error(`Room deletion failed: Error during deletion process for ID ${roomId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

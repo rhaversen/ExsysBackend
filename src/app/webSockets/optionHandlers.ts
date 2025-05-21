@@ -1,19 +1,19 @@
-import { type IOption } from '../models/Option.js'
+import { IOptionFrontend } from '../models/Option.js'
 import { emitSocketEvent } from '../utils/socket.js'
 
-export function emitOptionCreated (option: IOption): void {
-	emitSocketEvent<IOption>(
+export function emitOptionCreated (option: IOptionFrontend): void {
+	emitSocketEvent<IOptionFrontend>(
 		'optionCreated',
 		option,
-		`Broadcasted option created for option ${option.id}`
+		`Broadcasted option created for option ${option._id}`
 	)
 }
 
-export function emitOptionUpdated (option: IOption): void {
-	emitSocketEvent<IOption>(
+export function emitOptionUpdated (option: IOptionFrontend): void {
+	emitSocketEvent<IOptionFrontend>(
 		'optionUpdated',
 		option,
-		`Broadcasted option updated for option ${option.id}`
+		`Broadcasted option updated for option ${option._id}`
 	)
 }
 

@@ -1,34 +1,25 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import { IActivity } from '../models/Activity.js'
 import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
-import { IReader } from '../models/Reader.js'
 import logger from '../utils/logger.js'
-import { emitKioskCreated, emitKioskDeleted, emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 // Make transformKiosk async and handle population internally
 export async function transformKiosk (
 	kiosk: IKiosk
 ): Promise<IKioskFrontend> {
 	try {
-		// Populate activities and readerId
-		const populatedKiosk = await kiosk.populate<{ activities: IActivity[], readerId: IReader | null }>([
-			{ path: 'activities' },
-			{ path: 'readerId' }
-		])
-
 		return {
-			_id: populatedKiosk.id,
-			name: populatedKiosk.name,
-			readerId: populatedKiosk.readerId,
-			kioskTag: populatedKiosk.kioskTag,
-			activities: populatedKiosk.activities,
-			disabledActivities: populatedKiosk.disabledActivities,
-			deactivated: populatedKiosk.deactivated,
-			deactivatedUntil: populatedKiosk.deactivatedUntil,
-			createdAt: populatedKiosk.createdAt,
-			updatedAt: populatedKiosk.updatedAt
+			_id: kiosk.id,
+			name: kiosk.name,
+			readerId: kiosk.readerId?.toString() ?? null,
+			kioskTag: kiosk.kioskTag,
+			priorityActivities: kiosk.priorityActivities.map((activity) => activity.toString()),
+			disabledActivities: kiosk.disabledActivities.map((activity) => activity.toString()),
+			deactivated: kiosk.deactivated,
+			deactivatedUntil: kiosk.deactivatedUntil?.toString() ?? null,
+			createdAt: kiosk.createdAt,
+			updatedAt: kiosk.updatedAt
 		}
 	} catch (error) {
 		logger.error(`Error transforming kiosk ID ${kiosk.id}`, { error })
@@ -45,7 +36,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		readerId: req.body.readerId,
-		activities: req.body.activities,
+		priorityActivities: req.body.priorityActivities,
 		disabledActivities: req.body.disabledActivities,
 		deactivated: req.body.deactivated,
 		deactivatedUntil: req.body.deactivatedUntil
@@ -59,8 +50,6 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		const transformedKiosk = await transformKiosk(newKiosk)
 		logger.debug(`Kiosk transformed successfully: ID ${newKiosk.id}`)
 		res.status(201).json(transformedKiosk)
-
-		emitKioskCreated(transformedKiosk)
 	} catch (error) {
 		logger.error(`Kiosk creation failed for name: ${kioskName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -194,9 +183,9 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 			kiosk.readerId = req.body.readerId
 			updateApplied = true
 		}
-		if (req.body.activities !== undefined) { // Array comparison is complex, log if provided
-			logger.debug(`Updating activities for kiosk ID ${kioskId}`)
-			kiosk.activities = req.body.activities
+		if (req.body.priorityActivities !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating priorityActivities for kiosk ID ${kioskId}`)
+			kiosk.priorityActivities = req.body.priorityActivities
 			updateApplied = true
 		}
 		if (req.body.disabledActivities !== undefined) { // Array comparison is complex, log if provided
@@ -247,8 +236,6 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		// Await the async transform function
 		const transformedKiosk = await transformKiosk(updatedKiosk)
 		res.status(200).json(transformedKiosk)
-
-		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch kiosk failed: Error updating kiosk ID ${kioskId}`, { error })
@@ -280,10 +267,6 @@ export async function createNewKioskTag (req: Request, res: Response, next: Next
 
 		logger.info(`New kioskTag generated successfully for kiosk ID ${kioskId}: ${oldTag} -> ${newTag}`)
 		res.status(200).json({ kioskTag: newTag })
-
-		// Emit update after tag generation
-		const transformedKiosk = await transformKiosk(kiosk) // Re-transform with new tag
-		emitKioskUpdated(transformedKiosk)
 	} catch (error) {
 		logger.error(`Generate new kioskTag failed for kiosk ID ${kioskId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -305,7 +288,8 @@ export async function deleteKiosk (req: Request, res: Response, next: NextFuncti
 	}
 
 	try {
-		const kiosk = await KioskModel.findByIdAndDelete(kioskId)
+		const kiosk = await KioskModel.findById(kioskId)
+		await kiosk?.deleteOne()
 
 		if (kiosk === null || kiosk === undefined) {
 			logger.warn(`Kiosk deletion failed: Kiosk not found. ID: ${kioskId}`)
@@ -315,8 +299,6 @@ export async function deleteKiosk (req: Request, res: Response, next: NextFuncti
 
 		logger.info(`Kiosk deleted successfully: ID ${kioskId}, Name: ${kiosk.name}, Tag: ${kiosk.kioskTag}`)
 		res.status(204).send()
-
-		emitKioskDeleted(kioskId)
 	} catch (error) {
 		logger.error(`Kiosk deletion failed: Error during deletion process for ID ${kioskId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

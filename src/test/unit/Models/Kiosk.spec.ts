@@ -20,7 +20,7 @@ describe('Kiosk Model', function () {
 	let testKioskField: {
 		name: string
 		kioskTag: string
-		activities: mongoose.Types.ObjectId[]
+		priorityActivities: mongoose.Types.ObjectId[]
 		readerId: mongoose.Types.ObjectId
 	}
 
@@ -48,7 +48,7 @@ describe('Kiosk Model', function () {
 		testKioskField = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
-			activities: [testActivity1.id.toString(), testActivity2.id.toString()],
+			priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 			readerId: testReader.id
 		}
 	})
@@ -58,8 +58,8 @@ describe('Kiosk Model', function () {
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal(testKioskField.kioskTag)
 		expect(kiosk).to.have.property('name', testKioskField.name)
-		const populatedKiosk = await kiosk?.populate('activities')
-		expect(populatedKiosk?.activities[0]).to.have.property('id', testKioskField.activities[0])
+		const populatedKiosk = await kiosk?.populate('priorityActivities')
+		expect(populatedKiosk?.priorityActivities[0]).to.have.property('id', testKioskField.priorityActivities[0])
 	})
 
 	it('should trim the name', async function () {
@@ -139,7 +139,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create({
 				...testKioskField,
-				activities: [testActivity1.id, new mongoose.Types.ObjectId()]
+				priorityActivities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
 		} catch {
 			// The promise was rejected as expected
@@ -184,10 +184,10 @@ describe('Kiosk Model', function () {
 		expect(kiosk).to.exist
 	})
 
-	it('should save a kiosk without activities', async function () {
+	it('should save a kiosk without priorityActivities', async function () {
 		const kiosk = await KioskModel.create({
 			...testKioskField,
-			activities: undefined
+			priorityActivities: undefined
 		})
 		expect(kiosk).to.exist
 	})
@@ -255,7 +255,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create({
 				...testKioskField,
-				activities: [new mongoose.Types.ObjectId()]
+				priorityActivities: [new mongoose.Types.ObjectId()]
 			})
 		} catch {
 			// The promise was rejected as expected
@@ -269,7 +269,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create({
 				...testKioskField,
-				activities: [testActivity1.id, new mongoose.Types.ObjectId()]
+				priorityActivities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
 		} catch {
 			// The promise was rejected as expected
