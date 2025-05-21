@@ -1,9 +1,24 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import ProductModel from '../models/Product.js'
+import ProductModel, { IProduct, IProductFrontend } from '../models/Product.js'
 import logger from '../utils/logger.js'
-import { emitProductCreated, emitProductDeleted, emitProductUpdated } from '../webSockets/productHandlers.js'
+
+export function transformProduct (
+	productDoc: IProduct
+): IProductFrontend {
+	return {
+		_id: productDoc.id,
+		name: productDoc.name,
+		price: productDoc.price,
+		imageURL: productDoc.imageURL,
+		orderWindow: productDoc.orderWindow,
+		options: productDoc.options?.map((option) => option.toString()) ?? [],
+		isActive: productDoc.isActive,
+		createdAt: productDoc.createdAt,
+		updatedAt: productDoc.updatedAt
+	}
+}
 
 export async function createProduct (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const productName = req.body.name ?? 'N/A'
@@ -20,12 +35,10 @@ export async function createProduct (req: Request, res: Response, next: NextFunc
 	}
 
 	try {
-		// Create and then populate options
+		// Create the product using the allowed fields
 		const newProduct = await ProductModel.create(allowedFields)
-		await newProduct.populate('options')
 		logger.debug(`Product created successfully: ID ${newProduct.id}, Name: ${newProduct.name}`)
-		res.status(201).json(newProduct)
-		emitProductCreated(newProduct)
+		res.status(201).json(transformProduct(newProduct))
 	} catch (error) {
 		logger.error(`Product creation failed for name: ${productName}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -40,9 +53,9 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 	logger.debug('Getting all products')
 
 	try {
-		const products = await ProductModel.find({}).populate('options')
+		const products = await ProductModel.find({})
 		logger.debug(`Retrieved ${products.length} products`)
-		res.status(200).json(products)
+		res.status(200).json(products.map(transformProduct))
 	} catch (error) {
 		logger.error('Failed to get products', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -107,8 +120,7 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 
 		if (!updateApplied) {
 			logger.info(`Patch product: No changes detected for product ID ${productId}`)
-			await product.populate('options') // Populate before sending response
-			res.status(200).json(product) // Return current state if no changes
+			res.status(200).json(transformProduct(product)) // Return current state if no changes
 			await session.commitTransaction()
 			await session.endSession()
 			return
@@ -118,13 +130,9 @@ export async function patchProduct (req: Request, res: Response, next: NextFunct
 		await product.validate()
 		await product.save({ session })
 
-		await product.populate('options')
-
 		await session.commitTransaction()
 		logger.info(`Product patched successfully: ID ${productId}`)
-		res.json(product) // Send populated product
-
-		emitProductUpdated(product)
+		res.json(transformProduct(product))
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch product failed: Error updating product ID ${productId}`, { error })
@@ -149,7 +157,8 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 	}
 
 	try {
-		const product = await ProductModel.findByIdAndDelete(productId)
+		const product = await ProductModel.findById(productId)
+		await product?.deleteOne()
 
 		if (product === null || product === undefined) {
 			logger.warn(`Product deletion failed: Product not found. ID: ${productId}`)
@@ -159,8 +168,6 @@ export async function deleteProduct (req: Request, res: Response, next: NextFunc
 
 		logger.info(`Product deleted successfully: ID ${productId}, Name: ${product.name}`)
 		res.status(204).send()
-
-		emitProductDeleted(productId)
 	} catch (error) {
 		logger.error(`Product deletion failed: Error during deletion process for ID ${productId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

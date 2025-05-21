@@ -14,7 +14,6 @@ import AdminModel from '../../../app/models/Admin.js'
 import KioskModel, { type IKiosk } from '../../../app/models/Kiosk.js'
 import OptionModel, { type IOption } from '../../../app/models/Option.js'
 import OrderModel, { type IOrder } from '../../../app/models/Order.js'
-import PaymentModel, { type IPayment } from '../../../app/models/Payment.js'
 import ProductModel, { type IProduct } from '../../../app/models/Product.js'
 import ReaderModel, { type IReader } from '../../../app/models/Reader.js'
 import RoomModel, { type IRoom } from '../../../app/models/Room.js'
@@ -680,7 +679,7 @@ describe('Orders routes', function () {
 		})
 
 		describe('Use sumUp checkout method', function () {
-			it('should create a paymentId on the order', async function () {
+			it('should create a payment on the order', async function () {
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: false,
 					kioskId: testKiosk.id,
@@ -697,69 +696,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'sumUp'
 				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
-				expect(order?.paymentId).to.exist
-			})
-
-			it('should create a paymentId', async function () {
-				await agent().post('/api/v1/orders').send({
-					skipCheckout: false,
-					kioskId: testKiosk.id,
-					activityId: testActivity.id,
-					roomId: testRoom.id,
-					products: [{
-						id: testProduct1.id,
-						quantity: 1
-					}],
-					options: [{
-						id: testOption1.id,
-						quantity: 1
-					}],
-					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
-				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment).to.exist
-			})
-
-			it('should return the paymentId', async function () {
-				const res = await agent().post('/api/v1/orders').send({
-					skipCheckout: false,
-					kioskId: testKiosk.id,
-					activityId: testActivity.id,
-					roomId: testRoom.id,
-					products: [{
-						id: testProduct1.id,
-						quantity: 1
-					}],
-					options: [{
-						id: testOption1.id,
-						quantity: 1
-					}],
-					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
-				const order = await OrderModel.findOne({})
-				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
-			})
-
-			it('should set the paymentId on the order', async function () {
-				await agent().post('/api/v1/orders').send({
-					skipCheckout: false,
-					kioskId: testKiosk.id,
-					activityId: testActivity.id,
-					roomId: testRoom.id,
-					products: [{
-						id: testProduct1.id,
-						quantity: 1
-					}],
-					options: [{
-						id: testOption1.id,
-						quantity: 1
-					}],
-					checkoutMethod: 'sumUp'
-				}).set('Cookie', kioskSessionCookie)
-				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
+				expect(order?.payment).to.exist
 			})
 
 			it('should set the payment status to pending', async function () {
@@ -779,8 +716,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'sumUp'
 				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment?.paymentStatus).to.equal('pending')
+				expect(order?.payment.paymentStatus).to.equal('pending')
 			})
 
 			it('should set the clientTransactionId on the payment', async function () {
@@ -800,13 +736,12 @@ describe('Orders routes', function () {
 					checkoutMethod: 'sumUp'
 				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment?.clientTransactionId).to.exist
+				expect(order?.payment.clientTransactionId).to.exist
 			})
 		})
 
 		describe('Use later checkout method', function () {
-			it('should create a paymentId on the order', async function () {
+			it('should create a payment on the order', async function () {
 				await agent().post('/api/v1/orders').send({
 					skipCheckout: true,
 					kioskId: testKiosk.id,
@@ -823,69 +758,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'later'
 				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
-				expect(order?.paymentId).to.exist
-			})
-
-			it('should create a paymentId', async function () {
-				await agent().post('/api/v1/orders').send({
-					skipCheckout: true,
-					kioskId: testKiosk.id,
-					activityId: testActivity.id,
-					roomId: testRoom.id,
-					products: [{
-						id: testProduct1.id,
-						quantity: 1
-					}],
-					options: [{
-						id: testOption1.id,
-						quantity: 1
-					}],
-					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
-				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment).to.exist
-			})
-
-			it('should return the paymentId', async function () {
-				const res = await agent().post('/api/v1/orders').send({
-					skipCheckout: true,
-					kioskId: testKiosk.id,
-					activityId: testActivity.id,
-					roomId: testRoom.id,
-					products: [{
-						id: testProduct1.id,
-						quantity: 1
-					}],
-					options: [{
-						id: testOption1.id,
-						quantity: 1
-					}],
-					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
-				const order = await OrderModel.findOne({})
-				expect(res.body.paymentId).to.equal(order?.paymentId.toString())
-			})
-
-			it('should set the paymentId on the order', async function () {
-				await agent().post('/api/v1/orders').send({
-					skipCheckout: true,
-					kioskId: testKiosk.id,
-					activityId: testActivity.id,
-					roomId: testRoom.id,
-					products: [{
-						id: testProduct1.id,
-						quantity: 1
-					}],
-					options: [{
-						id: testOption1.id,
-						quantity: 1
-					}],
-					checkoutMethod: 'later'
-				}).set('Cookie', kioskSessionCookie)
-				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment?.id.toString()).to.equal(order?.paymentId.toString())
+				expect(order?.payment).to.exist
 			})
 
 			it('should set the payment status to successful', async function () {
@@ -905,8 +778,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'later'
 				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment?.paymentStatus).to.equal('successful')
+				expect(order?.payment.paymentStatus).to.equal('successful')
 			})
 
 			it('should not set the clientTransactionId on the payment', async function () {
@@ -926,8 +798,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'later'
 				}).set('Cookie', kioskSessionCookie)
 				const order = await OrderModel.findOne({})
-				const payment = await PaymentModel.findById(order?.paymentId)
-				expect(payment?.clientTransactionId).to.not.exist
+				expect(order?.payment.clientTransactionId).to.not.exist
 			})
 		})
 
@@ -955,9 +826,9 @@ describe('Orders routes', function () {
 					checkoutMethod: 'manual'
 				}).set('Cookie', adminSessionCookie)
 
-				const order = await OrderModel.findOne({}).populate('paymentId')
-				expect(order?.paymentId).to.exist
-				expect((order?.paymentId as IPayment).paymentStatus).to.equal('successful')
+				const order = await OrderModel.findOne({})
+				expect(order?.payment).to.exist
+				expect(order?.payment.paymentStatus).to.equal('successful')
 			})
 
 			it('should set kioskId to null for manual order', async function () {
@@ -1052,8 +923,6 @@ describe('Orders routes', function () {
 		let testOption: IOption
 		let testReader: IReader
 		let testKiosk: IKiosk
-		let testPayment1: IPayment
-		let testPayment2: IPayment
 
 		let clock: sinon.SinonFakeTimers
 
@@ -1164,13 +1033,10 @@ describe('Orders routes', function () {
 				password: 'password'
 			})
 
-			testPayment1 = await PaymentModel.create({ paymentStatus: 'successful' })
-			testPayment2 = await PaymentModel.create({ paymentStatus: 'failed' })
-
 			await OrderModel.create({
 				activityId: testActivity.id,
 				roomId: testRoom.id,
-				paymentId: testPayment1.id,
+				payment: { paymentStatus: 'successful' },
 				kioskId: testKiosk.id,
 				products: [{
 					id: testProduct1.id,
@@ -1184,7 +1050,7 @@ describe('Orders routes', function () {
 			})
 
 			await OrderModel.create({
-				paymentId: testPayment2.id,
+				payment: { paymentStatus: 'failed' },
 				activityId: testActivity.id,
 				roomId: testRoom.id,
 				kioskId: testKiosk.id,
@@ -1213,20 +1079,20 @@ describe('Orders routes', function () {
 		it('should return all orders', async function () {
 			const res = await agent().get('/api/v1/orders').set('Cookie', adminSessionCookie)
 			expect(res.body).to.exist
-			expect(res.body[0].activityId).to.equal(testActivity.id)
-			expect(res.body[0].products[0]._id).to.equal(testProduct1.id)
-			expect(res.body[0].products[0].name).to.equal(testProduct1.name)
+			expect(res.body[0].activityId.toString()).to.equal(testActivity.id)
+			expect(res.body[0].products[0]._id.toString()).to.equal(testProduct1.id)
 			expect(res.body[0].products[0].quantity).to.equal(1)
-			expect(res.body[0].options[0]._id).to.equal(testOption.id)
-			expect(res.body[0].options[0].name).to.equal(testOption.name)
+			expect(res.body[0].options[0]._id.toString()).to.equal(testOption.id)
 			expect(res.body[0].options[0].quantity).to.equal(1)
-			expect(res.body[1].activityId).to.equal(testActivity.id)
-			expect(res.body[1].products[0]._id).to.equal(testProduct2.id)
-			expect(res.body[1].products[0].name).to.equal(testProduct2.name)
+			expect(res.body[0].roomId.toString()).to.equal(testRoom.id)
+			expect(res.body[0].kioskId.toString()).to.equal(testKiosk.id)
+			expect(res.body[1].activityId.toString()).to.equal(testActivity.id)
+			expect(res.body[1].products[0]._id.toString()).to.equal(testProduct2.id)
 			expect(res.body[1].products[0].quantity).to.equal(1)
-			expect(res.body[1].options[0]._id).to.equal(testOption.id)
-			expect(res.body[1].options[0].name).to.equal(testOption.name)
+			expect(res.body[1].options[0]._id.toString()).to.equal(testOption.id)
 			expect(res.body[1].options[0].quantity).to.equal(1)
+			expect(res.body[1].roomId.toString()).to.equal(testRoom.id)
+			expect(res.body[1].kioskId.toString()).to.equal(testKiosk.id)
 			expect(res.body.length).to.equal(2)
 			expect(res.body.map((order: any) => order.createdAt)).to.have.lengthOf(2)
 			expect(res.body.map((order: any) => order.updatedAt)).to.have.lengthOf(2)
@@ -1251,7 +1117,7 @@ describe('Orders routes', function () {
 					options: { $elemMatch: { id: testOption.id } }
 				}, { status: 'delivered' })
 				await OrderModel.create({
-					paymentId: testPayment1.id,
+					payment: { paymentStatus: 'successful' },
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					kioskId: testKiosk.id,
@@ -1267,7 +1133,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'later'
 				})
 				await OrderModel.create({
-					paymentId: testPayment2.id,
+					payment: { paymentStatus: 'failed' },
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					kioskId: testKiosk.id,
@@ -1299,11 +1165,11 @@ describe('Orders routes', function () {
 				expect(res.body.length).to.equal(0)
 			})
 
-			it('should include the paymentId in the response', async function () {
+			it('should include the paymentStatus in the response', async function () {
 				const res = await agent().get('/api/v1/orders/?status=delivered').set('Cookie', adminSessionCookie)
 				expect(res.body).to.exist
-				expect(res.body[0].paymentId).to.equal(testPayment1.id)
-				expect(res.body[1].paymentId).to.equal(testPayment2.id)
+				expect(res.body[0].paymentStatus).to.equal('successful')
+				expect(res.body[1].paymentStatus).to.equal('failed')
 			})
 
 			it('should allow multiple statuses', async function () {
@@ -1320,7 +1186,7 @@ describe('Orders routes', function () {
 			beforeEach(async function () {
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by 24 hours
 				await OrderModel.create({
-					paymentId: testPayment1.id,
+					payment: { paymentStatus: 'successful' },
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					kioskId: testKiosk.id,
@@ -1336,7 +1202,7 @@ describe('Orders routes', function () {
 				})
 				clock.tick(24 * 60 * 60 * 1000) // Advance time by another 24 hours
 				await OrderModel.create({
-					paymentId: testPayment2.id,
+					payment: { paymentStatus: 'failed' },
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					kioskId: testKiosk.id,
@@ -1370,11 +1236,11 @@ describe('Orders routes', function () {
 				expect(res.body.map((order: any) => order._id)).to.have.lengthOf(2)
 			})
 
-			it('should include the paymentId in the response', async function () {
+			it('should include the paymentStatus in the response', async function () {
 				const res = await agent().get('/api/v1/orders/?fromDate=2024-04-24T00:00:00.000Z&toDate=2024-04-24T23:59:59.999Z').set('Cookie', adminSessionCookie)
 				expect(res.body).to.exist
-				expect(res.body[0].paymentId).to.equal(testPayment1.id)
-				expect(res.body[1].paymentId).to.equal(testPayment2.id)
+				expect(res.body[0].paymentStatus).to.equal('successful')
+				expect(res.body[1].paymentStatus).to.equal('failed')
 			})
 
 			it('should return an empty array if there are no orders in the interval', async function () {
@@ -1468,11 +1334,10 @@ describe('Orders routes', function () {
 			})
 
 			it('should return an empty array if there are no orders with paymentStatus', async function () {
-				const testPayment3 = await PaymentModel.create({ paymentStatus: 'pending' })
 				await OrderModel.findOneAndUpdate({
 					products: { $elemMatch: { id: testProduct1.id } },
 					options: { $elemMatch: { id: testOption.id } }
-				}, { paymentId: testPayment3.id })
+				}, { payment: { paymentStatus: 'pending' } })
 				const res = await agent().get('/api/v1/orders/?paymentStatus=successful').set('Cookie', adminSessionCookie)
 				expect(res.body).to.exist
 				expect(res.body.length).to.equal(0)
@@ -1498,7 +1363,7 @@ describe('Orders routes', function () {
 					options: { $elemMatch: { id: testOption.id } }
 				}, { status: 'delivered' })
 				await OrderModel.create({
-					paymentId: testPayment1.id,
+					payment: { paymentStatus: 'successful' },
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					kioskId: testKiosk.id,
@@ -1514,7 +1379,7 @@ describe('Orders routes', function () {
 					checkoutMethod: 'later'
 				})
 				await OrderModel.create({
-					paymentId: testPayment2.id,
+					payment: { paymentStatus: 'failed' },
 					activityId: testActivity.id,
 					roomId: testRoom.id,
 					kioskId: testKiosk.id,
@@ -1553,7 +1418,6 @@ describe('Orders routes', function () {
 		let testOption1: IOption
 		let testReader: IReader
 		let testKiosk: IKiosk
-		let testPayment: IPayment
 
 		let order1: IOrder
 		let order2: IOrder
@@ -1600,10 +1464,8 @@ describe('Orders routes', function () {
 				password: 'password'
 			})
 
-			testPayment = await PaymentModel.create({})
-
 			order1 = await OrderModel.create({
-				paymentId: testPayment.id,
+				payment: { paymentStatus: 'pending' }, // Default to pending for new orders unless specified
 				activityId: testActivity.id,
 				roomId: testRoom.id,
 				kioskId: testKiosk.id,
@@ -1619,7 +1481,7 @@ describe('Orders routes', function () {
 			})
 
 			order2 = await OrderModel.create({
-				paymentId: testPayment.id,
+				payment: { paymentStatus: 'pending' }, // Default to pending for new orders unless specified
 				activityId: testActivity.id,
 				roomId: testRoom.id,
 				kioskId: testKiosk.id,

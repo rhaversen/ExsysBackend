@@ -1,59 +1,63 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
+import { transformOrder } from '../controllers/orderController.js' // Assuming transformOrder is in orderController
 import logger from '../utils/logger.js'
+import { emitOrderCreated, emitOrderUpdated, emitOrderDeleted } from '../webSockets/orderHandlers.js' // Assuming these emitters
 
-import ActivityModel, { IActivity } from './Activity.js'
-import KioskModel, { IKiosk } from './Kiosk.js'
-import OptionModel, { type IOption } from './Option.js'
-import PaymentModel, { type IPayment } from './Payment.js'
-import ProductModel, { type IProduct } from './Product.js'
-import RoomModel, { IRoom } from './Room.js'
+import ActivityModel, { IActivityFrontend } from './Activity.js'
+import KioskModel, { IKioskFrontend } from './Kiosk.js'
+import OptionModel, { IOptionFrontend } from './Option.js'
+import ProductModel, { IProductFrontend } from './Product.js'
+import RoomModel, { IRoomFrontend } from './Room.js'
 
 // Interfaces
+export interface IPayment {
+	clientTransactionId?: string
+	paymentStatus: 'pending' | 'successful' | 'failed'
+}
+
+export interface IOrderItem {
+	id: Types.ObjectId // Reference to Product or Option ID
+	quantity: number
+}
+
+export type PaymentStatus = 'pending' | 'successful' | 'failed'
+export type OrderStatus = 'pending' | 'confirmed' | 'delivered' // TODO: Add cancelled
+export type CheckoutMethod = 'sumUp' | 'later' | 'mobilePay' | 'manual'
+
+// Main Order Interface
 export interface IOrder extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
-	activityId: Schema.Types.ObjectId // The activity the order is for
-	roomId: Schema.Types.ObjectId // The room the order is for
-	kioskId: Schema.Types.ObjectId | null // The kiosk the order is for (optional)
-	products: Array<{
-		id: Schema.Types.ObjectId
-		quantity: number
-	}> // The products and their quantities
-	options?: Array<{
-		id: Schema.Types.ObjectId
-		quantity: number
-	}> // Additional options for the order
-	status?: 'pending' | 'confirmed' | 'delivered'
-	checkoutMethod: 'sumUp' | 'later' | 'manual' // The checkout method used for the order
-	paymentId: Schema.Types.ObjectId | IPayment
+	_id: Types.ObjectId
+	activityId: Types.ObjectId // The activity the order is for
+	roomId: Types.ObjectId // The room the order is for
+	kioskId?: Types.ObjectId // The kiosk the order is for (optional for manual orders)
+	products: IOrderItem[]
+	options?: IOrderItem[]
+	status?: OrderStatus
+	checkoutMethod: CheckoutMethod
+	payment: IPayment
 
 	// Timestamps
 	createdAt: Date
 	updatedAt: Date
-}
 
-// Unified type for an order with populated fields
-export type IOrderPopulated = Omit<IOrder, 'paymentId' | 'products' | 'options' | 'kioskId'> & {
-	paymentId: Pick<IPayment, 'paymentStatus' | 'clientTransactionId' | '_id' | 'id'>
-	products: Array<{ id: IProduct & { name: string }; quantity: number }>
-	options?: Array<{ id: IOption & { name: string }; quantity: number }>
-	kioskId: IKiosk['_id'] | null
+	// Internal flag for middleware
+	_wasNew?: boolean
 }
 
 export interface IOrderFrontend {
 	_id: string
-	products: Array<{ _id: IProduct['_id'], name: string, quantity: number }>
-	options: Array<{ _id: IOption['_id'], name: string, quantity: number }>
-	activityId: IActivity['_id']
-	roomId: IRoom['_id']
-	kioskId: IKiosk['_id'] | null
-	status: 'pending' | 'confirmed' | 'delivered'
-	paymentId: string
-	paymentStatus: IPayment['paymentStatus']
-	checkoutMethod: 'sumUp' | 'later' | 'manual'
-	createdAt: string
-	updatedAt: string
+	products: Array<{ _id: IProductFrontend['_id'], quantity: number }>
+	options: Array<{ _id: IOptionFrontend['_id'], quantity: number }>
+	activityId: IActivityFrontend['_id']
+	roomId: IRoomFrontend['_id']
+	kioskId: IKioskFrontend['_id'] | null
+	status: OrderStatus
+	paymentStatus: PaymentStatus
+	checkoutMethod: CheckoutMethod
+	createdAt: Date
+	updatedAt: Date
 }
 
 // Sub-schema for products
@@ -84,7 +88,16 @@ const orderOptionSchema = new Schema({
 	}
 }, { _id: false }) // No separate _id for sub-schemas
 
-// Main order schema
+const paymentSchema = new Schema<IPayment>({
+	clientTransactionId: { type: Schema.Types.String, trim: true },
+	paymentStatus: {
+		type: Schema.Types.String,
+		enum: ['pending', 'successful', 'failed', 'refunded'],
+		required: true
+	}
+}, { _id: false })
+
+// Main Order Schema
 const orderSchema = new Schema<IOrder>({
 	activityId: {
 		type: Schema.Types.ObjectId,
@@ -116,16 +129,16 @@ const orderSchema = new Schema<IOrder>({
 	status: {
 		type: Schema.Types.String,
 		enum: ['pending', 'confirmed', 'delivered'],
-		default: 'pending'
+		default: 'pending',
+		required: [true, 'Ordre status er påkrævet']
 	},
-	paymentId: {
-		type: Schema.Types.ObjectId,
-		required: [true, 'Betaling er påkrævet'],
-		ref: 'Payment'
+	payment: {
+		type: paymentSchema,
+		required: [true, 'Betalingsinformation er påkrævet']
 	},
 	checkoutMethod: {
 		type: Schema.Types.String,
-		enum: ['sumUp', 'later', 'manual'],
+		enum: ['sumUp', 'later', 'mobilePay', 'manual'],
 		required: [true, 'Checkout metode er påkrævet']
 	}
 }, {
@@ -197,22 +210,21 @@ orderSchema.path('options.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Tilvalg mængde skal være et heltal')
 
-orderSchema.path('paymentId').validate(async function (v: Schema.Types.ObjectId) {
-	const payment = await PaymentModel.findById(v)
-	return payment !== null && payment !== undefined
-}, 'Betalingen eksisterer ikke')
+// Removed paymentId validation as it's now an embedded document.
+// Validation for fields within 'payment' will be handled by the paymentSchema itself.
 
 // Indexes
 orderSchema.index({ createdAt: -1 }) // Index for sorting/querying by date
-orderSchema.index({ paymentId: 1 }, { unique: true }) // Ensure one order per payment
+orderSchema.index({ 'payment.clientTransactionId': 1 }, { unique: true, sparse: true }) // Index for unique clientTransactionId within payment sub document
 orderSchema.index({ products: 1 }) // Index for product queries
 orderSchema.index({ options: 1 }) // Index for option queries
 orderSchema.index({ kioskId: 1, createdAt: -1 }) // Index for kiosk-specific queries
 
 // Pre-save middleware
 orderSchema.pre('save', function (next) {
+	this._wasNew = this.isNew
 	if (this.isNew) {
-		logger.info(`Creating new order: Kiosk ${this.kioskId ?? 'Manual'}, Activity ${this.activityId}, Payment ${this.paymentId}`)
+		logger.debug(`Creating new order: Activity ID "${this.activityId.toString()}", Room ID "${this.roomId.toString()}"`)
 	} else {
 		logger.debug(`Updating order: ID ${this.id}`)
 	}
@@ -220,8 +232,21 @@ orderSchema.pre('save', function (next) {
 })
 
 // Post-save middleware
-orderSchema.post('save', function (doc, next) {
-	logger.info(`Order saved successfully: ID ${doc.id}, Status ${doc.status}`)
+orderSchema.post('save', function (doc: IOrder, next) {
+	logger.debug(`Order saved successfully: ID ${doc.id}`)
+	try {
+		const transformedOrder = transformOrder(doc)
+		if (doc._wasNew ?? false) {
+			logger.debug(`New order created: ID ${doc._id}, emitting order created event.`)
+			emitOrderCreated(transformedOrder)
+		} else {
+			logger.debug(`Order updated: ID ${doc._id}, emitting order updated event.`)
+			emitOrderUpdated(transformedOrder)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Order ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew }
 	next()
 })
 
@@ -232,18 +257,7 @@ orderSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: fals
 	logger.warn(`Preparing to delete order: ID ${orderId}`)
 
 	try {
-		// Optionally delete the associated payment if it's not shared
-		const paymentId = this.paymentId
-		if (paymentId != null) {
-			// Check if other orders use this payment (shouldn't happen with unique index, but good practice)
-			const otherOrders = await OrderModel.countDocuments({ paymentId, _id: { $ne: orderId } })
-			if (otherOrders === 0) {
-				logger.info(`Deleting associated payment for order ID ${orderId}: Payment ID ${paymentId}`)
-				await PaymentModel.findByIdAndDelete(paymentId)
-			} else {
-				logger.warn(`Order ID ${orderId} is being deleted, but its Payment ID ${paymentId} is potentially shared. Payment not deleted.`)
-			}
-		}
+		// Payment is embedded, so it will be deleted with the order. No separate deletion needed.
 		next()
 	} catch (error) {
 		logger.error(`Error in pre-delete hook for order ID ${orderId}`, { error })
@@ -258,19 +272,13 @@ orderSchema.pre('deleteMany', async function (next) {
 	logger.warn('Executing deleteMany on Orders with filter:', filter)
 
 	try {
-		const docsToDelete = await OrderModel.find(filter).select('paymentId _id').lean()
+		// Payments are embedded, so they will be deleted with their parent orders.
+		// No separate logic needed to delete payments.
+		const docsToDelete = await OrderModel.find(filter).select('_id').lean() // Only need _id for logging
 		const docIds = docsToDelete.map(doc => doc._id)
-		const paymentIdsToDelete = docsToDelete
-			.map(doc => doc.paymentId)
 
 		if (docIds.length > 0) {
 			logger.warn(`Preparing to delete ${docIds.length} orders via deleteMany: IDs [${docIds.join(', ')}]`)
-
-			// Delete associated payments (assuming 1-to-1 relationship enforced by index)
-			if (paymentIdsToDelete.length > 0) {
-				logger.info(`Deleting ${paymentIdsToDelete.length} associated payments for orders being deleted via deleteMany.`)
-				await PaymentModel.deleteMany({ _id: { $in: paymentIdsToDelete } })
-			}
 		} else {
 			logger.info('deleteMany on Orders: No documents matched the filter.')
 		}
@@ -282,12 +290,19 @@ orderSchema.pre('deleteMany', async function (next) {
 })
 
 // Post-delete middleware
-orderSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
+orderSchema.post(['deleteOne', 'findOneAndDelete'], function (doc, next) {
+	emitOrderDeleted(doc._id.toString()) // Emit event for deleted order
 	logger.warn(`Order deleted successfully: ID ${doc._id}`)
 	next()
 })
 
-orderSchema.post('deleteMany', function (result, next) {
+orderSchema.post('deleteMany', async function (result, next) {
+	if (typeof result?.deletedCount === 'number' && result.deletedCount > 0) {
+		const deletedOrders = await OrderModel.find(this.getFilter()).lean()
+		for (const order of deletedOrders) {
+			emitOrderDeleted(order._id.toString())
+		}
+	}
 	logger.warn(`deleteMany on Orders completed. Deleted count: ${result.deletedCount}`)
 	next()
 })

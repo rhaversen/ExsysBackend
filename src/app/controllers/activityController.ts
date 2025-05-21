@@ -1,9 +1,22 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose from 'mongoose'
 
-import ActivityModel from '../models/Activity.js'
+import ActivityModel, { IActivity, IActivityFrontend } from '../models/Activity.js'
 import logger from '../utils/logger.js'
-import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
+
+export function transformActivity (
+	activityDoc: IActivity
+): IActivityFrontend {
+	return {
+		_id: activityDoc.id,
+		name: activityDoc.name,
+		priorityRooms: activityDoc.priorityRooms,
+		disabledProducts: activityDoc.disabledProducts,
+		disabledRooms: activityDoc.disabledRooms,
+		createdAt: activityDoc.createdAt,
+		updatedAt: activityDoc.updatedAt
+	}
+}
 
 export async function createActivity (req: Request, res: Response, next: NextFunction): Promise<void> {
 	logger.info(`Attempting to create activity with name: ${req.body.name ?? 'N/A'}`)
@@ -11,17 +24,15 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		rooms: req.body.rooms,
+		priorityRooms: req.body.priorityRooms,
 		disabledProducts: req.body.disabledProducts,
 		disabledRooms: req.body.disabledRooms
 	}
 
 	try {
-		const newActivity = await (await ActivityModel.create(allowedFields)).populate('rooms')
+		const newActivity = await ActivityModel.create(allowedFields)
 		logger.debug(`Activity created successfully: ID ${newActivity.id}`)
-		res.status(201).json(newActivity)
-
-		emitActivityPosted(newActivity)
+		res.status(201).json(transformActivity(newActivity))
 	} catch (error) {
 		logger.error(`Activity creation failed for name: ${req.body.name ?? 'N/A'}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -37,7 +48,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 	logger.debug(`Getting activity: ID ${activityId}`)
 
 	try {
-		const activity = await ActivityModel.findById(activityId).populate('rooms')
+		const activity = await ActivityModel.findById(activityId)
 
 		if (activity === null || activity === undefined) {
 			logger.warn(`Get activity failed: Activity not found. ID: ${activityId}`)
@@ -46,7 +57,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 		}
 
 		logger.debug(`Retrieved activity successfully: ID ${activityId}`)
-		res.status(200).json(activity)
+		res.status(200).json(transformActivity(activity))
 	} catch (error) {
 		logger.error(`Get activity failed: Error retrieving activity ID ${activityId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -61,9 +72,9 @@ export async function getActivities (req: Request, res: Response, next: NextFunc
 	logger.debug('Getting all activities')
 
 	try {
-		const activities = await ActivityModel.find({}).populate('rooms')
+		const activities = await ActivityModel.find({})
 		logger.debug(`Retrieved ${activities.length} activities`)
-		res.status(200).json(activities)
+		res.status(200).json(activities.map(transformActivity))
 	} catch (error) {
 		logger.error('Failed to get activities', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -99,9 +110,9 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 			activity.name = req.body.name
 			updateApplied = true
 		}
-		if (req.body.rooms !== undefined) {
-			logger.debug(`Updating rooms for activity ID ${activityId}`)
-			activity.rooms = req.body.rooms
+		if (req.body.priorityRooms !== undefined) {
+			logger.debug(`Updating priorityRooms for activity ID ${activityId}`)
+			activity.priorityRooms = req.body.priorityRooms
 			updateApplied = true
 		}
 		if (req.body.disabledProducts !== undefined) {
@@ -117,8 +128,7 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 
 		if (!updateApplied) {
 			logger.info(`Patch activity: No changes detected for activity ID ${activityId}`)
-			await activity.populate('rooms') // Populate before sending response
-			res.status(200).json(activity) // Return current state if no changes
+			res.status(200).json(transformActivity(activity)) // Return current state if no changes
 			await session.commitTransaction()
 			await session.endSession()
 			return
@@ -128,13 +138,9 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 		await activity.validate()
 		await activity.save({ session })
 
-		await activity.populate('rooms')
-
 		await session.commitTransaction()
 		logger.info(`Activity patched successfully: ID ${activityId}`)
-		res.status(200).json(activity)
-
-		emitActivityUpdated(activity)
+		res.status(200).json(transformActivity(activity))
 	} catch (error) {
 		await session.abortTransaction()
 		logger.error(`Patch activity failed: Error updating activity ID ${activityId}`, { error })
@@ -160,7 +166,8 @@ export async function deleteActivity (req: Request, res: Response, next: NextFun
 	}
 
 	try {
-		const activity = await ActivityModel.findByIdAndDelete(activityId)
+		const activity = await ActivityModel.findById(activityId)
+		await activity?.deleteOne()
 
 		if (activity === null || activity === undefined) {
 			logger.warn(`Activity deletion failed: Activity not found. ID: ${activityId}`)
@@ -170,8 +177,6 @@ export async function deleteActivity (req: Request, res: Response, next: NextFun
 
 		logger.info(`Activity deleted successfully: ID ${activityId}`)
 		res.status(204).send()
-
-		emitActivityDeleted(activityId)
 	} catch (error) {
 		logger.error(`Activity deletion failed: Error during deletion process for ID ${activityId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {

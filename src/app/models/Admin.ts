@@ -1,8 +1,10 @@
 import { compare, hash } from 'bcrypt'
 import { type Document, model, Schema } from 'mongoose'
 
+import { transformAdmin } from '../controllers/adminController.js'
 import logger from '../utils/logger.js'
 import config from '../utils/setupConfig.js'
+import { emitAdminCreated, emitAdminDeleted, emitAdminUpdated } from '../webSockets/adminHandlers.js'
 
 // Config variables
 const { bcryptSaltRounds } = config
@@ -19,6 +21,9 @@ export interface IAdmin extends Document {
 
 	// Methods
 	comparePassword: (password: string) => Promise<boolean>
+
+	// Internal flag for middleware
+	_wasNew?: boolean
 }
 
 export interface IAdminFrontend {
@@ -41,7 +46,7 @@ const adminSchema = new Schema<IAdmin>({
 		type: Schema.Types.String,
 		required: true,
 		trim: true,
-		minlength: [4, 'Password skal være mindst 4 tegn'],
+		minLength: [4, 'Password skal være mindst 4 tegn'],
 		maxLength: [100, 'Password kan højest være 100 tegn']
 	}
 }, {
@@ -60,6 +65,8 @@ adminSchema.path('name').validate(async function (value: string) {
 
 // Pre-save middleware for hashing password
 adminSchema.pre('save', async function (next) {
+	this._wasNew = this.isNew // Set _wasNew flag
+
 	// Only hash the password if it has been modified (or is new)
 	if (!this.isModified('password')) {
 		logger.silly(`Admin ID ${this.id}: Password not modified, skipping hash.`)
@@ -80,9 +87,20 @@ adminSchema.pre('save', async function (next) {
 })
 
 // Post-save middleware
-adminSchema.post('save', function (doc, next) {
+adminSchema.post('save', function (doc: IAdmin, next) {
 	// Avoid logging password hash here
 	logger.debug(`Admin saved successfully: ID ${doc.id}, Name "${doc.name}"`)
+	try {
+		const transformedAdmin = transformAdmin(doc)
+		if (doc._wasNew ?? false) {
+			emitAdminCreated(transformedAdmin)
+		} else {
+			emitAdminUpdated(transformedAdmin)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for Admin ID ${doc.id} in post-save hook:`, { error })
+	}
+	if (doc._wasNew !== undefined) { delete doc._wasNew } // Clean up
 	next()
 })
 
@@ -96,6 +114,11 @@ adminSchema.pre(['deleteOne', 'findOneAndDelete'], { document: true, query: fals
 // Post-delete middleware
 adminSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	logger.info(`Admin deleted successfully: ID ${doc._id}, Name "${doc.name}"`)
+	try {
+		emitAdminDeleted(doc.id) // Emit with ID
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for deleted Admin ID ${doc.id} in post-delete hook:`, { error })
+	}
 	next()
 })
 
