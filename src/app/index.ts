@@ -91,7 +91,7 @@ const sessionStore = MongoStore.create({
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
-	secret: SESSION_SECRET ?? '', // Secret for signing session ID cookie
+	secret: SESSION_SECRET, // Secret for signing session ID cookie
 	saveUninitialized: false, // Do not save session if not authenticated
 	store: sessionStore, // Store session in MongoDB
 	cookie: cookieOptions
