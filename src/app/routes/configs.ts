@@ -32,6 +32,7 @@ router.get('/',
  * @param {number[]} [req.body.disabledWeekdays] - The disabled weekdays of the kiosk, 0=Monday, 6=Sunday (optional).
  * @param {string} [req.body.kioskPassword] - The unified password for all kiosks (optional).
  * @param {number} [req.body.kioskFeedbackBannerDelayMs] - Delay before showing feedback banner on kiosk (optional).
+ * @param {string} [req.body.kioskWelcomeMessage] - The welcome message displayed on kiosks (optional).
  * @returns {number} res.status - The status code of the HTTP response.
  * @returns {Object} res.body - The updated configs.
  */

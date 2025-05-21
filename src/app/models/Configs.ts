@@ -13,6 +13,7 @@ export interface IConfigs extends Document {
 	disabledWeekdays: number[] // 0=Monday, 6=Sunday
 	kioskPassword: string
 	kioskFeedbackBannerDelayMs: number
+	kioskWelcomeMessage: string
 
 	// Timestamps
 	createdAt: Date
@@ -28,6 +29,7 @@ export interface IConfigsFrontend {
 		disabledWeekdays: number[] // 0=Monday, 6=Sunday
 		kioskPassword: string
 		kioskFeedbackBannerDelayMs: number
+		kioskWelcomeMessage: string
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -81,6 +83,13 @@ const configsSchema = new Schema<IConfigs>({
 			validator: Number.isInteger,
 			message: 'Kiosk feedback banner forsinkelse skal være et heltal'
 		}
+	},
+	kioskWelcomeMessage: {
+		type: Schema.Types.String,
+		trim: true,
+		default: 'Bestilling af brød, kaffe og the',
+		minlength: [1, 'Velkomstbesked skal være mindst 1 tegn'],
+		maxlength: [200, 'Velkomstbesked kan højest være 200 tegn']
 	}
 }, {
 	timestamps: true
