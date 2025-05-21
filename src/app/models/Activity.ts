@@ -7,8 +7,8 @@ import { emitActivityDeleted, emitActivityCreated, emitActivityUpdated } from '.
 import { emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 import KioskModel from './Kiosk.js'
-import ProductModel, { IProduct } from './Product.js'
-import RoomModel, { IRoom } from './Room.js'
+import ProductModel, { IProductFrontend } from './Product.js'
+import RoomModel, { IRoomFrontend } from './Room.js'
 
 // Interfaces
 export interface IActivity extends Document {
@@ -29,9 +29,9 @@ export interface IActivity extends Document {
 
 export interface IActivityFrontend {
 	_id: string
-	priorityRooms: Array<IRoom['_id']>
-	disabledProducts: Array<IProduct['_id']>
-	disabledRooms: Array<IRoom['_id']>
+	priorityRooms: Array<IRoomFrontend['_id']>
+	disabledProducts: Array<IProductFrontend['_id']>
+	disabledRooms: Array<IRoomFrontend['_id']>
 	name: string
 	createdAt: Date
 	updatedAt: Date
