@@ -17,9 +17,7 @@ import helmet from 'helmet'
 import mongoose from 'mongoose'
 import passport from 'passport'
 
-import { transformSession } from './controllers/sessionController.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
-import { type ISession } from './models/Session.js'
 import activityRoutes from './routes/activities.js'
 import adminRoutes from './routes/admins.js'
 import authRoutes from './routes/auth.js'
@@ -40,7 +38,6 @@ import configurePassport from './utils/passportConfig.js'
 import { getIPAddress } from './utils/sessionUtils.js'
 import config from './utils/setupConfig.js'
 import { initSocket } from './utils/socket.js'
-import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Environment variables
 const { NODE_ENV, SESSION_SECRET } = process.env as Record<string, string>
@@ -110,21 +107,11 @@ const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfi
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Middleware to update session on each request
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
 	if (req.isAuthenticated() && req.session !== undefined) {
 		req.session.ipAddress = getIPAddress(req)
 		req.session.lastActivity = new Date()
 		req.session.userAgent = req.headers['user-agent']
-
-		const sessionDoc: ISession = {
-			_id: req.sessionID,
-			session: JSON.stringify(req.session),
-			expires: req.session.cookie.expires ?? null
-		}
-
-		const transformedSession = transformSession(sessionDoc)
-
-		emitSessionUpdated(transformedSession)
 	}
 	next()
 })
