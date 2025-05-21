@@ -110,20 +110,10 @@ describe('Products routes', function () {
 			expect(res.body.orderWindow.from.minute).to.equal(testProductFields.orderWindow.from.minute)
 			expect(res.body.orderWindow.to.hour).to.equal(testProductFields.orderWindow.to.hour)
 			expect(res.body.orderWindow.to.minute).to.equal(testProductFields.orderWindow.to.minute)
-			expect(res.body.options[0]._id.toString()).to.equal(testOption.id)
+			expect(res.body.options[0].toString()).to.equal(testOption.id)
 			expect(res.body).to.have.property('createdAt')
 			expect(res.body).to.have.property('updatedAt')
 			expect(res.body).to.have.property('_id')
-		})
-
-		it('should populate the options', async function () {
-			const res = await agent().post('/api/v1/products').send(testProductFields).set('Cookie', sessionCookie)
-			expect(res.body).to.exist
-			expect(res.body.options).to.be.an('array')
-			expect(res.body.options).to.have.lengthOf(1)
-			expect(res.body.options[0].name).to.equal(testOption.name)
-			expect(res.body.options[0].imageURL).to.equal(testOption.imageURL)
-			expect(res.body.options[0].price).to.equal(testOption.price)
 		})
 
 		it('should create a valid product with two options', async function () {
@@ -206,26 +196,6 @@ describe('Products routes', function () {
 			expect(res.body[0]).to.have.property('createdAt')
 			expect(res.body[0]).to.have.property('updatedAt')
 			expect(res.body[0]).to.have.property('_id')
-		})
-
-		it('should populate the options', async function () {
-			const testOption = await OptionModel.create({
-				name: 'Test Option',
-				imageURL: 'https://example.com/image.jpg',
-				price: 50
-			})
-
-			await ProductModel.findByIdAndUpdate(testProduct.id, { options: [testOption.id] })
-
-			const res = await agent().get('/api/v1/products').set('Cookie', sessionCookie)
-			expect(res.body).to.exist
-			expect(res.body).to.be.an('array')
-			expect(res.body).to.have.lengthOf(1)
-			expect(res.body[0].options).to.be.an('array')
-			expect(res.body[0].options).to.have.lengthOf(1)
-			expect(res.body[0].options[0].name).to.equal('Test Option')
-			expect(res.body[0].options[0].imageURL).to.equal('https://example.com/image.jpg')
-			expect(res.body[0].options[0].price).to.equal(50)
 		})
 
 		it('should get all products', async function () {
@@ -374,38 +344,6 @@ describe('Products routes', function () {
 			expect(res.body).to.have.property('createdAt')
 			expect(res.body).to.have.property('updatedAt')
 			expect(res.body).to.have.property('_id')
-		})
-
-		it('should populate the options', async function () {
-			const testOption = await OptionModel.create({
-				name: 'Test Option',
-				imageURL: 'https://example.com/image.jpg',
-				price: 50
-			})
-
-			await ProductModel.findByIdAndUpdate(testProduct.id, { options: [testOption.id] })
-
-			const res = await agent().patch(`/api/v1/products/${testProduct.id}`).send({
-				name: 'Updated Product',
-				imageURL: 'https://example.com/imageNew.jpg',
-				price: 200,
-				orderWindow: {
-					from: {
-						hour: 1,
-						minute: 0
-					},
-					to: {
-						hour: 22,
-						minute: 59
-					}
-				}
-			}).set('Cookie', sessionCookie)
-
-			expect(res.body).to.exist
-			expect(res.body.options).to.be.an('array')
-			expect(res.body.options).to.have.lengthOf(1)
-			expect(res.body.options[0].name).to.equal('Test Option')
-			expect(res.body.options[0].imageURL).to.equal('https://example.com/image.jpg')
 		})
 
 		it('should allow a partial update', async function () {

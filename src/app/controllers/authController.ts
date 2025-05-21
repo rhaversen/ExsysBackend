@@ -3,15 +3,13 @@ import passport from 'passport'
 
 import { type IAdmin } from '../models/Admin.js'
 import { type IKiosk } from '../models/Kiosk.js'
-import SessionModel, { type ISession } from '../models/Session.js'
+import SessionModel from '../models/Session.js'
 import logger from '../utils/logger.js'
 import { getIPAddress } from '../utils/sessionUtils.js'
 import config from '../utils/setupConfig.js'
-import { emitSessionCreated, emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 
 import { transformAdmin } from './adminController.js'
 import { transformKiosk } from './kioskController.js'
-import { transformSession } from './sessionController.js'
 
 // Config variables
 const { sessionExpiry } = config
@@ -81,13 +79,6 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 					req.session.cookie.maxAge = sessionExpiry
 				}
 
-				const sessionDoc: ISession = {
-					_id: req.sessionID,
-					session: JSON.stringify(req.session),
-					expires: req.session.cookie.expires ?? null
-				}
-				const transformedSession = transformSession(sessionDoc)
-
 				const admin = user as IAdmin
 				const transformedAdmin = transformAdmin(admin)
 
@@ -96,8 +87,6 @@ export async function loginAdminLocal (req: Request, res: Response, next: NextFu
 					auth: true,
 					user: transformedAdmin
 				})
-
-				emitSessionCreated(transformedSession)
 			} catch (sessionError) {
 				logger.error(`Admin login failed: Error during session handling for ${adminName}:`, { error: sessionError })
 				next(sessionError)
@@ -190,13 +179,6 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				logger.debug(`Setting persistent session for kiosk ${kioskTag}`)
 				req.session.cookie.maxAge = sessionExpiry
 
-				const sessionDoc: ISession = {
-					_id: req.sessionID,
-					session: JSON.stringify(req.session),
-					expires: req.session.cookie.expires ?? null
-				}
-				const transformedSession = transformSession(sessionDoc)
-
 				const transformedKiosk = await transformKiosk(kiosk)
 
 				logger.info(`Kiosk ${kiosk.kioskTag} (ID: ${kiosk.id}) logged in successfully. Session ID: ${req.sessionID}`)
@@ -204,8 +186,6 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 					auth: true,
 					user: transformedKiosk
 				})
-
-				emitSessionCreated(transformedSession)
 			} catch (sessionError) {
 				logger.error(`Kiosk login failed: Error during session handling for ${kioskTag}:`, { error: sessionError })
 				next(sessionError)
@@ -219,8 +199,6 @@ export async function logoutLocal (req: Request, res: Response, next: NextFuncti
 	const userType = req.session.type ?? 'unknown'
 	const userId = (req.user as (IAdmin | IKiosk))?.id ?? 'unknown'
 	logger.info(`Attempting logout for ${userType} user ID: ${userId}, Session ID: ${sessionId}`)
-
-	emitSessionDeleted(sessionId)
 
 	req.logout(function (err) {
 		if (err !== null && err !== undefined) {

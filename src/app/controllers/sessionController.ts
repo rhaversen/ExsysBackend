@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import Session, { type ISession, type ISessionFrontend } from '../models/Session.js'
 import logger from '../utils/logger.js'
-import { emitSessionDeleted } from '../webSockets/sessionHandlers.js'
 
 export interface ParsedSessionData {
 	cookie: {
@@ -28,15 +27,15 @@ export function transformSession (
 ): ISessionFrontend {
 	try {
 		const sessionData = JSON.parse(sessionDoc.session) as ParsedSessionData
-		const userId = sessionData?.passport?.user?.toString() ?? null // Safely access user ID
-
-		// Determine stayLoggedIn based on originalMaxAge (null means session cookie)
-		const stayLoggedIn = sessionData.cookie.originalMaxAge !== null
+		const userId = sessionData?.passport?.user?.toString() ?? null
+		const sessionExpires = sessionData.cookie.expires
+		const originalMaxAge = sessionData.cookie.originalMaxAge
 
 		return {
 			_id: sessionDoc._id,
-			sessionExpires: sessionDoc.expires, // Use expires from the session document, which reflects the actual DB expiry
-			stayLoggedIn,
+			docExpires: sessionDoc.expires, // Use expires from the session document, which reflects the actual DB expiry
+			sessionExpires: sessionExpires != null ? new Date(sessionExpires) : null,
+			stayLoggedIn: originalMaxAge != null && originalMaxAge > 0, // Determine stayLoggedIn based on originalMaxAge (null means session is not persistent)
 			type: sessionData.type ?? 'unknown', // Default to 'unknown' if type is missing
 			userId,
 			ipAddress: sessionData.ipAddress,
@@ -50,6 +49,7 @@ export function transformSession (
 		// Returning a minimal structure to avoid crashing consumers
 		return {
 			_id: sessionDoc._id,
+			docExpires: sessionDoc.expires,
 			sessionExpires: null,
 			stayLoggedIn: false,
 			type: 'unknown',
@@ -142,9 +142,6 @@ export async function deleteSession (req: Request, res: Response, next: NextFunc
 
 		// Respond 204 No Content
 		res.status(204).send()
-
-		// Emit WebSocket event after successful deletion and response
-		emitSessionDeleted(sessionId)
 	} catch (error) {
 		logger.error(`Delete session failed: Error during deletion process for ID ${sessionId}`, { error })
 		next(error)

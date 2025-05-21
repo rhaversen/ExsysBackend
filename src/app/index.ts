@@ -17,13 +17,12 @@ import helmet from 'helmet'
 import mongoose from 'mongoose'
 import passport from 'passport'
 
-import { transformSession } from './controllers/sessionController.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
-import { type ISession } from './models/Session.js'
 import activityRoutes from './routes/activities.js'
 import adminRoutes from './routes/admins.js'
 import authRoutes from './routes/auth.js'
 import configRoutes from './routes/configs.js'
+import feedbackRoutes from './routes/feedback.js'
 import kioskRoutes from './routes/kiosks.js'
 import optionRoutes from './routes/options.js'
 import orderRoutes from './routes/orders.js'
@@ -36,10 +35,10 @@ import sessionRoutes from './routes/sessions.js'
 import databaseConnector from './utils/databaseConnector.js'
 import logger from './utils/logger.js'
 import configurePassport from './utils/passportConfig.js'
+import { initializeSessionChangeStream, closeSessionChangeStream } from './utils/sessionChangeStream.js'
 import { getIPAddress } from './utils/sessionUtils.js'
 import config from './utils/setupConfig.js'
 import { initSocket } from './utils/socket.js'
-import { emitSessionUpdated } from './webSockets/sessionHandlers.js'
 
 // Environment variables
 const { NODE_ENV, SESSION_SECRET } = process.env as Record<string, string>
@@ -70,6 +69,9 @@ if (NODE_ENV === 'production' || NODE_ENV === 'staging') {
 	await databaseConnector.connectToMongoDB()
 }
 
+// Setup Change Stream for Sessions after DB connection and model initialization
+initializeSessionChangeStream()
+
 // Middleware
 app.use(helmet()) // Security headers
 app.use(express.json()) // for parsing application/json
@@ -93,7 +95,7 @@ const sessionStore = MongoStore.create({
 app.use(session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
-	secret: SESSION_SECRET ?? '', // Secret for signing session ID cookie
+	secret: SESSION_SECRET, // Secret for signing session ID cookie
 	saveUninitialized: false, // Do not save session if not authenticated
 	store: sessionStore, // Store session in MongoDB
 	cookie: cookieOptions
@@ -109,21 +111,11 @@ const veryLowSensitivityApiLimiter = RateLimit(veryLowSensitivityApiLimiterConfi
 const mediumSensitivityApiLimiter = RateLimit(mediumSensitivityApiLimiterConfig)
 
 // Middleware to update session on each request
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
 	if (req.isAuthenticated() && req.session !== undefined) {
 		req.session.ipAddress = getIPAddress(req)
 		req.session.lastActivity = new Date()
 		req.session.userAgent = req.headers['user-agent']
-
-		const sessionDoc: ISession = {
-			_id: req.sessionID,
-			session: JSON.stringify(req.session),
-			expires: req.session.cookie.expires ?? null
-		}
-
-		const transformedSession = transformSession(sessionDoc)
-
-		emitSessionUpdated(transformedSession)
 	}
 	next()
 })
@@ -141,6 +133,7 @@ app.use('/api/v1/kiosks', kioskRoutes)
 app.use('/api/v1/readers', readerRoutes)
 app.use('/api/v1/sessions', sessionRoutes)
 app.use('/api/v1/configs', configRoutes)
+app.use('/api/v1/feedback', feedbackRoutes)
 app.use('/api/v1/reader-callback', mediumSensitivityApiLimiter)
 
 // Apply low sensitivity for service routes
@@ -183,6 +176,10 @@ export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
+
+	logger.info('Closing session change stream...')
+	await closeSessionChangeStream()
+	logger.info('Session change stream closed.')
 
 	logger.info('Closing session store...')
 	await sessionStore.close()
