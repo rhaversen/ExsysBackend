@@ -72,7 +72,7 @@ const configsSchema = new Schema<IConfigs>({
 		type: Schema.Types.String,
 		trim: true,
 		default: 'Password',
-		minlength: [4, 'Adgangskode skal være mindst 4 tegn'],
+		minLength: [4, 'Adgangskode skal være mindst 4 tegn'],
 		maxLength: [100, 'Adgangskode kan højest være 100 tegn']
 	},
 	kioskFeedbackBannerDelayMs: {
@@ -88,8 +88,8 @@ const configsSchema = new Schema<IConfigs>({
 		type: Schema.Types.String,
 		trim: true,
 		default: 'Bestilling af brød, kaffe og the',
-		minlength: [1, 'Velkomstbesked skal være mindst 1 tegn'],
-		maxlength: [200, 'Velkomstbesked kan højest være 200 tegn']
+		minLength: [1, 'Velkomstbesked skal være mindst 1 tegn'],
+		maxLength: [200, 'Velkomstbesked kan højest være 200 tegn']
 	}
 }, {
 	timestamps: true
