@@ -27,15 +27,15 @@ export function transformSession (
 ): ISessionFrontend {
 	try {
 		const sessionData = JSON.parse(sessionDoc.session) as ParsedSessionData
-		const userId = sessionData?.passport?.user?.toString() ?? null // Safely access user ID
-
-		// Determine stayLoggedIn based on originalMaxAge (null means session cookie)
-		const stayLoggedIn = sessionData.cookie.originalMaxAge !== null
+		const userId = sessionData?.passport?.user?.toString() ?? null
+		const sessionExpires = sessionData.cookie.expires
+		const originalMaxAge = sessionData.cookie.originalMaxAge
 
 		return {
 			_id: sessionDoc._id,
-			sessionExpires: sessionDoc.expires, // Use expires from the session document, which reflects the actual DB expiry
-			stayLoggedIn,
+			docExpires: sessionDoc.expires, // Use expires from the session document, which reflects the actual DB expiry
+			sessionExpires: sessionExpires != null ? new Date(sessionExpires) : null,
+			stayLoggedIn: originalMaxAge != null && originalMaxAge > 0, // Determine stayLoggedIn based on originalMaxAge (null means session is not persistent)
 			type: sessionData.type ?? 'unknown', // Default to 'unknown' if type is missing
 			userId,
 			ipAddress: sessionData.ipAddress,
@@ -49,6 +49,7 @@ export function transformSession (
 		// Returning a minimal structure to avoid crashing consumers
 		return {
 			_id: sessionDoc._id,
+			docExpires: sessionDoc.expires,
 			sessionExpires: null,
 			stayLoggedIn: false,
 			type: 'unknown',

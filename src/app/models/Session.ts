@@ -18,6 +18,7 @@ export interface ISession {
 export interface ISessionFrontend {
 	_id: string // Used for deletion, determining current session and key in list
 	sessionExpires: Date | null // Used to determine if session is expired if stayLoggedIn is true (Uses rolling expiration) (ISO string)
+	docExpires: Date // Used to determine if session is expired if stayLoggedIn is false (Uses rolling expiration) (ISO string)
 	stayLoggedIn: boolean // Used to determine if session is persistent
 	type: 'admin' | 'kiosk' | 'unknown' // Used to infer user information
 	userId: IActivityFrontend['_id'] | IKioskFrontend['_id'] | null // Used to infer user information
