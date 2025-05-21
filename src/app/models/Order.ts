@@ -215,7 +215,7 @@ orderSchema.path('options.quantity').validate(function (v: number) {
 
 // Indexes
 orderSchema.index({ createdAt: -1 }) // Index for sorting/querying by date
-orderSchema.index({ 'payment.clientTransactionId': 1 }, { unique: true, sparse: true }) // Index for unique clientTransactionId within payment subdocument
+orderSchema.index({ 'payment.clientTransactionId': 1 }, { unique: true, sparse: true }) // Index for unique clientTransactionId within payment sub document
 orderSchema.index({ products: 1 }) // Index for product queries
 orderSchema.index({ options: 1 }) // Index for option queries
 orderSchema.index({ kioskId: 1, createdAt: -1 }) // Index for kiosk-specific queries
