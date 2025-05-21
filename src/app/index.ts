@@ -35,6 +35,7 @@ import sessionRoutes from './routes/sessions.js'
 import databaseConnector from './utils/databaseConnector.js'
 import logger from './utils/logger.js'
 import configurePassport from './utils/passportConfig.js'
+import { initializeSessionChangeStream, closeSessionChangeStream } from './utils/sessionChangeStream.js'
 import { getIPAddress } from './utils/sessionUtils.js'
 import config from './utils/setupConfig.js'
 import { initSocket } from './utils/socket.js'
@@ -67,6 +68,9 @@ app.set('trust proxy', 1) // Trust the first proxy (NGINX)
 if (NODE_ENV === 'production' || NODE_ENV === 'staging') {
 	await databaseConnector.connectToMongoDB()
 }
+
+// Setup Change Stream for Sessions after DB connection and model initialization
+initializeSessionChangeStream()
 
 // Middleware
 app.use(helmet()) // Security headers
@@ -172,6 +176,10 @@ export async function shutDown (): Promise<void> {
 	logger.info('Closing server...')
 	server.close()
 	logger.info('Server closed')
+
+	logger.info('Closing session change stream...')
+	await closeSessionChangeStream()
+	logger.info('Session change stream closed.')
 
 	logger.info('Closing session store...')
 	await sessionStore.close()
