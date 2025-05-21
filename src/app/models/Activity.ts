@@ -3,7 +3,7 @@ import { Document, model, Schema } from 'mongoose'
 import { transformActivity } from '../controllers/activityController.js' // Import transformer
 import { transformKiosk } from '../controllers/kioskController.js'
 import logger from '../utils/logger.js'
-import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
+import { emitActivityDeleted, emitActivityCreated, emitActivityUpdated } from '../webSockets/activityHandlers.js'
 import { emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 import KioskModel from './Kiosk.js'
@@ -122,7 +122,7 @@ activitySchema.post('save', async function (doc: IActivity, next) {
 	try {
 		const transformedActivity = transformActivity(doc)
 		if (doc._wasNew ?? false) {
-			emitActivityPosted(transformedActivity)
+			emitActivityCreated(transformedActivity)
 		} else {
 			emitActivityUpdated(transformedActivity)
 		}
