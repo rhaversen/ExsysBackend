@@ -4,10 +4,14 @@ import mongoose from 'mongoose'
 import { transformSession } from '../controllers/sessionController.js'
 import SessionModel, { ISession } from '../models/Session.js'
 import { emitSessionCreated, emitSessionDeleted, emitSessionUpdated } from '../webSockets/sessionHandlers.js'
+import { shutDown } from '../index.js'
 
 import logger from './logger.js'
 
 let sessionChangeStream: mongoose.mongo.ChangeStream<ISession, mongoose.mongo.ChangeStreamDocument<ISession>> | undefined
+let changeStreamRetryAttempts = 0
+const MAX_CHANGE_STREAM_RETRIES = 5
+const INITIAL_RETRY_DELAY_MS = 2000
 
 export function initializeSessionChangeStream (): void {
 	const sessionChangeStream = SessionModel.collection.watch<ISession>(
@@ -47,11 +51,28 @@ export function initializeSessionChangeStream (): void {
 		}
 	})
 
-	sessionChangeStream.on('error', (error: unknown) => {
+	sessionChangeStream.on('error', async (error: unknown) => {
 		logger.error('Session change stream error:', { error })
 		Sentry.captureException(error, { tags: { context: 'MongoDBChangeStreamError' } })
+		
+		await closeSessionChangeStream()
+		if (changeStreamRetryAttempts < MAX_CHANGE_STREAM_RETRIES) {
+			changeStreamRetryAttempts++
+			const retryDelay = INITIAL_RETRY_DELAY_MS * Math.pow(2, changeStreamRetryAttempts - 1)
+			logger.warn(`Session change stream errored. Attempting retry ${changeStreamRetryAttempts}/${MAX_CHANGE_STREAM_RETRIES} in ${retryDelay / 1000}s...`)
+			setTimeout(() => {
+				initializeSessionChangeStream()
+			}, retryDelay)
+		} else {
+			logger.error(`Failed to re-initialize session change stream after ${MAX_CHANGE_STREAM_RETRIES} attempts. Shutting down application.`)
+			await shutDown()
+		}
 	})
 
+	if (changeStreamRetryAttempts > 0) {
+		logger.info(`Session change stream successfully re-initialized after ${changeStreamRetryAttempts} attempt(s).`)
+	}
+	changeStreamRetryAttempts = 0
 	logger.info('MongoDB change stream for sessions initialized.')
 }
 
