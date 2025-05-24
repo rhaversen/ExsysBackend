@@ -7,23 +7,19 @@ import sinon from 'sinon'
 import ActivityModel, { IActivityFrontend } from '../../../app/models/Activity.js'
 import ProductModel from '../../../app/models/Product.js'
 import RoomModel from '../../../app/models/Room.js'
-import * as activityHandlers from '../../../app/webSockets/activityHandlers.js'
+import * as socketUtils from '../../../app/utils/socket.js'
 
 describe('Activity WebSocket Emitters', function () {
-	let emitActivityCreatedSpy: sinon.SinonSpy
-	let emitActivityUpdatedSpy: sinon.SinonSpy
-	let emitActivityDeletedSpy: sinon.SinonSpy
+	let emitSocketEventSpy: sinon.SinonSpy
 
 	let room1Id: string, room2Id: string, room3Id: string
 	let product1Id: string, product2Id: string
 
 	beforeEach(async function () {
-		// Clear all data
 		if (mongoose.connection.db !== undefined) {
 			await mongoose.connection.db.dropDatabase()
 		}
 
-		// Create dummy rooms and products for validation
 		const room1 = await RoomModel.create({ name: 'Test Room 1', description: 'Test Description 1' })
 		const room2 = await RoomModel.create({ name: 'Test Room 2', description: 'Test Description 2' })
 		const room3 = await RoomModel.create({ name: 'Test Room 3', description: 'Test Description 3' })
@@ -50,10 +46,7 @@ describe('Activity WebSocket Emitters', function () {
 		product1Id = product1._id.toString()
 		product2Id = product2._id.toString()
 
-		// Setup spies
-		emitActivityCreatedSpy = sinon.spy(activityHandlers, 'emitActivityCreated')
-		emitActivityUpdatedSpy = sinon.spy(activityHandlers, 'emitActivityUpdated')
-		emitActivityDeletedSpy = sinon.spy(activityHandlers, 'emitActivityDeleted')
+		emitSocketEventSpy = sinon.spy(socketUtils, 'emitSocketEvent')
 	})
 
 	afterEach(function () {
@@ -69,20 +62,17 @@ describe('Activity WebSocket Emitters', function () {
 				disabledRooms: [room2Id]
 			}
 			const activity = await ActivityModel.create(activityData)
-			// Assuming transformActivity is a function that prepares the activity for frontend
-			// and that it's called internally by emitActivityCreated or the event that triggers it.
-			// For this test, we'll manually create what we expect to be emitted.
-			const expectedActivityFrontend: IActivityFrontend = {
+
+			const expectedActivityFrontend: Partial<IActivityFrontend> = {
 				_id: activity._id.toString(),
 				name: activity.name,
-				priorityRooms: activity.priorityRooms.map(id => id.toString()),
-				disabledProducts: activity.disabledProducts.map(id => id.toString()),
-				disabledRooms: activity.disabledRooms.map(id => id.toString()),
-				createdAt: activity.createdAt,
-				updatedAt: activity.updatedAt
+				priorityRooms: [room1Id],
+				disabledProducts: [product1Id, product2Id],
+				disabledRooms: [room2Id]
 			}
-			expect(emitActivityCreatedSpy.calledOnce).to.be.true
-			expect(emitActivityCreatedSpy.calledWithMatch(sinon.match(expectedActivityFrontend))).to.be.true
+
+			expect(emitSocketEventSpy.calledWith('activityCreated')).to.be.true
+			expect(emitSocketEventSpy.getCall(0).args[1]).to.deep.include(expectedActivityFrontend)
 		})
 	})
 
@@ -94,21 +84,23 @@ describe('Activity WebSocket Emitters', function () {
 				disabledProducts: [product1Id, product2Id],
 				disabledRooms: [room2Id]
 			})
+
+			emitSocketEventSpy.resetHistory()
+
 			activity.name = 'Updated Activity'
 			activity.priorityRooms.push(room3Id as unknown as Schema.Types.ObjectId)
 			await activity.save()
 
-			const expectedActivityFrontend: IActivityFrontend = {
+			const expectedActivityFrontend: Partial<IActivityFrontend> = {
 				_id: activity._id.toString(),
-				name: activity.name,
-				priorityRooms: activity.priorityRooms.map(id => id.toString()),
-				disabledProducts: activity.disabledProducts.map(id => id.toString()),
-				disabledRooms: activity.disabledRooms.map(id => id.toString()),
-				createdAt: activity.createdAt,
-				updatedAt: activity.updatedAt
+				name: 'Updated Activity',
+				priorityRooms: [room1Id, room3Id],
+				disabledProducts: [product1Id, product2Id],
+				disabledRooms: [room2Id]
 			}
-			expect(emitActivityUpdatedSpy.calledOnce).to.be.true
-			expect(emitActivityUpdatedSpy.calledWithMatch(sinon.match(expectedActivityFrontend))).to.be.true
+
+			expect(emitSocketEventSpy.calledWith('activityUpdated')).to.be.true
+			expect(emitSocketEventSpy.getCall(0).args[1]).to.deep.include(expectedActivityFrontend)
 		})
 	})
 
@@ -116,15 +108,18 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityDeleted" with the id of the deleted activity', async function () {
 			const activity = await ActivityModel.create({
 				name: 'Activity to Delete',
-				priorityRooms: [room1Id], // Add valid refs
+				priorityRooms: [room1Id],
 				disabledProducts: [product1Id, product2Id],
 				disabledRooms: [room2Id]
 			})
 			const activityId = activity._id.toString()
+
+			emitSocketEventSpy.resetHistory()
+
 			await ActivityModel.deleteOne({ _id: activity._id })
 
-			expect(emitActivityDeletedSpy.calledOnce).to.be.true
-			expect(emitActivityDeletedSpy.calledWith(activityId)).to.be.true
+			expect(emitSocketEventSpy.calledWith('activityDeleted')).to.be.true
+			expect(emitSocketEventSpy.getCall(0).args[1]).to.equal(activityId)
 		})
 	})
 })
