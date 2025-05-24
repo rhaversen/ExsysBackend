@@ -3,12 +3,12 @@ import { Document, model, Schema } from 'mongoose'
 import { transformActivity } from '../controllers/activityController.js' // Import transformer
 import { transformKiosk } from '../controllers/kioskController.js'
 import logger from '../utils/logger.js'
-import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
+import { emitActivityDeleted, emitActivityCreated, emitActivityUpdated } from '../webSockets/activityHandlers.js'
 import { emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 import KioskModel from './Kiosk.js'
-import ProductModel, { IProduct } from './Product.js'
-import RoomModel, { IRoom } from './Room.js'
+import ProductModel, { IProductFrontend } from './Product.js'
+import RoomModel, { IRoomFrontend } from './Room.js'
 
 // Interfaces
 export interface IActivity extends Document {
@@ -29,9 +29,9 @@ export interface IActivity extends Document {
 
 export interface IActivityFrontend {
 	_id: string
-	priorityRooms: Array<IRoom['_id']>
-	disabledProducts: Array<IProduct['_id']>
-	disabledRooms: Array<IRoom['_id']>
+	priorityRooms: Array<IRoomFrontend['_id']>
+	disabledProducts: Array<IProductFrontend['_id']>
+	disabledRooms: Array<IRoomFrontend['_id']>
 	name: string
 	createdAt: Date
 	updatedAt: Date
@@ -122,7 +122,7 @@ activitySchema.post('save', async function (doc: IActivity, next) {
 	try {
 		const transformedActivity = transformActivity(doc)
 		if (doc._wasNew ?? false) {
-			emitActivityPosted(transformedActivity)
+			emitActivityCreated(transformedActivity)
 		} else {
 			emitActivityUpdated(transformedActivity)
 		}

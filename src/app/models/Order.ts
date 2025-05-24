@@ -89,7 +89,10 @@ const orderOptionSchema = new Schema({
 }, { _id: false }) // No separate _id for sub-schemas
 
 const paymentSchema = new Schema<IPayment>({
-	clientTransactionId: { type: Schema.Types.String, trim: true },
+	clientTransactionId: {
+		type: Schema.Types.String,
+		trim: true
+	},
 	paymentStatus: {
 		type: Schema.Types.String,
 		enum: ['pending', 'successful', 'failed', 'refunded'],
@@ -209,9 +212,6 @@ orderSchema.path('options.id').validate(async function (v: Schema.Types.ObjectId
 orderSchema.path('options.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Tilvalg mængde skal være et heltal')
-
-// Removed paymentId validation as it's now an embedded document.
-// Validation for fields within 'payment' will be handled by the paymentSchema itself.
 
 // Indexes
 orderSchema.index({ createdAt: -1 }) // Index for sorting/querying by date

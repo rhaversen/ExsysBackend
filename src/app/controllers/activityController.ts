@@ -10,9 +10,9 @@ export function transformActivity (
 	return {
 		_id: activityDoc.id,
 		name: activityDoc.name,
-		priorityRooms: activityDoc.priorityRooms,
-		disabledProducts: activityDoc.disabledProducts,
-		disabledRooms: activityDoc.disabledRooms,
+		priorityRooms: activityDoc.priorityRooms.map((room) => room.toString()),
+		disabledProducts: activityDoc.disabledProducts.map((product) => product.toString()),
+		disabledRooms: activityDoc.disabledRooms.map((room) => room.toString()),
 		createdAt: activityDoc.createdAt,
 		updatedAt: activityDoc.updatedAt
 	}
