@@ -431,7 +431,6 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		// Fetch orders
 		const orders = await OrderModel.find(query)
 			.sort({ createdAt: -1 }) // Sort by creation date descending
-			.lean()
 			.exec()
 
 		logger.debug(`Initial query returned ${orders?.length ?? 0} orders`)
