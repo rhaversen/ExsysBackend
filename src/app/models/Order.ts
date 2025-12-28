@@ -289,9 +289,9 @@ orderSchema.pre('deleteMany', async function (next) {
 	}
 })
 
-// Post-delete middleware
-orderSchema.post(['deleteOne', 'findOneAndDelete'], function (doc, next) {
-	emitOrderDeleted(doc._id.toString()) // Emit event for deleted order
+// Post-delete middleware (document-based)
+orderSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
+	emitOrderDeleted(doc._id.toString())
 	logger.warn(`Order deleted successfully: ID ${doc._id}`)
 	next()
 })

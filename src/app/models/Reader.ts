@@ -154,6 +154,10 @@ readerSchema.pre('deleteOne', async function (next) {
 				emitKioskUpdated(transformKiosk(updatedKiosk))
 			}
 		}
+
+		logger.info(`Reader deleted successfully: ID ${readerId}, API Ref "${docToDelete.apiReferenceId}", Tag "${docToDelete.readerTag}"`)
+		emitReaderDeleted(readerId.toString())
+
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Reader filter:', { filter, error })

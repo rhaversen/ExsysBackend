@@ -133,9 +133,8 @@ activitySchema.post('save', async function (doc: IActivity, next) {
 	next()
 })
 
-// Pre-delete middleware
-activitySchema.pre('deleteOne', async function (next) {
-	// 'this' refers to the query object
+// Pre-delete middleware (query-based)
+activitySchema.pre('deleteOne', { document: false, query: true }, async function (next) {
 	const filter = this.getFilter()
 	logger.info('Preparing to delete Activity matching filter:', filter)
 
@@ -170,6 +169,10 @@ activitySchema.pre('deleteOne', async function (next) {
 				emitKioskUpdated(transformKiosk(updatedKiosk))
 			}
 		}
+
+		// Emit WebSocket event for the deletion (query-based deleteOne)
+		emitActivityDeleted(activityId.toString())
+		logger.info(`Activity deleted successfully: ID ${activityId}, Name "${docToDelete.name}"`)
 
 		next()
 	} catch (error) {
@@ -221,7 +224,7 @@ activitySchema.pre('deleteMany', async function (next) {
 	}
 })
 
-// Post-delete middleware (for logging confirmation)
+// Post-delete middleware for document-based deleteOne and findOneAndDelete
 activitySchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	// 'doc' is the deleted document
 	logger.info(`Activity deleted successfully: ID ${doc._id}, Name "${doc.name}"`)

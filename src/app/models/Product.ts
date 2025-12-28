@@ -237,6 +237,10 @@ productSchema.pre('deleteOne', async function (next) {
 				emitActivityUpdated(transformActivity(updatedActivity))
 			}
 		}
+
+		logger.info(`Product deleted successfully: ID ${productId}, Name "${docToDelete.name}"`)
+		emitProductDeleted(productId.toString())
+
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Product filter:', { filter, error })

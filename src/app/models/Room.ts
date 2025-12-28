@@ -127,6 +127,9 @@ roomSchema.pre('deleteOne', async function (next) {
 			}
 		}
 
+		logger.info(`Room deleted successfully: ID ${roomId}, Name "${docToDelete.name}"`)
+		emitRoomDeleted(roomId.toString())
+
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Room filter:', { filter, error })
