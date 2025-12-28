@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
 import { transformActivity } from '../controllers/activityController.js'
 import { transformProduct } from '../controllers/productController.js'
@@ -22,7 +22,7 @@ export interface OrderWindow {
 
 export interface IProduct extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	name: string
 	price: number
 	imageURL?: string

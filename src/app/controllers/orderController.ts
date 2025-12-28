@@ -1,5 +1,5 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import KioskModel, { IKiosk } from '../models/Kiosk.js'
 import OptionModel from '../models/Option.js'
@@ -25,7 +25,7 @@ interface GetOrdersWithDateRangeRequest extends Request {
 }
 
 export const transformOrder = (
-	order: IOrder
+	order: IOrder | FlattenMaps<IOrder>
 ): IOrderFrontend => {
 	try {
 		const products = order.products
@@ -431,6 +431,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		// Fetch orders
 		const orders = await OrderModel.find(query)
 			.sort({ createdAt: -1 }) // Sort by creation date descending
+			.lean()
 			.exec()
 
 		logger.debug(`Initial query returned ${orders?.length ?? 0} orders`)
@@ -489,9 +490,10 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 	let updatedCount = 0
 
 	try {
-		// Fetch and populate orders within the transaction session
+		// Fetch orders within the transaction session
 		const ordersToUpdate = await OrderModel.find({ _id: { $in: orderIds } })
 			.session(session)
+			.exec()
 
 		if (ordersToUpdate.length === 0) {
 			logger.warn(`Update order status: No orders found matching provided IDs: [${orderIds.join(', ')}]`)

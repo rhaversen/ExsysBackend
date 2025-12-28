@@ -1,4 +1,4 @@
-import { Document, model, Schema } from 'mongoose'
+import { Document, model, Schema, Types } from 'mongoose'
 
 import { transformActivity } from '../controllers/activityController.js' // Import transformer
 import { transformKiosk } from '../controllers/kioskController.js'
@@ -13,7 +13,7 @@ import RoomModel, { IRoomFrontend } from './Room.js'
 // Interfaces
 export interface IActivity extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	priorityRooms: Schema.Types.ObjectId[] // Rooms which are promoted for this activity
 	disabledProducts: Schema.Types.ObjectId[] // Products that are disabled for this activity
 	disabledRooms: Schema.Types.ObjectId[] // Rooms that are disabled for this activity
@@ -167,7 +167,7 @@ activitySchema.pre('deleteOne', async function (next) {
 		for (const kioskDoc of affectedKiosksBeforeUpdate) {
 			const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
 			if (updatedKiosk) {
-				emitKioskUpdated(await transformKiosk(updatedKiosk))
+				emitKioskUpdated(transformKiosk(updatedKiosk))
 			}
 		}
 
@@ -208,7 +208,7 @@ activitySchema.pre('deleteMany', async function (next) {
 			for (const kioskDoc of affectedKiosksBeforeUpdate) {
 				const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
 				if (updatedKiosk) {
-					emitKioskUpdated(await transformKiosk(updatedKiosk))
+					emitKioskUpdated(transformKiosk(updatedKiosk))
 				}
 			}
 		} else {

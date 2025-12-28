@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
 import { transformConfigs } from '../controllers/configsController.js'
 import logger from '../utils/logger.js'
@@ -6,7 +6,7 @@ import { emitConfigsUpdated } from '../webSockets/configsHandlers.js'
 
 export interface IConfigs extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	kioskInactivityTimeoutMs: number
 	kioskInactivityTimeoutWarningMs: number
 	kioskOrderConfirmationTimeoutMs: number

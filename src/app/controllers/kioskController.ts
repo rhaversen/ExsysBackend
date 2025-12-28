@@ -1,29 +1,23 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
 
-// Make transformKiosk async and handle population internally
-export async function transformKiosk (
-	kiosk: IKiosk
-): Promise<IKioskFrontend> {
-	try {
-		return {
-			_id: kiosk.id,
-			name: kiosk.name,
-			readerId: kiosk.readerId?.toString() ?? null,
-			kioskTag: kiosk.kioskTag,
-			priorityActivities: kiosk.priorityActivities.map((activity) => activity.toString()),
-			disabledActivities: kiosk.disabledActivities.map((activity) => activity.toString()),
-			deactivated: kiosk.deactivated,
-			deactivatedUntil: kiosk.deactivatedUntil?.toString() ?? null,
-			createdAt: kiosk.createdAt,
-			updatedAt: kiosk.updatedAt
-		}
-	} catch (error) {
-		logger.error(`Error transforming kiosk ID ${kiosk.id}`, { error })
-		throw new Error(`Failed to transform kiosk ID ${kiosk.id}: ${error instanceof Error ? error.message : String(error)}`)
+export function transformKiosk (
+	kiosk: IKiosk | FlattenMaps<IKiosk>
+): IKioskFrontend {
+	return {
+		_id: kiosk._id.toString(),
+		name: kiosk.name,
+		readerId: kiosk.readerId?.toString() ?? null,
+		kioskTag: kiosk.kioskTag,
+		priorityActivities: kiosk.priorityActivities.map((activity) => activity.toString()),
+		disabledActivities: kiosk.disabledActivities.map((activity) => activity.toString()),
+		deactivated: kiosk.deactivated,
+		deactivatedUntil: kiosk.deactivatedUntil?.toString() ?? null,
+		createdAt: kiosk.createdAt,
+		updatedAt: kiosk.updatedAt
 	}
 }
 
@@ -46,8 +40,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		const newKiosk = await KioskModel.create(allowedFields)
 		logger.debug(`Kiosk created in DB successfully: ID ${newKiosk.id}, Name: ${newKiosk.name}, Tag: ${newKiosk.kioskTag}`)
 
-		// Await the async transform function
-		const transformedKiosk = await transformKiosk(newKiosk)
+		const transformedKiosk = transformKiosk(newKiosk)
 		logger.debug(`Kiosk transformed successfully: ID ${newKiosk.id}`)
 		res.status(201).json(transformedKiosk)
 	} catch (error) {
@@ -73,7 +66,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 		}
 
 		// Find the kiosk again to ensure fresh data, but without population here
-		const kiosk = await KioskModel.findById(kioskUser._id).exec()
+		const kiosk = await KioskModel.findById(kioskUser._id).lean()
 
 		if (!kiosk) {
 			// This indicates a data inconsistency if req.user was set but the DB record is gone
@@ -82,8 +75,7 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 			return
 		}
 
-		// Await the async transform function
-		const transformedKiosk = await transformKiosk(kiosk)
+		const transformedKiosk = transformKiosk(kiosk)
 		logger.debug(`Retrieved current kiosk successfully: ID ${kiosk.id}, Name: ${kiosk.name}`)
 		res.status(200).json(transformedKiosk)
 	} catch (error) {
@@ -101,8 +93,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 	logger.debug(`Getting kiosk: ID ${kioskId}`)
 
 	try {
-		// Find the kiosk without population here
-		const kiosk = await KioskModel.findById(kioskId).exec()
+		const kiosk = await KioskModel.findById(kioskId).lean()
 
 		if (kiosk === null || kiosk === undefined) {
 			logger.warn(`Get kiosk failed: Kiosk not found. ID: ${kioskId}`)
@@ -110,8 +101,7 @@ export async function getKiosk (req: Request, res: Response, next: NextFunction)
 			return
 		}
 
-		// Await the async transform function
-		const transformedKiosk = await transformKiosk(kiosk)
+		const transformedKiosk = transformKiosk(kiosk)
 		logger.debug(`Retrieved kiosk successfully: ID ${kioskId}`)
 		res.status(200).json(transformedKiosk)
 	} catch (error) {
@@ -128,14 +118,10 @@ export async function getKiosks (req: Request, res: Response, next: NextFunction
 	logger.debug('Getting all kiosks')
 
 	try {
-		// Find kiosks without population here
-		const kiosks = await KioskModel.find({}).exec()
+		const kiosks = await KioskModel.find({}).lean()
 		logger.debug(`Found ${kiosks.length} kiosks in DB`)
 
-		// Await the transformation for each kiosk
-		const transformedKiosks = await Promise.all(
-			kiosks.map(async (kiosk) => await transformKiosk(kiosk))
-		)
+		const transformedKiosks = kiosks.map((kiosk) => transformKiosk(kiosk))
 		logger.debug(`Retrieved and transformed ${transformedKiosks.length} kiosks`)
 		res.status(200).json(transformedKiosks)
 	} catch (error) {
@@ -206,8 +192,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 
 		if (!updateApplied) {
 			logger.info(`Patch kiosk: No changes detected for kiosk ID ${kioskId}`)
-			// Need to transform before sending back
-			const transformedKiosk = await transformKiosk(kiosk)
+			const transformedKiosk = transformKiosk(kiosk)
 			res.status(200).json(transformedKiosk) // Return current transformed state if no changes
 			await session.commitTransaction()
 			await session.endSession()
@@ -233,8 +218,7 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 		await session.commitTransaction()
 		logger.info(`Kiosk patched successfully: ID ${kioskId}`)
 
-		// Await the async transform function
-		const transformedKiosk = await transformKiosk(updatedKiosk)
+		const transformedKiosk = transformKiosk(updatedKiosk)
 		res.status(200).json(transformedKiosk)
 	} catch (error) {
 		await session.abortTransaction()

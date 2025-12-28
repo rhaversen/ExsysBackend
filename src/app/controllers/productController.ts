@@ -1,14 +1,14 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import ProductModel, { IProduct, IProductFrontend } from '../models/Product.js'
 import logger from '../utils/logger.js'
 
 export function transformProduct (
-	productDoc: IProduct
+	productDoc: IProduct | FlattenMaps<IProduct>
 ): IProductFrontend {
 	return {
-		_id: productDoc.id,
+		_id: productDoc._id.toString(),
 		name: productDoc.name,
 		price: productDoc.price,
 		imageURL: productDoc.imageURL,
@@ -53,7 +53,7 @@ export async function getProducts (req: Request, res: Response, next: NextFuncti
 	logger.debug('Getting all products')
 
 	try {
-		const products = await ProductModel.find({})
+		const products = await ProductModel.find({}).lean()
 		logger.debug(`Retrieved ${products.length} products`)
 		res.status(200).json(products.map(transformProduct))
 	} catch (error) {

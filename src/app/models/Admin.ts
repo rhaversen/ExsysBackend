@@ -1,5 +1,5 @@
 import { compare, hash } from 'bcrypt'
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
 import { transformAdmin } from '../controllers/adminController.js'
 import logger from '../utils/logger.js'
@@ -11,7 +11,7 @@ const { bcryptSaltRounds } = config
 
 export interface IAdmin extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	name: string
 	password: string
 
