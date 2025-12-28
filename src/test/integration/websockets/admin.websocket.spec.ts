@@ -43,7 +43,7 @@ describe('Admin WebSocket Emitters', function () {
 		it('should emit "adminCreated" via new Admin().save()', async function () {
 			const admin = new AdminModel({
 				name: 'Admin via Save',
-				password: 'securepass'
+				password: 'password'
 			})
 			await admin.save()
 
