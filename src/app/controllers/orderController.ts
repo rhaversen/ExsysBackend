@@ -448,7 +448,10 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		logger.debug(`${filteredOrders.length} orders remaining after payment status filter`)
 
 		logger.info(`Successfully retrieved ${filteredOrders.length} orders matching query.`)
-		res.status(200).json(filteredOrders.map(transformOrder))
+		res.status(200).json(filteredOrders.map(order => ({
+			...transformOrder(order),
+			clientTransactionId: order.payment?.clientTransactionId ?? null
+		})))
 	} catch (error) {
 		logger.error('Failed to get orders with query', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
