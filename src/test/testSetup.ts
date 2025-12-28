@@ -71,6 +71,9 @@ afterEach(async function () {
 after(async function () {
 	// Increase timeout to allow for potentially slow MongoDB shutdown
 	this.timeout(40000)
+	// Close the change stream before disconnecting
+	const { closeSessionChangeStream } = await import('../app/utils/sessionChangeStream.js')
+	await closeSessionChangeStream()
 	// Close the server
 	app.server.close()
 	// Disconnect from the database
