@@ -179,7 +179,7 @@ export async function loginKioskLocal (req: Request, res: Response, next: NextFu
 				logger.debug(`Setting persistent session for kiosk ${kioskTag}`)
 				req.session.cookie.maxAge = sessionExpiry
 
-				const transformedKiosk = await transformKiosk(kiosk)
+				const transformedKiosk = transformKiosk(kiosk)
 
 				logger.info(`Kiosk ${kiosk.kioskTag} (ID: ${kiosk.id}) logged in successfully. Session ID: ${req.sessionID}`)
 				res.status(200).json({

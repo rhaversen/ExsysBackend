@@ -1,14 +1,14 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import OptionModel, { IOption, IOptionFrontend } from '../models/Option.js'
 import logger from '../utils/logger.js'
 
 export const transformOption = (
-	optionDoc: IOption
+	optionDoc: IOption | FlattenMaps<IOption>
 ): IOptionFrontend => {
 	return {
-		_id: optionDoc.id,
+		_id: optionDoc._id.toString(),
 		name: optionDoc.name,
 		imageURL: optionDoc.imageURL,
 		price: optionDoc.price,
@@ -46,7 +46,7 @@ export async function getOptions (req: Request, res: Response, next: NextFunctio
 	logger.debug('Getting all options')
 
 	try {
-		const options = await OptionModel.find({})
+		const options = await OptionModel.find({}).lean()
 		logger.debug(`Retrieved ${options.length} options`)
 		res.status(200).json(options.map(transformOption))
 	} catch (error) {

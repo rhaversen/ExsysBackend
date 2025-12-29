@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
 import { transformOption } from '../controllers/optionController.js' // Import transformer
 import { transformProduct } from '../controllers/productController.js'
@@ -11,7 +11,7 @@ import ProductModel from './Product.js'
 // Interfaces
 export interface IOption extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	name: string // The name of the option
 	imageURL?: string // An image of the option
 	price: number // The price of the option

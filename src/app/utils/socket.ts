@@ -76,7 +76,7 @@ export function getSocketStatus (): boolean {
 	return io !== null && io !== undefined
 }
 
-export function emitSocketEvent<T> (
+function emitSocketEventImpl<T> (
 	eventName: string,
 	data: T,
 	successLog: string
@@ -91,7 +91,7 @@ export function emitSocketEvent<T> (
 	}
 }
 
-export function broadcastEvent (
+function broadcastEventImpl (
 	eventName: string,
 	successLog: string
 ): boolean {
@@ -105,4 +105,24 @@ export function broadcastEvent (
 		logger.error(`Failed to broadcast ${eventName}:`, { error })
 		return false
 	}
+}
+
+export const socketEmitters = {
+	emitSocketEvent: emitSocketEventImpl,
+	broadcastEvent: broadcastEventImpl
+}
+
+export function emitSocketEvent<T> (
+	eventName: string,
+	data: T,
+	successLog: string
+): void {
+	socketEmitters.emitSocketEvent(eventName, data, successLog)
+}
+
+export function broadcastEvent (
+	eventName: string,
+	successLog: string
+): boolean {
+	return socketEmitters.broadcastEvent(eventName, successLog)
 }

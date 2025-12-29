@@ -1,14 +1,14 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import ConfigsModel, { type IConfigs, type IConfigsFrontend } from '../models/Configs.js'
 import logger from '../utils/logger.js'
 
 export function transformConfigs (
-	configsDoc: IConfigs
+	configsDoc: IConfigs | FlattenMaps<IConfigs>
 ): IConfigsFrontend {
 	return {
-		_id: configsDoc.id,
+		_id: configsDoc._id.toString(),
 		configs: {
 			kioskInactivityTimeoutMs: configsDoc.kioskInactivityTimeoutMs,
 			kioskInactivityTimeoutWarningMs: configsDoc.kioskInactivityTimeoutWarningMs,

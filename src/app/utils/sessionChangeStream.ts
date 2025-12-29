@@ -10,7 +10,7 @@ import logger from './logger.js'
 let sessionChangeStream: mongoose.mongo.ChangeStream<ISession, mongoose.mongo.ChangeStreamDocument<ISession>> | undefined
 
 export function initializeSessionChangeStream (): void {
-	const sessionChangeStream = SessionModel.collection.watch<ISession>(
+	sessionChangeStream = SessionModel.collection.watch<ISession>(
 		[
 		// Optionally filter specific operations, though defaults are usually fine
 		// { $match: { operationType: { $in: ['insert', 'update', 'delete', 'replace'] } } }

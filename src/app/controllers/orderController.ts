@@ -1,5 +1,5 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import KioskModel, { IKiosk } from '../models/Kiosk.js'
 import OptionModel from '../models/Option.js'
@@ -25,7 +25,7 @@ interface GetOrdersWithDateRangeRequest extends Request {
 }
 
 export const transformOrder = (
-	order: IOrder
+	order: IOrder | FlattenMaps<IOrder>
 ): IOrderFrontend => {
 	try {
 		const products = order.products
@@ -449,7 +449,7 @@ export async function getOrdersWithQuery (req: GetOrdersWithDateRangeRequest, re
 		logger.debug(`${filteredOrders.length} orders remaining after payment status filter`)
 
 		logger.info(`Successfully retrieved ${filteredOrders.length} orders matching query.`)
-		res.status(200).json(filteredOrders.map(transformOrder))
+		res.status(200).json(filteredOrders.map(order => transformOrder(order)))
 	} catch (error) {
 		logger.error('Failed to get orders with query', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
@@ -487,9 +487,10 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 	let updatedCount = 0
 
 	try {
-		// Fetch and populate orders within the transaction session
+		// Fetch orders within the transaction session
 		const ordersToUpdate = await OrderModel.find({ _id: { $in: orderIds } })
 			.session(session)
+			.exec()
 
 		if (ordersToUpdate.length === 0) {
 			logger.warn(`Update order status: No orders found matching provided IDs: [${orderIds.join(', ')}]`)

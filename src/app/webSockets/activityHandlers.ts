@@ -1,7 +1,7 @@
 import { IActivityFrontend } from '../models/Activity.js'
 import { emitSocketEvent } from '../utils/socket.js'
 
-export function emitActivityPosted (activity: IActivityFrontend): void {
+export function emitActivityCreated (activity: IActivityFrontend): void {
 	emitSocketEvent<IActivityFrontend>(
 		'activityCreated',
 		activity,
