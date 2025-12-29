@@ -1,5 +1,5 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import Session, { type ISession, type ISessionFrontend } from '../models/Session.js'
 import logger from '../utils/logger.js'
@@ -23,7 +23,7 @@ export interface ParsedSessionData {
 }
 
 export function transformSession (
-	sessionDoc: ISession
+	sessionDoc: ISession | FlattenMaps<ISession>
 ): ISessionFrontend {
 	try {
 		const sessionData = JSON.parse(sessionDoc.session) as ParsedSessionData

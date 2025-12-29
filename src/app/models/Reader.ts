@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, type FlattenMaps, model, Schema, Types } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
 import { transformKiosk } from '../controllers/kioskController.js'
@@ -16,7 +16,7 @@ const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 // Interfaces
 export interface IReader extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	apiReferenceId: string // Reference to the reader in the API
 	readerTag: string // Unique identifier for the reader
 
@@ -151,9 +151,13 @@ readerSchema.pre('deleteOne', async function (next) {
 		for (const kioskDoc of affectedKiosksBeforeUpdate) {
 			const updatedKiosk = await KioskModel.findById(kioskDoc._id)
 			if (updatedKiosk) {
-				emitKioskUpdated(await transformKiosk(updatedKiosk))
+				emitKioskUpdated(transformKiosk(updatedKiosk))
 			}
 		}
+
+		logger.info(`Reader deleted successfully: ID ${readerId}, API Ref "${docToDelete.apiReferenceId}", Tag "${docToDelete.readerTag}"`)
+		emitReaderDeleted(readerId.toString())
+
 		next()
 	} catch (error) {
 		logger.error('Error in pre-deleteOne hook for Reader filter:', { filter, error })
@@ -186,7 +190,7 @@ readerSchema.pre('deleteMany', async function (next) {
 			for (const kioskDoc of affectedKiosksBeforeUpdate) {
 				const updatedKiosk = await KioskModel.findById(kioskDoc._id)
 				if (updatedKiosk) {
-					emitKioskUpdated(await transformKiosk(updatedKiosk))
+					emitKioskUpdated(transformKiosk(updatedKiosk))
 				}
 			}
 		} else {
@@ -235,7 +239,7 @@ async function generateUniqueReaderTag (): Promise<string> {
 	let attempts = 0
 	const maxAttempts = 10 // Prevent infinite loop
 	let newReaderTag: string
-	let foundReaderWithTag: IReader | null
+	let foundReaderWithTag: FlattenMaps<IReader> | null
 
 	logger.silly('Attempting to generate a unique readerTag...')
 	do {

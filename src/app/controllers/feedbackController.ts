@@ -1,14 +1,14 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import FeedbackModel, { IFeedback, IFeedbackFrontend } from '../models/Feedback.js'
 import logger from '../utils/logger.js'
 
 export function transformFeedback (
-	feedbackDoc: IFeedback
+	feedbackDoc: IFeedback | FlattenMaps<IFeedback>
 ): IFeedbackFrontend {
 	return {
-		_id: feedbackDoc.id,
+		_id: feedbackDoc._id.toString(),
 		feedback: feedbackDoc.feedback,
 		name: feedbackDoc.name,
 		isRead: feedbackDoc.isRead,
@@ -54,7 +54,7 @@ export async function getFeedback (req: Request, res: Response, next: NextFuncti
 	logger.debug(`Getting feedback: ID ${feedbackId}`)
 
 	try {
-		const feedback = await FeedbackModel.findById(feedbackId)
+		const feedback = await FeedbackModel.findById(feedbackId).lean()
 
 		if (feedback === null || feedback === undefined) {
 			logger.warn(`Get feedback failed: Feedback not found. ID: ${feedbackId}`)
@@ -78,7 +78,7 @@ export async function getFeedbacks (req: Request, res: Response, next: NextFunct
 	logger.debug('Getting all feedbacks')
 
 	try {
-		const feedbacks = await FeedbackModel.find()
+		const feedbacks = await FeedbackModel.find().lean()
 		logger.debug(`Retrieved ${feedbacks.length} feedbacks successfully`)
 		res.status(200).json(feedbacks.map(transformFeedback))
 	} catch (error) {

@@ -1,14 +1,14 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import AdminModel, { type IAdmin, type IAdminFrontend } from '../models/Admin.js'
 import logger from '../utils/logger.js'
 
 export function transformAdmin (
-	adminDoc: IAdmin
+	adminDoc: IAdmin | FlattenMaps<IAdmin>
 ): IAdminFrontend {
 	return {
-		_id: adminDoc.id,
+		_id: adminDoc._id.toString(),
 		name: adminDoc.name,
 		createdAt: adminDoc.createdAt,
 		updatedAt: adminDoc.updatedAt
@@ -48,7 +48,7 @@ export async function getAdmins (req: Request, res: Response, next: NextFunction
 	logger.debug('Getting all admins')
 
 	try {
-		const admins = await AdminModel.find({})
+		const admins = await AdminModel.find({}).lean()
 		const transformedAdmins = admins.map(transformAdmin)
 		logger.debug(`Retrieved ${admins.length} admins`)
 		res.status(200).json(transformedAdmins)

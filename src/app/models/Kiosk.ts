@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, type FlattenMaps, model, Schema, Types } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
 import { transformKiosk } from '../controllers/kioskController.js' // Import transformer
@@ -15,7 +15,7 @@ const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 // Interfaces
 export interface IKiosk extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	name: string // Name of the kiosk
 	kioskTag: string // Unique identifier generated with nanoid
 	priorityActivities: Schema.Types.ObjectId[] | [] // Promoted priorityActivities for this kiosk
@@ -168,8 +168,7 @@ kioskSchema.pre('save', async function (next) {
 kioskSchema.post('save', async function (doc: IKiosk, next) {
 	logger.debug(`Kiosk saved successfully: ID ${doc.id}, Name "${doc.name}", Tag "${doc.kioskTag}"`)
 	try {
-		// transformKiosk handles necessary populations
-		const transformed = await transformKiosk(doc)
+		const transformed = transformKiosk(doc)
 		if (doc._wasNew ?? false) {
 			emitKioskCreated(transformed)
 		} else {
@@ -234,7 +233,7 @@ async function generateUniqueKioskTag (): Promise<string> {
 	let attempts = 0
 	const maxAttempts = 10 // Prevent infinite loop
 	let newKioskTag: string
-	let foundKioskWithTag: IKiosk | null
+	let foundKioskWithTag: FlattenMaps<IKiosk> | null
 
 	logger.silly('Attempting to generate a unique kioskTag...')
 	do {

@@ -1,16 +1,16 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import ReaderModel, { type IReader, type IReaderFrontend } from '../models/Reader.js'
 import { pairReader, unpairReader } from '../services/apiServices.js'
 import logger from '../utils/logger.js'
 
 export function transformReader (
-	readerDoc: IReader
+	readerDoc: IReader | FlattenMaps<IReader>
 ): IReaderFrontend {
 	// Transform the reader document to the frontend format
 	return {
-		_id: readerDoc.id,
+		_id: readerDoc._id.toString(),
 		readerTag: readerDoc.readerTag,
 		createdAt: readerDoc.createdAt,
 		updatedAt: readerDoc.updatedAt
@@ -72,7 +72,7 @@ export async function getReaders (req: Request, res: Response, next: NextFunctio
 	logger.debug('Getting all readers')
 
 	try {
-		const readers = await ReaderModel.find({})
+		const readers = await ReaderModel.find({}).lean()
 		const transformedReaders = readers.map(transformReader)
 		res.status(200).json(transformedReaders)
 		logger.debug(`Retrieved ${readers.length} readers`)

@@ -1,9 +1,10 @@
 import { type Request, type Response } from 'express'
+import mongoose from 'mongoose'
 
-import OrderModel from '../models/Order.js'
+import OrderModel, { IOrder } from '../models/Order.js'
 import logger from '../utils/logger.js'
 
-interface ICreateReaderCallback extends Request {
+interface ICreateCheckoutCallback extends Request {
 	body: {
 		id: string // Event ID
 		event_type: string // e.g., 'payment.updated'
@@ -17,11 +18,41 @@ interface ICreateReaderCallback extends Request {
 	}
 }
 
-function isPaymentStatus (status: string): status is 'successful' | 'failed' {
+interface IDebugPaymentCallback extends Request {
+	body: {
+		orderId: string
+		status: 'successful' | 'failed'
+	}
+}
+
+type PaymentStatus = 'successful' | 'failed'
+
+function isPaymentStatus (status: string): status is PaymentStatus {
 	return ['successful', 'failed'].includes(status)
 }
 
-export async function updatePaymentStatus (req: ICreateReaderCallback, res: Response): Promise<void> {
+interface UpdateResult {
+	success: boolean
+	message: string
+	alreadyFinal?: boolean
+}
+
+async function processPaymentStatusUpdate (order: IOrder, newStatus: PaymentStatus, logContext: string): Promise<UpdateResult> {
+	if (order.payment.paymentStatus === 'successful' || order.payment.paymentStatus === 'failed') {
+		logger.info(`${logContext}: Payment for Order ID ${order._id} already has final status "${order.payment.paymentStatus}". Ignoring update to "${newStatus}".`)
+		return { success: true, message: 'Payment already in final state, callback ignored.', alreadyFinal: true }
+	}
+
+	logger.info(`${logContext}: Updating payment status for Order ID ${order._id} from "${order.payment.paymentStatus}" to "${newStatus}"`)
+	order.payment.paymentStatus = newStatus
+
+	await order.save()
+	logger.debug(`${logContext}: Order's payment status saved successfully for Order ID ${order._id}`)
+
+	return { success: true, message: `Payment status updated to '${newStatus}'` }
+}
+
+export async function updatePaymentStatus (req: ICreateCheckoutCallback, res: Response): Promise<void> {
 	const eventId = req.body.id
 	const eventType = req.body.event_type
 	const {
@@ -56,25 +87,43 @@ export async function updatePaymentStatus (req: ICreateReaderCallback, res: Resp
 			return
 		}
 
-		// Check if payment status is already final to prevent redundant updates/events
-		if (order.payment.paymentStatus === 'successful' || order.payment.paymentStatus === 'failed') {
-			logger.info(`Reader callback: Payment for Order ID ${order._id} already has final status "${order.payment.paymentStatus}". Ignoring update to "${sumUpStatus}". Event ID: ${eventId}`)
-			res.status(200).json({ message: 'Payment already in final state, callback ignored.' }) // Acknowledge receipt
+		const result = await processPaymentStatusUpdate(order, sumUpStatus, `Reader callback (Event ID: ${eventId})`)
+		res.status(200).json({ message: result.message })
+	} catch (error) {
+		logger.error(`Reader callback processing failed for Client Tx ID ${clientTransactionId}, Event ID ${eventId}`, { error })
+		res.status(200).json({ message: 'Callback processing failed' })
+	}
+}
+
+export async function debugUpdatePaymentStatus (req: IDebugPaymentCallback, res: Response): Promise<void> {
+	const { orderId, status } = req.body
+
+	logger.info(`Debug: Simulating payment callback for Order ID ${orderId} with status ${status}`)
+
+	if (!orderId || typeof orderId !== 'string' || !mongoose.Types.ObjectId.isValid(orderId)) {
+		logger.warn(`Debug callback: Invalid or missing orderId: ${orderId}`)
+		res.status(400).json({ error: 'Invalid or missing orderId' })
+		return
+	}
+	if (typeof status !== 'string' || !isPaymentStatus(status)) {
+		logger.warn(`Debug callback: Invalid status "${status}" for Order ID: ${orderId}`)
+		res.status(400).json({ error: 'Invalid status. Must be \'successful\' or \'failed\'' })
+		return
+	}
+
+	try {
+		const order = await OrderModel.findById(orderId)
+
+		if (!order) {
+			logger.warn(`Debug callback: Order not found. ID: ${orderId}`)
+			res.status(404).json({ error: 'Order not found' })
 			return
 		}
 
-		// Update payment status within the order
-		logger.info(`Updating payment status for Order ID ${order._id} from "${order.payment.paymentStatus}" to "${sumUpStatus}". Event ID: ${eventId}`)
-		order.payment.paymentStatus = sumUpStatus
-
-		await order.save() // Save the updated order document
-		logger.debug(`Order's payment status saved successfully for Order ID ${order._id}`)
-
-		// Respond 200 OK to SumUp immediately after saving
-		res.status(200).send()
+		const result = await processPaymentStatusUpdate(order, status, 'Debug callback')
+		res.status(200).json({ message: result.message })
 	} catch (error) {
-		logger.error(`Reader callback processing failed for Client Tx ID ${clientTransactionId}, Event ID ${eventId}`, { error })
-		// Do NOT send error response to SumUp here, as we already sent 200 OK.
-		// The error is logged for internal investigation.
+		logger.error(`Debug callback processing failed for Order ID ${orderId}`, { error })
+		res.status(500).json({ error: 'Failed to update payment status' })
 	}
 }
