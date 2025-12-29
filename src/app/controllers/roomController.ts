@@ -1,14 +1,14 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import RoomModel, { IRoom, IRoomFrontend } from '../models/Room.js'
 import logger from '../utils/logger.js'
 
 export const transformRoom = (
-	roomDoc: IRoom
+	roomDoc: IRoom | FlattenMaps<IRoom>
 ): IRoomFrontend => {
 	return {
-		_id: roomDoc.id,
+		_id: roomDoc._id.toString(),
 		name: roomDoc.name,
 		description: roomDoc.description,
 		createdAt: roomDoc.createdAt,
@@ -45,7 +45,7 @@ export async function getRoom (req: Request, res: Response, next: NextFunction):
 	logger.debug(`Getting room: ID ${roomId}`)
 
 	try {
-		const room = await RoomModel.findById(roomId)
+		const room = await RoomModel.findById(roomId).lean()
 
 		if (room === null || room === undefined) {
 			logger.warn(`Get room failed: Room not found. ID: ${roomId}`)
@@ -69,7 +69,7 @@ export async function getRooms (req: Request, res: Response, next: NextFunction)
 	logger.debug('Getting all rooms')
 
 	try {
-		const rooms = await RoomModel.find({})
+		const rooms = await RoomModel.find({}).lean()
 		logger.debug(`Retrieved ${rooms.length} rooms`)
 		res.status(200).json(rooms.map(transformRoom))
 	} catch (error) {

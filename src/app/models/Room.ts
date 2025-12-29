@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
 import { transformActivity } from '../controllers/activityController.js'
 import { transformRoom } from '../controllers/roomController.js'
@@ -11,7 +11,7 @@ import ActivityModel from './Activity.js'
 // Interfaces
 export interface IRoom extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	name: string // The name of the room
 	description: string // A description of the room
 
@@ -126,6 +126,9 @@ roomSchema.pre('deleteOne', async function (next) {
 				emitActivityUpdated(transformActivity(updatedActivity))
 			}
 		}
+
+		logger.info(`Room deleted successfully: ID ${roomId}, Name "${docToDelete.name}"`)
+		emitRoomDeleted(roomId.toString())
 
 		next()
 	} catch (error) {

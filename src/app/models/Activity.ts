@@ -1,19 +1,19 @@
-import { Document, model, Schema } from 'mongoose'
+import { Document, model, Schema, Types } from 'mongoose'
 
 import { transformActivity } from '../controllers/activityController.js' // Import transformer
 import { transformKiosk } from '../controllers/kioskController.js'
 import logger from '../utils/logger.js'
-import { emitActivityDeleted, emitActivityPosted, emitActivityUpdated } from '../webSockets/activityHandlers.js'
+import { emitActivityDeleted, emitActivityCreated, emitActivityUpdated } from '../webSockets/activityHandlers.js'
 import { emitKioskUpdated } from '../webSockets/kioskHandlers.js'
 
 import KioskModel from './Kiosk.js'
-import ProductModel, { IProduct } from './Product.js'
-import RoomModel, { IRoom } from './Room.js'
+import ProductModel, { IProductFrontend } from './Product.js'
+import RoomModel, { IRoomFrontend } from './Room.js'
 
 // Interfaces
 export interface IActivity extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	priorityRooms: Schema.Types.ObjectId[] // Rooms which are promoted for this activity
 	disabledProducts: Schema.Types.ObjectId[] // Products that are disabled for this activity
 	disabledRooms: Schema.Types.ObjectId[] // Rooms that are disabled for this activity
@@ -29,9 +29,9 @@ export interface IActivity extends Document {
 
 export interface IActivityFrontend {
 	_id: string
-	priorityRooms: Array<IRoom['_id']>
-	disabledProducts: Array<IProduct['_id']>
-	disabledRooms: Array<IRoom['_id']>
+	priorityRooms: Array<IRoomFrontend['_id']>
+	disabledProducts: Array<IProductFrontend['_id']>
+	disabledRooms: Array<IRoomFrontend['_id']>
 	name: string
 	createdAt: Date
 	updatedAt: Date
@@ -122,7 +122,7 @@ activitySchema.post('save', async function (doc: IActivity, next) {
 	try {
 		const transformedActivity = transformActivity(doc)
 		if (doc._wasNew ?? false) {
-			emitActivityPosted(transformedActivity)
+			emitActivityCreated(transformedActivity)
 		} else {
 			emitActivityUpdated(transformedActivity)
 		}
@@ -133,9 +133,8 @@ activitySchema.post('save', async function (doc: IActivity, next) {
 	next()
 })
 
-// Pre-delete middleware
-activitySchema.pre('deleteOne', async function (next) {
-	// 'this' refers to the query object
+// Pre-delete middleware (query-based)
+activitySchema.pre('deleteOne', { document: false, query: true }, async function (next) {
 	const filter = this.getFilter()
 	logger.info('Preparing to delete Activity matching filter:', filter)
 
@@ -167,9 +166,13 @@ activitySchema.pre('deleteOne', async function (next) {
 		for (const kioskDoc of affectedKiosksBeforeUpdate) {
 			const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
 			if (updatedKiosk) {
-				emitKioskUpdated(await transformKiosk(updatedKiosk))
+				emitKioskUpdated(transformKiosk(updatedKiosk))
 			}
 		}
+
+		// Emit WebSocket event for the deletion (query-based deleteOne)
+		emitActivityDeleted(activityId.toString())
+		logger.info(`Activity deleted successfully: ID ${activityId}, Name "${docToDelete.name}"`)
 
 		next()
 	} catch (error) {
@@ -208,7 +211,7 @@ activitySchema.pre('deleteMany', async function (next) {
 			for (const kioskDoc of affectedKiosksBeforeUpdate) {
 				const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
 				if (updatedKiosk) {
-					emitKioskUpdated(await transformKiosk(updatedKiosk))
+					emitKioskUpdated(transformKiosk(updatedKiosk))
 				}
 			}
 		} else {
@@ -221,7 +224,7 @@ activitySchema.pre('deleteMany', async function (next) {
 	}
 })
 
-// Post-delete middleware (for logging confirmation)
+// Post-delete middleware for document-based deleteOne and findOneAndDelete
 activitySchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
 	// 'doc' is the deleted document
 	logger.info(`Activity deleted successfully: ID ${doc._id}, Name "${doc.name}"`)

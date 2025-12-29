@@ -42,6 +42,9 @@ export async function disconnectFromInMemoryMongoDB (sessionStore: MongoStore): 
 		logger.info('Stopping memory database replica set...')
 		await replSet.stop({ doCleanup: true, force: true })
 		logger.info('Memory database replica set stopped')
+
+		// Give time for any pending operations to settle before the process exits
+		await new Promise(resolve => setTimeout(resolve, 100))
 	} catch (error) {
 		if (error instanceof Error) {
 			logger.error(`Error disconnecting from in-memory MongoDB: ${error.message}`)

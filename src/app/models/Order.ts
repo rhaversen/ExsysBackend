@@ -89,7 +89,10 @@ const orderOptionSchema = new Schema({
 }, { _id: false }) // No separate _id for sub-schemas
 
 const paymentSchema = new Schema<IPayment>({
-	clientTransactionId: { type: Schema.Types.String, trim: true },
+	clientTransactionId: {
+		type: Schema.Types.String,
+		trim: true
+	},
 	paymentStatus: {
 		type: Schema.Types.String,
 		enum: ['pending', 'successful', 'failed', 'refunded'],
@@ -210,9 +213,6 @@ orderSchema.path('options.quantity').validate(function (v: number) {
 	return Number.isInteger(v)
 }, 'Tilvalg mængde skal være et heltal')
 
-// Removed paymentId validation as it's now an embedded document.
-// Validation for fields within 'payment' will be handled by the paymentSchema itself.
-
 // Indexes
 orderSchema.index({ createdAt: -1 }) // Index for sorting/querying by date
 orderSchema.index({ 'payment.clientTransactionId': 1 }, { unique: true, sparse: true }) // Index for unique clientTransactionId within payment sub document
@@ -289,9 +289,9 @@ orderSchema.pre('deleteMany', async function (next) {
 	}
 })
 
-// Post-delete middleware
-orderSchema.post(['deleteOne', 'findOneAndDelete'], function (doc, next) {
-	emitOrderDeleted(doc._id.toString()) // Emit event for deleted order
+// Post-delete middleware (document-based)
+orderSchema.post(['deleteOne', 'findOneAndDelete'], { document: true, query: false }, function (doc, next) {
+	emitOrderDeleted(doc._id.toString())
 	logger.warn(`Order deleted successfully: ID ${doc._id}`)
 	next()
 })

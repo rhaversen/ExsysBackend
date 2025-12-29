@@ -1,18 +1,18 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose from 'mongoose'
+import mongoose, { type FlattenMaps } from 'mongoose'
 
 import ActivityModel, { IActivity, IActivityFrontend } from '../models/Activity.js'
 import logger from '../utils/logger.js'
 
 export function transformActivity (
-	activityDoc: IActivity
+	activityDoc: IActivity | FlattenMaps<IActivity>
 ): IActivityFrontend {
 	return {
-		_id: activityDoc.id,
+		_id: activityDoc._id.toString(),
 		name: activityDoc.name,
-		priorityRooms: activityDoc.priorityRooms,
-		disabledProducts: activityDoc.disabledProducts,
-		disabledRooms: activityDoc.disabledRooms,
+		priorityRooms: activityDoc.priorityRooms.map((room) => room.toString()),
+		disabledProducts: activityDoc.disabledProducts.map((product) => product.toString()),
+		disabledRooms: activityDoc.disabledRooms.map((room) => room.toString()),
 		createdAt: activityDoc.createdAt,
 		updatedAt: activityDoc.updatedAt
 	}
@@ -48,7 +48,7 @@ export async function getActivity (req: Request, res: Response, next: NextFuncti
 	logger.debug(`Getting activity: ID ${activityId}`)
 
 	try {
-		const activity = await ActivityModel.findById(activityId)
+		const activity = await ActivityModel.findById(activityId).lean()
 
 		if (activity === null || activity === undefined) {
 			logger.warn(`Get activity failed: Activity not found. ID: ${activityId}`)
@@ -72,7 +72,7 @@ export async function getActivities (req: Request, res: Response, next: NextFunc
 	logger.debug('Getting all activities')
 
 	try {
-		const activities = await ActivityModel.find({})
+		const activities = await ActivityModel.find({}).lean()
 		logger.debug(`Retrieved ${activities.length} activities`)
 		res.status(200).json(activities.map(transformActivity))
 	} catch (error) {

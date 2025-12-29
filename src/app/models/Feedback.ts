@@ -1,4 +1,4 @@
-import { type Document, model, Schema } from 'mongoose'
+import { type Document, model, Schema, Types } from 'mongoose'
 
 import { transformFeedback } from '../controllers/feedbackController.js' // Import transformer
 import logger from '../utils/logger.js'
@@ -7,7 +7,7 @@ import { emitFeedbackCreated, emitFeedbackDeleted, emitFeedbackUpdated } from '.
 // Interfaces
 export interface IFeedback extends Document {
 	// Properties
-	_id: Schema.Types.ObjectId
+	_id: Types.ObjectId
 	feedback: string // The feedback text
 	isRead: boolean // Indicates if the feedback has been isRead
 	name?: string // Optional name of the person giving feedback
