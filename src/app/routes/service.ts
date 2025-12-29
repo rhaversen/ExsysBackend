@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import mongoose from 'mongoose'
 
+import { debugUpdatePaymentStatus } from '../controllers/readerCallbackController.js'
 import { isAdmin } from '../middleware/authorization.js'
 import logger from '../utils/logger.js'
 import { getSocketStatus } from '../utils/socket.js'
@@ -59,6 +60,20 @@ router.get('/force-kiosk-refresh',
 		const status = emitForcedKioskRefresh()
 		if (status) { res.status(200).send('OK') } else { res.status(500).send('Error') }
 	}
+)
+
+/**
+ * @route POST /api/service/debug-payment-callback
+ * @description Debug endpoint to simulate a payment callback using order ID.
+ * @access Private (Admin only)
+ * @param {string} req.body.orderId - The ID of the order to update payment status for.
+ * @param {string} req.body.status - The payment status ('successful' or 'failed').
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - Confirmation message.
+ */
+router.post('/debug-payment-callback',
+	isAdmin,
+	debugUpdatePaymentStatus
 )
 
 export default router

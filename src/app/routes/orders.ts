@@ -46,7 +46,7 @@ router.get('/:id/paymentStatus',
 
 /**
  * @route GET /api/v1/orders
- * @description Get orders with a date range query. Includes clientTransactionId for debugging/simulating SumUp callbacks.
+ * @description Get orders with a date range query.
  * @access Private
  * @middleware isAdmin
  * @param {string} [req.query.fromDate] - The start date of the range (optional).
@@ -54,7 +54,7 @@ router.get('/:id/paymentStatus',
  * @param {string} [req.query.status] - The status of the orders (optional).
  * @param {string} [req.query.paymentStatus] - The payment status of the orders (optional).
  * @returns {number} res.status - The status code of the HTTP response.
- * @returns {Array<Object>} res.body - The orders matching the query, each including clientTransactionId (string | null).
+ * @returns {Array<Object>} res.body - The orders matching the query.
  */
 router.get('/',
 	isAdmin,
