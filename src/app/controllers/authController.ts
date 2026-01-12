@@ -14,17 +14,6 @@ import { transformKiosk } from './kioskController.js'
 // Config variables
 const { sessionExpiry } = config
 
-// Extend the Session interface to include ipAddress
-declare module 'express-session' {
-	interface Session {
-		ipAddress?: string
-		loginTime?: Date
-		lastActivity?: Date
-		userAgent?: string
-		type?: string
-	}
-}
-
 export async function loginAdminLocal (req: Request, res: Response, next: NextFunction): Promise<void> {
 	const adminName = req.body.name ?? 'N/A'
 	logger.info(`Attempting local login for admin: ${adminName}`)

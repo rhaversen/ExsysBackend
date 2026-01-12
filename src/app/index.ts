@@ -60,8 +60,7 @@ const server = createServer(app) // Create an HTTP server
 // Logging environment
 logger.info(`Node environment: ${NODE_ENV}`)
 
-// Setup
-await initSocket(server) // Initialize socket.io
+// Trust proxy settings
 app.set('trust proxy', 1) // Trust the first proxy (NGINX)
 
 // Connect to MongoDB in production and staging environment
@@ -91,15 +90,21 @@ const sessionStore = MongoStore.create({
 	autoRemoveInterval: 1 // 1 minute
 })
 
-// Apply session management middleware
-app.use(session({ // Session management
+// Create session middleware
+const sessionMiddleware = session({ // Session management
 	resave: true, // Save the updated session back to the store
 	rolling: true, // Reset the cookie max-age on every request
 	secret: SESSION_SECRET, // Secret for signing session ID cookie
 	saveUninitialized: false, // Do not save session if not authenticated
 	store: sessionStore, // Store session in MongoDB
 	cookie: cookieOptions
-}))
+})
+
+// Apply session management middleware
+app.use(sessionMiddleware)
+
+// Setup Socket.io with session authentication
+await initSocket(server, sessionMiddleware)
 
 // Apply and configure Passport middleware
 app.use(passport.initialize()) // Initialize Passport
