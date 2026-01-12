@@ -3,6 +3,7 @@ import mongoose, { type FlattenMaps } from 'mongoose'
 
 import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
+import { broadcastEvent, emitSocketEvent } from '../utils/socket.js'
 
 export function transformKiosk (
 	kiosk: IKiosk | FlattenMaps<IKiosk>
@@ -290,5 +291,54 @@ export async function deleteKiosk (req: Request, res: Response, next: NextFuncti
 		} else {
 			next(error)
 		}
+	}
+}
+
+export function ping (req: Request, res: Response, next: NextFunction): void {
+	logger.info('Admin triggered kiosk ping broadcast')
+
+	try {
+		broadcastEvent('kiosk-ping', 'Kiosk ping broadcast sent to all connected clients')
+		res.status(200).json({ success: true })
+	} catch (error) {
+		logger.error('Failed to broadcast kiosk ping', { error })
+		next(error)
+	}
+}
+
+export function pong (req: Request, res: Response, next: NextFunction): void {
+	const kioskUser = req.user as IKiosk | undefined
+
+	if (kioskUser === undefined) {
+		logger.error('Kiosk pong failed: req.user is undefined despite authentication check')
+		res.status(403).json({ error: 'Forbidden' })
+		return
+	}
+
+	const kioskId = kioskUser._id.toString()
+	logger.debug(`Kiosk pong received from kiosk ID: ${kioskId}`)
+
+	const { path, viewState, gitHash } = req.body as { path?: string, viewState?: string, gitHash?: string }
+
+	if (path === undefined || path === null || viewState === undefined || viewState === null || gitHash === undefined || gitHash === null) {
+		logger.warn(`Kiosk pong failed: Missing required fields. path: ${path ?? 'undefined'}, viewState: ${viewState ?? 'undefined'}, gitHash: ${gitHash ?? 'undefined'}`)
+		res.status(400).json({ error: 'Missing required fields: path, viewState, gitHash' })
+		return
+	}
+
+	try {
+		const payload = {
+			kioskId,
+			path,
+			viewState: viewState,
+			timestamp: new Date().toISOString(),
+			gitHash
+		}
+
+		emitSocketEvent('kiosk-pong', payload, `Kiosk pong emitted for kiosk ID: ${kioskId}`)
+		res.status(200).json({ success: true })
+	} catch (error) {
+		logger.error(`Failed to emit kiosk pong for kiosk ID: ${kioskId}`, { error })
+		next(error)
 	}
 }

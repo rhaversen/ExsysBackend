@@ -7,7 +7,9 @@ import {
 	getKiosk,
 	getKiosks,
 	getMe,
-	patchKiosk
+	patchKiosk,
+	ping,
+	pong
 } from '../controllers/kioskController.js'
 import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
 
@@ -34,6 +36,19 @@ router.post('/',
 )
 
 /**
+ * @route POST /api/v1/kiosks/ping
+ * @description Admin triggers a broadcast to all kiosks requesting their current status.
+ * @access Private
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - { success: true }
+ */
+router.post('/ping',
+	isAdmin,
+	ping
+)
+
+/**
  * @route GET /api/v1/kiosks/me
  * @description Get the currently logged-in kiosk.
  * @access Private
@@ -44,6 +59,22 @@ router.post('/',
 router.get('/me',
 	isKiosk,
 	getMe
+)
+
+/**
+ * @route POST /api/v1/kiosks/pong
+ * @description Kiosk responds to a ping with its current state.
+ * @access Private
+ * @middleware isKiosk
+ * @param {string} req.body.path - Current URL path (e.g., /kiosk).
+ * @param {string} req.body.viewState - Current view state.
+ * @param {string} req.body.gitHash - Current git hash of the kiosk software.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - { success: true }
+ */
+router.post('/pong',
+	isKiosk,
+	pong
 )
 
 /**
