@@ -13,8 +13,7 @@ export function transformKiosk (
 		name: kiosk.name,
 		readerId: kiosk.readerId?.toString() ?? null,
 		kioskTag: kiosk.kioskTag,
-		priorityActivities: kiosk.priorityActivities.map((activity) => activity.toString()),
-		disabledActivities: kiosk.disabledActivities.map((activity) => activity.toString()),
+		enabledActivities: kiosk.enabledActivities.map((activity) => activity.toString()),
 		deactivated: kiosk.deactivated,
 		deactivatedUntil: kiosk.deactivatedUntil?.toString() ?? null,
 		createdAt: kiosk.createdAt,
@@ -31,8 +30,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		readerId: req.body.readerId,
-		priorityActivities: req.body.priorityActivities,
-		disabledActivities: req.body.disabledActivities,
+		enabledActivities: req.body.enabledActivities,
 		deactivated: req.body.deactivated,
 		deactivatedUntil: req.body.deactivatedUntil
 	}
@@ -170,14 +168,9 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 			kiosk.readerId = req.body.readerId
 			updateApplied = true
 		}
-		if (req.body.priorityActivities !== undefined) { // Array comparison is complex, log if provided
-			logger.debug(`Updating priorityActivities for kiosk ID ${kioskId}`)
-			kiosk.priorityActivities = req.body.priorityActivities
-			updateApplied = true
-		}
-		if (req.body.disabledActivities !== undefined) { // Array comparison is complex, log if provided
-			logger.debug(`Updating disabledActivities for kiosk ID ${kioskId}`)
-			kiosk.disabledActivities = req.body.disabledActivities
+		if (req.body.enabledActivities !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating enabledActivities for kiosk ID ${kioskId}`)
+			kiosk.enabledActivities = req.body.enabledActivities
 			updateApplied = true
 		}
 		if (req.body.deactivatedUntil !== undefined && kiosk.deactivatedUntil?.toISOString() !== new Date(req.body.deactivatedUntil).toISOString()) { // Compare dates

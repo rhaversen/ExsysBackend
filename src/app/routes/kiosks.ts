@@ -23,8 +23,7 @@ const router = Router()
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.priorityActivities] - The activities that are promoted for this kiosk (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.enabledActivities] - The activities that are enabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
  * @param {boolean} [req.body.deactivated] - Whether the kiosk is deactivated (optional).
  * @returns {number} res.status - The status code of the HTTP response.
@@ -113,8 +112,7 @@ router.get('/',
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.priorityActivities] - The activities that are promoted for this kiosk (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.enabledActivities] - The activities that are enabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
  * @param {boolean} [req.body.deactivated] - Whether the kiosk is deactivated (optional).
  * @returns {number} res.status - The status code of the HTTP response.

@@ -10,9 +10,8 @@ export function transformActivity (
 	return {
 		_id: activityDoc._id.toString(),
 		name: activityDoc.name,
-		priorityRooms: activityDoc.priorityRooms.map((room) => room.toString()),
+		enabledRooms: activityDoc.enabledRooms.map((room) => room.toString()),
 		disabledProducts: activityDoc.disabledProducts.map((product) => product.toString()),
-		disabledRooms: activityDoc.disabledRooms.map((room) => room.toString()),
 		createdAt: activityDoc.createdAt,
 		updatedAt: activityDoc.updatedAt
 	}
@@ -24,9 +23,8 @@ export async function createActivity (req: Request, res: Response, next: NextFun
 	// Create a new object with only the allowed fields
 	const allowedFields: Record<string, unknown> = {
 		name: req.body.name,
-		priorityRooms: req.body.priorityRooms,
-		disabledProducts: req.body.disabledProducts,
-		disabledRooms: req.body.disabledRooms
+		enabledRooms: req.body.enabledRooms,
+		disabledProducts: req.body.disabledProducts
 	}
 
 	try {
@@ -110,19 +108,14 @@ export async function patchActivity (req: Request, res: Response, next: NextFunc
 			activity.name = req.body.name
 			updateApplied = true
 		}
-		if (req.body.priorityRooms !== undefined) {
-			logger.debug(`Updating priorityRooms for activity ID ${activityId}`)
-			activity.priorityRooms = req.body.priorityRooms
+		if (req.body.enabledRooms !== undefined) {
+			logger.debug(`Updating enabledRooms for activity ID ${activityId}`)
+			activity.enabledRooms = req.body.enabledRooms
 			updateApplied = true
 		}
 		if (req.body.disabledProducts !== undefined) {
 			logger.debug(`Updating disabledProducts for activity ID ${activityId}`)
 			activity.disabledProducts = req.body.disabledProducts
-			updateApplied = true
-		}
-		if (req.body.disabledRooms !== undefined) {
-			logger.debug(`Updating disabledRooms for activity ID ${activityId}`)
-			activity.disabledRooms = req.body.disabledRooms
 			updateApplied = true
 		}
 
