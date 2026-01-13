@@ -556,142 +556,142 @@ const room5 = await RoomModel.create({
 	name: 'Kitchen Room',
 	description: 'A room for cooking'
 })
-const room6 = await RoomModel.create({
+await RoomModel.create({
 	name: 'Ballroom Room',
 	description: 'A room for dancing'
 })
-const room7 = await RoomModel.create({
+await RoomModel.create({
 	name: 'Hall Room',
 	description: 'A room for entering'
 })
-const room8 = await RoomModel.create({
+await RoomModel.create({
 	name: 'Study Room',
 	description: 'A room for studying'
 })
-const room9 = await RoomModel.create({
+await RoomModel.create({
 	name: 'Lounge Room',
 	description: 'A room for lounging'
 })
 
 // Activities
 const activity1 = await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: '1 priorityRoom'
 })
 const activity2 = await ActivityModel.create({
-	priorityRooms: [room1.id, room2.id, room3.id],
-	name: '3 priorityRooms'
+	enabledRooms: [room1.id, room2.id, room3.id],
+	name: '3 enabledRooms'
 })
 const activity3 = await ActivityModel.create({
-	priorityRooms: [],
-	name: 'no priorityRooms'
+	enabledRooms: [],
+	name: 'no enabledRooms'
 })
 const activity4 = await ActivityModel.create({
-	priorityRooms: [room4.id],
+	enabledRooms: [room4.id],
 	name: 'Yoga'
 })
 const activity5 = await ActivityModel.create({
-	priorityRooms: [room4.id],
+	enabledRooms: [room4.id],
 	name: 'Basket'
 })
 await ActivityModel.create({
-	priorityRooms: [room4.id],
+	enabledRooms: [room4.id],
 	name: 'Football'
 })
 await ActivityModel.create({
-	priorityRooms: [room5.id],
+	enabledRooms: [room5.id],
 	name: 'Cooking'
 })
 await ActivityModel.create({
-	priorityRooms: [],
+	enabledRooms: [],
 	name: 'No Room'
 })
 await ActivityModel.create({
-	priorityRooms: [room1.id, room2.id],
+	enabledRooms: [room1.id, room2.id],
 	name: 'Multi-room Sports'
 })
 
 // Activities with custom timestamps
 // Created today
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created today',
 	createdAt: new Date()
 })
 
 // Created yesterday
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created yesterday',
 	createdAt: new Date(Date.now() - 86400000)
 })
 
 // Created 2 days ago
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 2 days ago',
 	createdAt: new Date(Date.now() - 172800000)
 })
 
 // Created 1 week ago
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 1 week ago',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 1 month ago',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 2 months ago
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 2 months ago',
 	createdAt: new Date(Date.now() - 5184000000)
 })
 
 // Created and updated 1 year ago
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 1 year ago',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago
 await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 2 years ago',
 	createdAt: new Date(Date.now() - 63072000000)
 })
 
 // Created 1 week ago and updated now
 const activityWithTimestamp1 = await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 1 week ago, updated now',
 	createdAt: new Date(Date.now() - 604800000)
 })
 
 // Created 1 month ago and updated now
 const activityWithTimestamp2 = await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 1 month ago, updated now',
 	createdAt: new Date(Date.now() - 2592000000)
 })
 
 // Created 1 year ago and updated now
 const activityWithTimestamp3 = await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 1 year ago, updated now',
 	createdAt: new Date(Date.now() - 31536000000)
 })
 
 // Created 2 years ago and updated now
 const activityWithTimestamp4 = await ActivityModel.create({
-	priorityRooms: [room1.id],
+	enabledRooms: [room1.id],
 	name: 'Created 2 years ago, updated now',
 	createdAt: new Date(Date.now() - 63072000000)
 })
@@ -699,19 +699,17 @@ const activityWithTimestamp4 = await ActivityModel.create({
 // Updating activities
 await ActivityModel.updateMany(
 	{ _id: { $in: [activityWithTimestamp1._id, activityWithTimestamp2._id, activityWithTimestamp3._id, activityWithTimestamp4._id] } },
-	{ $set: { priorityRooms: [room2.id] } }
+	{ $set: { enabledRooms: [room2.id] } }
 )
 
 await ActivityModel.create({
-	priorityRooms: [room1.id],
-	name: 'Activity with Single Room',
-	disabledRooms: [room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
+	enabledRooms: [room1.id],
+	name: 'Activity with Single Room'
 })
 
 await ActivityModel.create({
-	priorityRooms: [],
-	name: 'Activity with all rooms disabled',
-	disabledRooms: [room1.id, room2.id, room3.id, room4.id, room5.id, room6.id, room7.id, room8.id, room9.id]
+	enabledRooms: [],
+	name: 'Activity with no rooms'
 })
 
 // Readers
@@ -721,7 +719,7 @@ const reader3 = await ReaderModel.create({ apiReferenceId: '67890' })
 
 // Kiosks
 const kiosk1 = await KioskModel.create({
-	name: 'Kiosk without priorityActivities',
+	name: 'Kiosk without enabledActivities',
 	kioskTag: '00000',
 	password: 'password'
 })
@@ -749,7 +747,7 @@ await SessionModel.create({
 })
 
 const kiosk2 = await KioskModel.create({
-	name: 'Kiosk without priorityActivities and reader',
+	name: 'Kiosk without enabledActivities and reader',
 	readerId: reader1.id,
 	kioskTag: '00001',
 	password: 'password'
@@ -781,7 +779,7 @@ const kiosk3 = await KioskModel.create({
 	name: 'Kiosk with one activity',
 	kioskTag: '11111',
 	password: 'password',
-	priorityActivities: [activity1.id]
+	enabledActivities: [activity1.id]
 })
 // Session for kiosk3
 await SessionModel.create({
@@ -811,7 +809,7 @@ const kiosk4 = await KioskModel.create({
 	readerId: reader2.id,
 	kioskTag: '11112',
 	password: 'password',
-	priorityActivities: [activity2.id]
+	enabledActivities: [activity2.id]
 })
 // Session for kiosk4
 await SessionModel.create({
@@ -837,10 +835,10 @@ await SessionModel.create({
 })
 
 const kiosk5 = await KioskModel.create({
-	name: 'Kiosk with priorityActivities',
+	name: 'Kiosk with enabledActivities',
 	kioskTag: '22222',
 	password: 'password',
-	priorityActivities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+	enabledActivities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 // Session for kiosk5
 await SessionModel.create({
@@ -866,11 +864,11 @@ await SessionModel.create({
 })
 
 const kiosk6 = await KioskModel.create({
-	name: 'Kiosk with priorityActivities and reader',
+	name: 'Kiosk with enabledActivities and reader',
 	readerId: reader3.id,
 	kioskTag: '22223',
 	password: 'password',
-	priorityActivities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
+	enabledActivities: [activity1.id, activity2.id, activity3.id, activity4.id, activity5.id]
 })
 // Session for kiosk6
 await SessionModel.create({

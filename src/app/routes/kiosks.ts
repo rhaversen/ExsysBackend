@@ -7,7 +7,9 @@ import {
 	getKiosk,
 	getKiosks,
 	getMe,
-	patchKiosk
+	patchKiosk,
+	ping,
+	pong
 } from '../controllers/kioskController.js'
 import { isAdmin, isAdminOrKiosk, isKiosk } from '../middleware/authorization.js'
 
@@ -21,8 +23,7 @@ const router = Router()
  * @param {string} req.body.name - The name of the kiosk.
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.priorityActivities] - The activities that are promoted for this kiosk (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.enabledActivities] - The activities that are enabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
  * @param {boolean} [req.body.deactivated] - Whether the kiosk is deactivated (optional).
  * @returns {number} res.status - The status code of the HTTP response.
@@ -31,6 +32,19 @@ const router = Router()
 router.post('/',
 	isAdmin,
 	createKiosk
+)
+
+/**
+ * @route POST /api/v1/kiosks/ping
+ * @description Admin triggers a broadcast to all kiosks requesting their current status.
+ * @access Private
+ * @middleware isAdmin
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - { success: true }
+ */
+router.post('/ping',
+	isAdmin,
+	ping
 )
 
 /**
@@ -44,6 +58,22 @@ router.post('/',
 router.get('/me',
 	isKiosk,
 	getMe
+)
+
+/**
+ * @route POST /api/v1/kiosks/pong
+ * @description Kiosk responds to a ping with its current state.
+ * @access Private
+ * @middleware isKiosk
+ * @param {string} req.body.path - Current URL path (e.g., /kiosk).
+ * @param {string} req.body.viewState - Current view state.
+ * @param {string} req.body.gitHash - Current git hash of the kiosk software.
+ * @returns {number} res.status - The status code of the HTTP response.
+ * @returns {Object} res.body - { success: true }
+ */
+router.post('/pong',
+	isKiosk,
+	pong
 )
 
 /**
@@ -82,8 +112,7 @@ router.get('/',
  * @param {string} [req.body.name] - The name of the kiosk (optional).
  * @param {string} [req.body.kioskTag] - The tag of the kiosk (optional).
  * @param {string} [req.body.readerId] - The ID of the reader the kiosk should send checkouts to (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.priorityActivities] - The activities that are promoted for this kiosk (optional).
- * @param {Array<{activityId: Types.ObjectId}>} [req.body.disabledActivities] - The activities that are disabled for this kiosk (optional).
+ * @param {Array<{activityId: Types.ObjectId}>} [req.body.enabledActivities] - The activities that are enabled for this kiosk (optional).
  * @param {Date} [req.body.deactivatedUntil] - The date the kiosk is deactivated until (optional).
  * @param {boolean} [req.body.deactivated] - Whether the kiosk is deactivated (optional).
  * @returns {number} res.status - The status code of the HTTP response.

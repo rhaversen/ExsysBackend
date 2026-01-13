@@ -347,6 +347,11 @@ export async function getPaymentStatus (req: Request, res: Response, next: NextF
 	const orderId = req.params.id
 	logger.debug(`Getting payment status for order: ID ${orderId}`)
 
+	if (typeof orderId !== 'string') {
+		logger.warn(`Get payment status failed: Invalid Order ID format: ${orderId}`)
+		res.status(400).json({ error: 'Invalid Order ID format' })
+		return
+	}
 	if (!mongoose.Types.ObjectId.isValid(orderId)) {
 		logger.warn(`Get payment status failed: Invalid Order ID format: ${orderId}`)
 		res.status(400).json({ error: 'Invalid Order ID format' })
@@ -547,6 +552,11 @@ export async function cancelOrder (req: Request, res: Response, next: NextFuncti
 	if (kiosk.readerId == null) {
 		logger.warn('Cancel order failed: Kiosk has no associated reader.')
 		res.status(400).json({ error: 'Kiosk has no associated reader.' })
+		return
+	}
+	if (typeof orderId !== 'string') {
+		logger.warn(`Cancel order failed: Invalid Order ID format: ${orderId}`)
+		res.status(400).json({ error: 'Invalid Order ID format' })
 		return
 	}
 	if (!mongoose.Types.ObjectId.isValid(orderId)) {

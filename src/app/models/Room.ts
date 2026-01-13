@@ -108,14 +108,14 @@ roomSchema.pre('deleteOne', async function (next) {
 
 		// Find activities that will be affected BEFORE the update
 		const affectedActivitiesBeforeUpdate = await ActivityModel.find({
-			$or: [{ priorityRooms: roomId }, { disabledRooms: roomId }]
+			enabledRooms: roomId
 		}).lean()
 
-		// Remove room from Activity.priorityRooms and Activity.disabledRooms
-		logger.debug(`Removing room ID ${roomId} from Activity priorityRooms/disabledRooms`)
+		// Remove room from Activity.enabledRooms
+		logger.debug(`Removing room ID ${roomId} from Activity enabledRooms`)
 		await ActivityModel.updateMany(
-			{ $or: [{ priorityRooms: roomId }, { disabledRooms: roomId }] }, // Find priorityActivities containing the room in either list
-			{ $pull: { priorityRooms: roomId, disabledRooms: roomId } } // Pull from both fields
+			{ enabledRooms: roomId },
+			{ $pull: { enabledRooms: roomId } }
 		)
 		logger.debug(`Room ID ${roomId} removal attempt from relevant Activities completed`)
 
@@ -152,14 +152,14 @@ roomSchema.pre('deleteMany', async function (next) {
 
 			// Find activities that will be affected BEFORE the update
 			const affectedActivitiesBeforeUpdate = await ActivityModel.find({
-				$or: [{ priorityRooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }]
+				enabledRooms: { $in: docIds }
 			}).lean()
 
-			// Remove rooms from Activity.priorityRooms and Activity.disabledRooms
-			logger.debug(`Removing room IDs [${docIds.join(', ')}] from Activity priorityRooms/disabledRooms`)
+			// Remove rooms from Activity.enabledRooms
+			logger.debug(`Removing room IDs [${docIds.join(', ')}] from Activity enabledRooms`)
 			await ActivityModel.updateMany(
-				{ $or: [{ priorityRooms: { $in: docIds } }, { disabledRooms: { $in: docIds } }] },
-				{ $pull: { priorityRooms: { $in: docIds }, disabledRooms: { $in: docIds } } }
+				{ enabledRooms: { $in: docIds } },
+				{ $pull: { enabledRooms: { $in: docIds } } }
 			)
 			logger.debug(`Room IDs [${docIds.join(', ')}] removed from relevant Activities`)
 

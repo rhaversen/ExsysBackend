@@ -50,11 +50,16 @@ export async function initSocket (server: HttpServer, sessionMiddleware: Request
 			}
 		})
 
-		io.on('connection', (socket) => {
+		io.on('connection', async (socket) => {
 			const req = socket.request as unknown as SocketRequest
 			const userType = req.session?.type
 			const userId = req.session?.passport?.user
 			logger.info(`Authenticated socket connected: ${socket.id}, user: ${userId ?? 'unknown'}, type: ${userType ?? 'unknown'}`)
+
+			if (userId !== undefined) {
+				await socket.join(userId)
+				logger.debug(`Socket ${socket.id} joined room: ${userId}`)
+			}
 		})
 		return
 	}
@@ -101,11 +106,16 @@ export async function initSocket (server: HttpServer, sessionMiddleware: Request
 		key: redisPrefix
 	}))
 
-	io.on('connection', (socket) => {
+	io.on('connection', async (socket) => {
 		const req = socket.request as unknown as SocketRequest
 		const userType = req.session?.type
 		const userId = req.session?.passport?.user
 		logger.info(`Authenticated socket connected: ${socket.id}, user: ${userId ?? 'unknown'}, type: ${userType ?? 'unknown'}`)
+
+		if (userId !== undefined) {
+			await socket.join(userId)
+			logger.debug(`Socket ${socket.id} joined room: ${userId}`)
+		}
 	})
 }
 
@@ -152,9 +162,27 @@ function broadcastEventImpl (
 	}
 }
 
+function emitToRoomImpl (
+	room: string,
+	eventName: string,
+	successLog: string
+): boolean {
+	const io = getSocket()
+
+	try {
+		io.to(room).emit(eventName)
+		logger.debug(successLog)
+		return true
+	} catch (error) {
+		logger.error(`Failed to emit ${eventName} to room ${room}:`, { error })
+		return false
+	}
+}
+
 export const socketEmitters = {
 	emitSocketEvent: emitSocketEventImpl,
-	broadcastEvent: broadcastEventImpl
+	broadcastEvent: broadcastEventImpl,
+	emitToRoom: emitToRoomImpl
 }
 
 export function emitSocketEvent<T> (
@@ -170,4 +198,12 @@ export function broadcastEvent (
 	successLog: string
 ): boolean {
 	return socketEmitters.broadcastEvent(eventName, successLog)
+}
+
+export function emitToRoom (
+	room: string,
+	eventName: string,
+	successLog: string
+): boolean {
+	return socketEmitters.emitToRoom(room, eventName, successLog)
 }
