@@ -1,5 +1,5 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import mongoose, { type FlattenMaps } from 'mongoose'
+import { type FlattenMaps } from 'mongoose'
 
 import Session, { type ISession, type ISessionFrontend } from '../models/Session.js'
 import logger from '../utils/logger.js'
@@ -120,12 +120,7 @@ export async function deleteSession (req: Request, res: Response, next: NextFunc
 
 	logger.info(`User ${requestingUserType} ID ${requestingUserId} attempting to delete session: ID ${sessionId}`)
 
-	if (typeof sessionId !== 'string') {
-		logger.warn(`Delete session failed: Invalid Session ID format: ${sessionId}`)
-		res.status(400).json({ error: 'Invalid Session ID format' })
-		return
-	}
-	if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+	if (typeof sessionId !== 'string' || sessionId.trim() === '') {
 		logger.warn(`Delete session failed: Invalid Session ID format: ${sessionId}`)
 		res.status(400).json({ error: 'Invalid Session ID format' })
 		return
