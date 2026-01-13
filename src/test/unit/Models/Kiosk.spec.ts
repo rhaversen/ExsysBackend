@@ -20,7 +20,7 @@ describe('Kiosk Model', function () {
 	let testKioskField: {
 		name: string
 		kioskTag: string
-		priorityActivities: mongoose.Types.ObjectId[]
+		enabledActivities: mongoose.Types.ObjectId[]
 		readerId: mongoose.Types.ObjectId
 	}
 
@@ -48,7 +48,7 @@ describe('Kiosk Model', function () {
 		testKioskField = {
 			name: 'Test Kiosk',
 			kioskTag: '12345',
-			priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+			enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 			readerId: testReader.id
 		}
 	})
@@ -58,8 +58,8 @@ describe('Kiosk Model', function () {
 		expect(kiosk).to.exist
 		expect(kiosk.kioskTag).to.equal(testKioskField.kioskTag)
 		expect(kiosk).to.have.property('name', testKioskField.name)
-		const populatedKiosk = await kiosk?.populate('priorityActivities')
-		expect(populatedKiosk?.priorityActivities[0]).to.have.property('id', testKioskField.priorityActivities[0])
+		const populatedKiosk = await kiosk?.populate('enabledActivities')
+		expect(populatedKiosk?.enabledActivities[0]).to.have.property('id', testKioskField.enabledActivities[0])
 	})
 
 	it('should trim the name', async function () {
@@ -139,7 +139,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create({
 				...testKioskField,
-				priorityActivities: [testActivity1.id, new mongoose.Types.ObjectId()]
+				enabledActivities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
 		} catch {
 			// The promise was rejected as expected
@@ -184,10 +184,10 @@ describe('Kiosk Model', function () {
 		expect(kiosk).to.exist
 	})
 
-	it('should save a kiosk without priorityActivities', async function () {
+	it('should save a kiosk without enabledActivities', async function () {
 		const kiosk = await KioskModel.create({
 			...testKioskField,
-			priorityActivities: undefined
+			enabledActivities: undefined
 		})
 		expect(kiosk).to.exist
 	})
@@ -255,7 +255,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create({
 				...testKioskField,
-				priorityActivities: [new mongoose.Types.ObjectId()]
+				enabledActivities: [new mongoose.Types.ObjectId()]
 			})
 		} catch {
 			// The promise was rejected as expected
@@ -269,7 +269,7 @@ describe('Kiosk Model', function () {
 		try {
 			await KioskModel.create({
 				...testKioskField,
-				priorityActivities: [testActivity1.id, new mongoose.Types.ObjectId()]
+				enabledActivities: [testActivity1.id, new mongoose.Types.ObjectId()]
 			})
 		} catch {
 			// The promise was rejected as expected

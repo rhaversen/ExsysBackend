@@ -49,15 +49,17 @@ router.get('/debug-sentry', () => {
 
 /**
  * @route GET /api/service/force-kiosk-refresh
- * @description Emit a forced kiosk refresh event.
+ * @description Emit a forced kiosk refresh event. If kioskId query parameter is provided, only that kiosk is refreshed.
  * @access Private
  * @middleware isAdmin
+ * @param {string} [req.query.kioskId] - Optional ID of the specific kiosk to refresh.
  * @returns {number} res.status - The status code of the HTTP response.
  */
 router.get('/force-kiosk-refresh',
 	isAdmin,
-	(_req, res) => {
-		const status = emitForcedKioskRefresh()
+	(req, res) => {
+		const kioskId = req.query.kioskId as string | undefined
+		const status = emitForcedKioskRefresh(kioskId)
 		if (status) { res.status(200).send('OK') } else { res.status(500).send('Error') }
 	}
 )

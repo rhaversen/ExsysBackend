@@ -17,7 +17,7 @@ describe('Activity Model', function () {
 	let testRoom: IRoom
 	let testActivityField: {
 		name: string
-		priorityRooms: string[]
+		enabledRooms: string[]
 	}
 
 	beforeEach(async function () {
@@ -28,7 +28,7 @@ describe('Activity Model', function () {
 
 		testActivityField = {
 			name: 'Activity 1',
-			priorityRooms: [testRoom.id.toString()]
+			enabledRooms: [testRoom.id.toString()]
 		}
 	})
 
@@ -36,8 +36,8 @@ describe('Activity Model', function () {
 		const activity = await ActivityModel.create(testActivityField)
 		expect(activity).to.exist
 		expect(activity.name).to.equal(testActivityField.name)
-		expect(activity.priorityRooms).to.be.an('array')
-		expect(activity?.priorityRooms[0].toString()).to.equal(testActivityField.priorityRooms[0])
+		expect(activity.enabledRooms).to.be.an('array')
+		expect(activity?.enabledRooms[0].toString()).to.equal(testActivityField.enabledRooms[0])
 	})
 
 	it('should trim the name', async function () {
@@ -75,75 +75,58 @@ describe('Activity Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should create an activity without any priorityRooms', async function () {
+	it('should create an activity without any enabledRooms', async function () {
 		const activity = await ActivityModel.create({
 			...testActivityField,
-			priorityRooms: undefined
+			enabledRooms: undefined
 		})
 		expect(activity).to.exist
 	})
 
-	it('should default to an empty array when creating an activity without any priorityRooms', async function () {
+	it('should default to an empty array when creating an activity without any enabledRooms', async function () {
 		const activity = await ActivityModel.create({
 			...testActivityField,
-			priorityRooms: undefined
+			enabledRooms: undefined
 		})
-		expect(activity.priorityRooms).to.be.an('array').that.has.lengthOf(0)
+		expect(activity.enabledRooms).to.be.an('array').that.has.lengthOf(0)
 	})
 
-	it('should remove the activity from any kiosks priorityActivities field when deleted', async function () {
+	it('should remove the activity from any kiosks enabledActivities field when deleted', async function () {
 		const activity = await ActivityModel.create(testActivityField)
 		const kiosk = await KioskModel.create({
 			name: 'TestKiosk',
-			priorityActivities: [activity._id],
+			enabledActivities: [activity._id],
 			kioskTag: '11111'
 		})
 
 		await ActivityModel.deleteOne({ _id: activity._id })
 
 		const updatedKiosk = await KioskModel.findById(kiosk._id)
-		expect(updatedKiosk?.priorityActivities).to.be.empty
+		expect(updatedKiosk?.enabledActivities).to.be.empty
 	})
 
-	it('should remove the activity from any kiosks disabledActivities field when deleted', async function () {
-		const activity = await ActivityModel.create(testActivityField)
-		const kiosk = await KioskModel.create({
-			name: 'TestKiosk2',
-			disabledActivities: [activity._id],
-			kioskTag: '22222'
-		})
-
-		await ActivityModel.deleteOne({ _id: activity._id })
-
-		const updatedKiosk = await KioskModel.findById(kiosk._id)
-		expect(updatedKiosk?.disabledActivities).to.be.empty
-	})
-
-	it('should not remove other priorityActivities when deleting one', async function () {
+	it('should not remove other enabledActivities when deleting one', async function () {
 		const activity1 = await ActivityModel.create(testActivityField)
 		const activity2 = await ActivityModel.create({ ...testActivityField, name: 'Activity 2' })
 		const kiosk = await KioskModel.create({
-			name: 'TestKiosk3',
-			priorityActivities: [activity1._id, activity2._id],
-			disabledActivities: [activity1._id, activity2._id],
-			kioskTag: '33333'
+			name: 'TestKiosk2',
+			enabledActivities: [activity1._id, activity2._id],
+			kioskTag: '22222'
 		})
 
 		await ActivityModel.deleteOne({ _id: activity1._id })
 
 		const updatedKiosk = await KioskModel.findById(kiosk._id)
-		expect(updatedKiosk?.priorityActivities).to.have.lengthOf(1)
-		expect(updatedKiosk?.priorityActivities?.[0].toString()).to.equal(activity2._id.toString())
-		expect(updatedKiosk?.disabledActivities).to.have.lengthOf(1)
-		expect(updatedKiosk?.disabledActivities?.[0].toString()).to.equal(activity2._id.toString())
+		expect(updatedKiosk?.enabledActivities).to.have.lengthOf(1)
+		expect(updatedKiosk?.enabledActivities?.[0].toString()).to.equal(activity2._id.toString())
 	})
 
-	it('should not create an activity with a non-existing roomId in priorityRooms', async function () {
+	it('should not create an activity with a non-existing roomId in enabledRooms', async function () {
 		let errorOccurred = false
 		try {
 			await ActivityModel.create({
 				...testActivityField,
-				priorityRooms: [new mongoose.Types.ObjectId().toString()]
+				enabledRooms: [new mongoose.Types.ObjectId().toString()]
 			})
 		} catch {
 			// The promise was rejected as expected

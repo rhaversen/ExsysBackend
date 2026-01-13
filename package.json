@@ -41,7 +41,7 @@
 		"clean:all": "npm run clean:dist && npm run clean:logs"
 	},
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=24.0.0"
 	},
 	"overrides": {
 		"mongodb": "~6.20.0"
@@ -86,7 +86,7 @@
 		"@types/express": "^5.0.2",
 		"@types/express-session": "^1.18.1",
 		"@types/mocha": "^10.0.10",
-		"@types/node": "^22.15.21",
+		"@types/node": "^24.0.0",
 		"@types/passport": "^1.0.17",
 		"@types/passport-local": "^1.0.38",
 		"@types/sinon": "^17.0.4",

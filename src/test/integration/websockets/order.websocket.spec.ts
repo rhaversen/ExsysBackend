@@ -44,7 +44,7 @@ describe('Order WebSocket Emitters', function () {
 
 		const activity = await ActivityModel.create({
 			name: 'Test Activity',
-			priorityRooms: [roomId]
+			enabledRooms: [roomId]
 		})
 		activityId = activity._id.toString()
 

@@ -30,7 +30,7 @@ describe('Kiosks routes', function () {
 	})
 
 	describe('POST /v1/kiosks', function () {
-		describe('No priorityActivities', function () {
+		describe('No enabledActivities', function () {
 			let testKioskFields: {
 				name: string
 				kioskTag: string
@@ -79,16 +79,16 @@ describe('Kiosks routes', function () {
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag')
 				expect(response.body.readerId.toString()).to.equal(testKioskFields.readerId.toString())
-				expect(response.body).to.have.property('priorityActivities').that.is.an('array').that.is.empty
+				expect(response.body).to.have.property('enabledActivities').that.is.an('array').that.is.empty
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
 				expect(response.body).to.have.property('_id')
 			})
 
-			it('should have an empty priorityActivities array', async function () {
+			it('should have an empty enabledActivities array', async function () {
 				const response = await agent().post('/api/v1/kiosks').send(testKioskFields).set('Cookie', sessionCookie)
 
-				expect(response.body.priorityActivities).to.be.an('array').that.is.empty
+				expect(response.body.enabledActivities).to.be.an('array').that.is.empty
 			})
 		})
 
@@ -97,7 +97,7 @@ describe('Kiosks routes', function () {
 			let testRoom2: IRoom
 			let testKioskFields: {
 				name: string
-				priorityActivities: string[] // Changed to string array
+				enabledActivities: string[] // Changed to string array
 				readerId: mongoose.Types.ObjectId
 			}
 
@@ -113,11 +113,11 @@ describe('Kiosks routes', function () {
 
 				const testActivity1 = await ActivityModel.create({
 					name: 'Activity 1',
-					priorityRooms: [testRoom1.id]
+					enabledRooms: [testRoom1.id]
 				})
 				const testActivity2 = await ActivityModel.create({
 					name: 'Activity 2',
-					priorityRooms: [testRoom2.id]
+					enabledRooms: [testRoom2.id]
 				})
 
 				const testReader = await ReaderModel.create({
@@ -127,7 +127,7 @@ describe('Kiosks routes', function () {
 
 				testKioskFields = {
 					name: 'Test Kiosk',
-					priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+					enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 					readerId: testReader.id
 				}
 			})
@@ -152,7 +152,7 @@ describe('Kiosks routes', function () {
 				expect(kiosk).to.exist
 				expect(kiosk).to.have.property('name', testKioskFields.name)
 				expect(kiosk).to.have.property('kioskTag')
-				expect(kiosk?.priorityActivities.map(id => id.toString())).to.have.members(testKioskFields.priorityActivities)
+				expect(kiosk?.enabledActivities.map(id => id.toString())).to.have.members(testKioskFields.enabledActivities)
 				expect(kiosk).to.have.property('createdAt')
 				expect(kiosk).to.have.property('updatedAt')
 			})
@@ -162,8 +162,8 @@ describe('Kiosks routes', function () {
 
 				expect(response.body.kioskTag).to.exist
 				expect(response.body).to.have.property('name', testKioskFields.name)
-				expect(response.body).to.have.property('priorityActivities')
-				expect(response.body.priorityActivities).to.have.members(testKioskFields.priorityActivities)
+				expect(response.body).to.have.property('enabledActivities')
+				expect(response.body.enabledActivities).to.have.members(testKioskFields.enabledActivities)
 				expect(response.body.readerId.toString()).to.equal(testKioskFields.readerId.toString())
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
@@ -177,7 +177,7 @@ describe('Kiosks routes', function () {
 			let testKioskFields: {
 				name: string
 				kioskTag: string
-				priorityActivities: string[] // Changed to string array
+				enabledActivities: string[] // Changed to string array
 				readerId: mongoose.Types.ObjectId
 			}
 
@@ -193,11 +193,11 @@ describe('Kiosks routes', function () {
 
 				const testActivity1 = await ActivityModel.create({
 					name: 'Activity 1',
-					priorityRooms: [testRoom1.id]
+					enabledRooms: [testRoom1.id]
 				})
 				const testActivity2 = await ActivityModel.create({
 					name: 'Activity 2',
-					priorityRooms: [testRoom2.id]
+					enabledRooms: [testRoom2.id]
 				})
 
 				const testReader = await ReaderModel.create({
@@ -208,7 +208,7 @@ describe('Kiosks routes', function () {
 				testKioskFields = {
 					name: 'Test Kiosk',
 					kioskTag: '12345',
-					priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+					enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 					readerId: testReader.id
 				}
 			})
@@ -244,7 +244,7 @@ describe('Kiosks routes', function () {
 				expect(kiosk).to.exist
 				expect(kiosk).to.have.property('kioskTag', testKioskFields.kioskTag)
 				expect(kiosk).to.have.property('name', testKioskFields.name)
-				expect(kiosk?.priorityActivities.map(id => id.toString())).to.have.members(testKioskFields.priorityActivities)
+				expect(kiosk?.enabledActivities.map(id => id.toString())).to.have.members(testKioskFields.enabledActivities)
 				expect(kiosk).to.have.property('createdAt')
 				expect(kiosk).to.have.property('updatedAt')
 			})
@@ -254,8 +254,8 @@ describe('Kiosks routes', function () {
 
 				expect(response.body).to.have.property('name', testKioskFields.name)
 				expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-				expect(response.body).to.have.property('priorityActivities')
-				expect(response.body.priorityActivities).to.have.members(testKioskFields.priorityActivities)
+				expect(response.body).to.have.property('enabledActivities')
+				expect(response.body.enabledActivities).to.have.members(testKioskFields.enabledActivities)
 				expect(response.body.readerId.toString()).to.equal(testKioskFields.readerId.toString())
 				expect(response.body).to.have.property('createdAt')
 				expect(response.body).to.have.property('updatedAt')
@@ -269,7 +269,7 @@ describe('Kiosks routes', function () {
 		let testKioskFields: {
 			name: string
 			kioskTag: string
-			priorityActivities: string[] // Changed to string array
+			enabledActivities: string[] // Changed to string array
 			readerId: mongoose.Types.ObjectId
 		}
 
@@ -285,11 +285,11 @@ describe('Kiosks routes', function () {
 
 			const testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			const testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			const testReader = await ReaderModel.create({
@@ -300,7 +300,7 @@ describe('Kiosks routes', function () {
 			testKioskFields = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
-				priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader.id
 			}
 
@@ -324,7 +324,7 @@ describe('Kiosks routes', function () {
 
 			expect(response.body).to.have.property('name', testKioskFields.name)
 			expect(response.body).to.have.property('kioskTag', testKioskFields.kioskTag)
-			expect(response.body.priorityActivities).to.have.members(testKioskFields.priorityActivities)
+			expect(response.body.enabledActivities).to.have.members(testKioskFields.enabledActivities)
 			expect(response.body.readerId.toString()).to.equal(testKioskFields.readerId.toString())
 			expect(response.body).to.have.property('createdAt')
 			expect(response.body).to.have.property('updatedAt')
@@ -334,8 +334,8 @@ describe('Kiosks routes', function () {
 		it('should return priorityActivity IDs', async function () {
 			const response = await agent().get(`/api/v1/kiosks/${testKiosk1.id}`).set('Cookie', sessionCookie)
 
-			expect(response.body.priorityActivities).to.be.an('array')
-			expect(response.body.priorityActivities).to.have.members(testKioskFields.priorityActivities)
+			expect(response.body.enabledActivities).to.be.an('array')
+			expect(response.body.enabledActivities).to.have.members(testKioskFields.enabledActivities)
 		})
 
 		it('should return the reader ID', async function () {
@@ -355,13 +355,13 @@ describe('Kiosks routes', function () {
 		let testKioskFields1: {
 			name: string
 			kioskTag: string
-			priorityActivities: string[] // Changed to string array
+			enabledActivities: string[] // Changed to string array
 			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
-			priorityActivities: string[] // Changed to string array
+			enabledActivities: string[] // Changed to string array
 			readerId: mongoose.Types.ObjectId
 		}
 
@@ -377,11 +377,11 @@ describe('Kiosks routes', function () {
 
 			const testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			const testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			const testReader1 = await ReaderModel.create({
@@ -396,13 +396,13 @@ describe('Kiosks routes', function () {
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
-				priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
-				priorityActivities: [testActivity1.id.toString()],
+				enabledActivities: [testActivity1.id.toString()],
 				readerId: testReader2.id
 			}
 
@@ -429,11 +429,11 @@ describe('Kiosks routes', function () {
 			expect(response.body).to.have.lengthOf(2)
 			expect(response.body[0]).to.have.property('kioskTag', testKioskFields1.kioskTag)
 			expect(response.body[0]).to.have.property('name', testKioskFields1.name)
-			expect(response.body[0].priorityActivities).to.have.members(testKioskFields1.priorityActivities)
+			expect(response.body[0].enabledActivities).to.have.members(testKioskFields1.enabledActivities)
 			expect(response.body[0].readerId.toString()).to.equal(testKioskFields1.readerId.toString())
 			expect(response.body[1]).to.have.property('kioskTag', testKioskFields2.kioskTag)
 			expect(response.body[1]).to.have.property('name', testKioskFields2.name)
-			expect(response.body[1].priorityActivities).to.have.members(testKioskFields2.priorityActivities)
+			expect(response.body[1].enabledActivities).to.have.members(testKioskFields2.enabledActivities)
 			expect(response.body[1].readerId.toString()).to.equal(testKioskFields2.readerId.toString())
 			expect(response.body.map((kiosk: IKiosk) => kiosk.createdAt)).to.have.lengthOf(2)
 			expect(response.body.map((kiosk: IKiosk) => kiosk.updatedAt)).to.have.lengthOf(2)
@@ -443,8 +443,8 @@ describe('Kiosks routes', function () {
 		it('should return priorityActivity IDs for all kiosks', async function () {
 			const response = await agent().get('/api/v1/kiosks').set('Cookie', sessionCookie)
 
-			expect(response.body[0].priorityActivities).to.have.members(testKioskFields1.priorityActivities)
-			expect(response.body[1].priorityActivities).to.have.members(testKioskFields2.priorityActivities)
+			expect(response.body[0].enabledActivities).to.have.members(testKioskFields1.enabledActivities)
+			expect(response.body[1].enabledActivities).to.have.members(testKioskFields2.enabledActivities)
 		})
 
 		it('should return reader IDs for all kiosks', async function () {
@@ -464,13 +464,13 @@ describe('Kiosks routes', function () {
 		let testKioskFields1: {
 			name: string
 			kioskTag: string
-			priorityActivities: string[] // Changed to string array
+			enabledActivities: string[] // Changed to string array
 			readerId: mongoose.Types.ObjectId
 		}
 		let testKioskFields2: {
 			name: string
 			kioskTag: string
-			priorityActivities: string[] // Changed to string array
+			enabledActivities: string[] // Changed to string array
 			readerId: mongoose.Types.ObjectId
 		}
 
@@ -486,11 +486,11 @@ describe('Kiosks routes', function () {
 
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			const testReader1 = await ReaderModel.create({
@@ -505,13 +505,13 @@ describe('Kiosks routes', function () {
 			testKioskFields1 = {
 				name: 'Test Kiosk 1',
 				kioskTag: '12345',
-				priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader1.id
 			}
 			testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
-				priorityActivities: [testActivity1.id.toString()],
+				enabledActivities: [testActivity1.id.toString()],
 				readerId: testReader2.id
 			}
 
@@ -522,7 +522,7 @@ describe('Kiosks routes', function () {
 		it('should have status 200', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testKioskFields2.priorityActivities[0]]
+				enabledActivities: [testKioskFields2.enabledActivities[0]]
 			}
 
 			const response = await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
@@ -533,7 +533,7 @@ describe('Kiosks routes', function () {
 		it('should have status 403 if not logged in', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testKioskFields2.priorityActivities[0]]
+				enabledActivities: [testKioskFields2.enabledActivities[0]]
 			}
 
 			const response = await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields)
@@ -544,7 +544,7 @@ describe('Kiosks routes', function () {
 		it('should update the kiosk', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testActivity2.id.toString()]
+				enabledActivities: [testActivity2.id.toString()]
 			}
 
 			await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
@@ -552,19 +552,19 @@ describe('Kiosks routes', function () {
 			const kiosk = await KioskModel.findById(testKiosk1.id)
 
 			expect(kiosk).to.have.property('kioskTag', updatedFields.kioskTag)
-			expect(kiosk?.priorityActivities.map(id => id.toString())).to.include(updatedFields.priorityActivities[0])
+			expect(kiosk?.enabledActivities.map(id => id.toString())).to.include(updatedFields.enabledActivities[0])
 		})
 
 		it('should return the updated kiosk', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testActivity2.id.toString()]
+				enabledActivities: [testActivity2.id.toString()]
 			}
 
 			const response = await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('kioskTag', updatedFields.kioskTag)
-			expect(response.body.priorityActivities[0].toString()).to.equal(updatedFields.priorityActivities[0])
+			expect(response.body.enabledActivities[0].toString()).to.equal(updatedFields.enabledActivities[0])
 			expect(response.body).to.have.property('createdAt')
 			expect(response.body).to.have.property('updatedAt')
 			expect(response.body).to.have.property('_id')
@@ -585,12 +585,12 @@ describe('Kiosks routes', function () {
 		it('should return priorityActivity IDs after update', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testActivity2.id.toString()]
+				enabledActivities: [testActivity2.id.toString()]
 			}
 
 			const response = await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
-			expect(response.body.priorityActivities[0].toString()).to.equal(testActivity2.id.toString())
+			expect(response.body.enabledActivities[0].toString()).to.equal(testActivity2.id.toString())
 		})
 
 		it('should return reader ID after update', async function () {
@@ -619,14 +619,14 @@ describe('Kiosks routes', function () {
 		it('should not update other fields', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testActivity2.id.toString()]
+				enabledActivities: [testActivity2.id.toString()]
 			}
 
 			await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			const kiosk = await KioskModel.findById(testKiosk1.id)
 
-			expect(kiosk?.priorityActivities.map(id => id.toString())).to.include(updatedFields.priorityActivities[0])
+			expect(kiosk?.enabledActivities.map(id => id.toString())).to.include(updatedFields.enabledActivities[0])
 			expect(kiosk).to.have.property('name', testKioskFields1.name)
 			expect(kiosk?.readerId?.toString()).to.equal(testKioskFields1.readerId.toString())
 		})
@@ -634,7 +634,7 @@ describe('Kiosks routes', function () {
 		it('should not update other kiosks', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testActivity2.id.toString()]
+				enabledActivities: [testActivity2.id.toString()]
 			}
 
 			await agent().patch(`/api/v1/kiosks/${testKiosk1.id}`).send(updatedFields).set('Cookie', sessionCookie)
@@ -667,7 +667,7 @@ describe('Kiosks routes', function () {
 		it('should return 404 if the kiosk does not exist', async function () {
 			const updatedFields = {
 				kioskTag: '45678',
-				priorityActivities: [testActivity2.id.toString()]
+				enabledActivities: [testActivity2.id.toString()]
 			}
 
 			const response = await agent().patch(`/api/v1/kiosks/${new mongoose.Types.ObjectId().toString()}`).send(updatedFields).set('Cookie', sessionCookie)
@@ -686,7 +686,7 @@ describe('Kiosks routes', function () {
 			})
 			const testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			const testReader = await ReaderModel.create({
 				apiReferenceId: 'test',
@@ -695,7 +695,7 @@ describe('Kiosks routes', function () {
 			testKiosk1 = await KioskModel.create({
 				name: 'Kiosk 1',
 				kioskTag: '12345',
-				priorityActivities: [testActivity1.id],
+				enabledActivities: [testActivity1.id],
 				readerId: testReader.id
 			})
 		})
@@ -743,7 +743,7 @@ describe('Kiosks routes', function () {
 		let testKioskFields1: {
 			name: string
 			kioskTag: string
-			priorityActivities: string[] // Changed to string array
+			enabledActivities: string[] // Changed to string array
 			readerId: mongoose.Types.ObjectId
 		}
 
@@ -759,11 +759,11 @@ describe('Kiosks routes', function () {
 
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			const testReader = await ReaderModel.create({
@@ -774,7 +774,7 @@ describe('Kiosks routes', function () {
 			testKioskFields1 = {
 				name: 'Test Kiosk',
 				kioskTag: '12345',
-				priorityActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
+				enabledActivities: [testActivity1.id.toString(), testActivity2.id.toString()],
 				readerId: testReader.id
 			}
 
@@ -810,7 +810,7 @@ describe('Kiosks routes', function () {
 			const testKioskFields2 = {
 				name: 'Test Kiosk 2',
 				kioskTag: '54321',
-				priorityActivities: [testActivity1.id.toString()],
+				enabledActivities: [testActivity1.id.toString()],
 				readerId: testReader.id
 			}
 			const testKiosk2 = await KioskModel.create(testKioskFields2)
