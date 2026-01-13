@@ -151,7 +151,7 @@ describe('Rooms routes', function () {
 			expect(response).to.have.status(403)
 		})
 
-		it('should return all priorityRooms', async function () {
+		it('should return all rooms', async function () {
 			const response = await agent().get('/api/v1/rooms').set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)

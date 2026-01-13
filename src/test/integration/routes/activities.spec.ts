@@ -31,7 +31,7 @@ describe('Activities routes', function () {
 		let testRoom: IRoom
 		let testActivityFields1: {
 			name: string
-			priorityRooms: string[]
+			enabledRooms: string[]
 		}
 
 		beforeEach(async function () {
@@ -42,7 +42,7 @@ describe('Activities routes', function () {
 			// For a single room, use an array with one element
 			testActivityFields1 = {
 				name: 'Activity 1',
-				priorityRooms: [testRoom.id.toString()]
+				enabledRooms: [testRoom.id.toString()]
 			}
 		})
 
@@ -64,41 +64,41 @@ describe('Activities routes', function () {
 
 			expect(activity).to.exist
 			expect(activity).to.have.property('name', testActivityFields1.name)
-			// Expect priorityRooms to be an array and populate its first element
-			const populatedActivity = await activity?.populate('priorityRooms')
-			expect(populatedActivity?.priorityRooms).to.be.an('array')
-			expect(populatedActivity?.priorityRooms[0]).to.have.property('id', testActivityFields1.priorityRooms[0])
+			// Expect enabledRooms to be an array and populate its first element
+			const populatedActivity = await activity?.populate('enabledRooms')
+			expect(populatedActivity?.enabledRooms).to.be.an('array')
+			expect(populatedActivity?.enabledRooms[0]).to.have.property('id', testActivityFields1.enabledRooms[0])
 			expect(activity).to.have.property('createdAt')
 			expect(activity).to.have.property('updatedAt')
 		})
 
-		it('should return the newly created object with priorityRooms', async function () {
+		it('should return the newly created object with enabledRooms', async function () {
 			const response = await agent().post('/api/v1/activities').send(testActivityFields1).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(201)
 			expect(response.body).to.have.property('name', testActivityFields1.name)
-			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body.enabledRooms[0].toString()).to.equal(testActivityFields1.enabledRooms[0])
 		})
 
-		it('should create an activity with multiple priorityRooms', async function () {
+		it('should create an activity with multiple enabledRooms', async function () {
 			const secondRoom = await RoomModel.create({
 				name: 'Room 2',
 				description: 'Description for Room 2'
 			})
 			const multipleRoomsFields = {
 				name: 'Activity Multiple',
-				priorityRooms: [testRoom.id.toString(), secondRoom.id.toString()]
+				enabledRooms: [testRoom.id.toString(), secondRoom.id.toString()]
 			}
 			const response = await agent().post('/api/v1/activities').send(multipleRoomsFields).set('Cookie', sessionCookie)
 			expect(response).to.have.status(201)
-			expect(response.body.priorityRooms).to.be.an('array').that.has.lengthOf(2)
+			expect(response.body.enabledRooms).to.be.an('array').that.has.lengthOf(2)
 		})
 
-		it('should throw error when creating activity with duplicate priorityRooms', async function () {
+		it('should throw error when creating activity with duplicate enabledRooms', async function () {
 			const response = await agent().post('/api/v1/activities')
 				.send({
 					name: 'Duplicate Activity',
-					priorityRooms: [testRoom.id.toString(), testRoom.id.toString()]
+					enabledRooms: [testRoom.id.toString(), testRoom.id.toString()]
 				})
 				.set('Cookie', sessionCookie)
 			expect(response).to.have.status(400)
@@ -120,7 +120,7 @@ describe('Activities routes', function () {
 		let testActivity1: IActivity
 		let testActivityFields1: {
 			name: string
-			priorityRooms: string[]
+			enabledRooms: string[]
 		}
 
 		beforeEach(async function () {
@@ -135,15 +135,15 @@ describe('Activities routes', function () {
 
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			testActivityFields1 = {
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			}
 			await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 		})
 
@@ -163,9 +163,9 @@ describe('Activities routes', function () {
 			const response = await agent().get(`/api/v1/activities/${testActivity1.id}`).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', testActivityFields1.name)
-			expect(response.body).to.have.property('priorityRooms')
-			expect(response.body.priorityRooms).to.be.an('array')
-			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body).to.have.property('enabledRooms')
+			expect(response.body.enabledRooms).to.be.an('array')
+			expect(response.body.enabledRooms[0].toString()).to.equal(testActivityFields1.enabledRooms[0])
 			expect(response.body).to.have.property('createdAt')
 			expect(response.body).to.have.property('updatedAt')
 			expect(response.body).to.have.property('_id', testActivity1.id)
@@ -181,11 +181,11 @@ describe('Activities routes', function () {
 	describe('GET /v1/activities', function () {
 		let testActivityFields1: {
 			name: string
-			priorityRooms: string[]
+			enabledRooms: string[]
 		}
 		let testActivityFields2: {
 			name: string
-			priorityRooms: string[]
+			enabledRooms: string[]
 		}
 
 		beforeEach(async function () {
@@ -200,21 +200,21 @@ describe('Activities routes', function () {
 
 			await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			testActivityFields1 = {
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id.toString()]
+				enabledRooms: [testRoom1.id.toString()]
 			}
 
 			testActivityFields2 = {
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id.toString()]
+				enabledRooms: [testRoom2.id.toString()]
 			}
 		})
 
@@ -230,7 +230,7 @@ describe('Activities routes', function () {
 			expect(response).to.have.status(403)
 		})
 
-		it('should return all priorityActivities', async function () {
+		it('should return all activities', async function () {
 			const response = await agent().get('/api/v1/activities').set('Cookie', sessionCookie)
 
 			expect(response.body).to.be.an('array')
@@ -238,9 +238,9 @@ describe('Activities routes', function () {
 			expect(response.body.map((activity: IActivity) => activity.name))
 				.to.have.members(['Activity 1', 'Activity 2'])
 			expect(response.body.map((activity: {
-				priorityRooms: IRoom[]
-			}) => activity.priorityRooms[0].toString()))
-				.to.have.members([testActivityFields1.priorityRooms[0], testActivityFields2.priorityRooms[0]])
+				enabledRooms: IRoom[]
+			}) => activity.enabledRooms[0].toString()))
+				.to.have.members([testActivityFields1.enabledRooms[0], testActivityFields2.enabledRooms[0]])
 			expect(response.body.map((activity: IActivity) => activity.createdAt)).to.have.lengthOf(2)
 			expect(response.body.map((activity: IActivity) => activity.updatedAt)).to.have.lengthOf(2)
 		})
@@ -250,7 +250,7 @@ describe('Activities routes', function () {
 		let testActivity1: IActivity
 		let testActivityFields1: {
 			name: string
-			priorityRooms: string[]
+			enabledRooms: string[]
 		}
 
 		beforeEach(async function () {
@@ -260,18 +260,18 @@ describe('Activities routes', function () {
 			})
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 			testActivityFields1 = {
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id.toString()]
+				enabledRooms: [testRoom1.id.toString()]
 			}
 		})
 
 		it('should have status 200', async function () {
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: testActivityFields1.priorityRooms
+				enabledRooms: testActivityFields1.enabledRooms
 			}
 
 			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
@@ -282,7 +282,7 @@ describe('Activities routes', function () {
 		it('should have status 403 if not logged in', async function () {
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: testActivityFields1.priorityRooms
+				enabledRooms: testActivityFields1.enabledRooms
 			}
 
 			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields)
@@ -297,13 +297,13 @@ describe('Activities routes', function () {
 			})
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: [testRoom2.id.toString()]
+				enabledRooms: [testRoom2.id.toString()]
 			}
 
 			await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
 			expect(activity).to.have.property('name', updatedFields.name)
-			expect(activity?.priorityRooms[0].toString()).to.equal(testRoom2.id.toString())
+			expect(activity?.enabledRooms[0].toString()).to.equal(testRoom2.id.toString())
 		})
 
 		it('should return the updated activity', async function () {
@@ -313,27 +313,27 @@ describe('Activities routes', function () {
 			})
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: [testRoom2.id.toString()]
+				enabledRooms: [testRoom2.id.toString()]
 			}
 
 			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body).to.have.property('priorityRooms').that.is.an('array')
-			expect(response.body.priorityRooms[0].toString()).to.equal(testRoom2.id.toString())
+			expect(response.body).to.have.property('enabledRooms').that.is.an('array')
+			expect(response.body.enabledRooms[0].toString()).to.equal(testRoom2.id.toString())
 		})
 
-		it('should unset the priorityRooms when setting to null', async function () {
+		it('should unset the enabledRooms when setting to null', async function () {
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: []
+				enabledRooms: []
 			}
 
 			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
-			expect(response.body).to.have.property('priorityRooms').that.is.an('array').with.lengthOf(0)
+			expect(response.body).to.have.property('enabledRooms').that.is.an('array').with.lengthOf(0)
 			const activity = await ActivityModel.findById(testActivity1.id)
-			expect(activity?.priorityRooms).to.have.lengthOf(0)
+			expect(activity?.enabledRooms).to.have.lengthOf(0)
 		})
 
 		it('should allow updating name to current name', async function () {
@@ -344,18 +344,18 @@ describe('Activities routes', function () {
 
 			expect(response).to.have.status(200)
 			expect(response.body).to.have.property('name', updatedFields.name)
-			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body.enabledRooms[0].toString()).to.equal(testActivityFields1.enabledRooms[0])
 		})
 
-		it('should allow updating to current priorityRooms', async function () {
+		it('should allow updating to current enabledRooms', async function () {
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: testActivityFields1.priorityRooms
+				enabledRooms: testActivityFields1.enabledRooms
 			}
 			const response = await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
-			expect(response.body.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
+			expect(response.body.enabledRooms[0].toString()).to.equal(testActivityFields1.enabledRooms[0])
 		})
 
 		it('should allow a partial update', async function () {
@@ -375,28 +375,28 @@ describe('Activities routes', function () {
 
 			await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity1.id)
-			expect(activity?.priorityRooms[0].toString()).to.equal(testActivityFields1.priorityRooms[0])
+			expect(activity?.enabledRooms[0].toString()).to.equal(testActivityFields1.enabledRooms[0])
 		})
 
-		it('should not update other priorityActivities', async function () {
+		it('should not update other activities', async function () {
 			const testRoom2 = await RoomModel.create({
 				name: 'Room 2',
 				description: 'Description for Room 2'
 			})
 			const testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: [testRoom2.id.toString()]
+				enabledRooms: [testRoom2.id.toString()]
 			}
 
 			await agent().patch(`/api/v1/activities/${testActivity1.id}`).send(updatedFields).set('Cookie', sessionCookie)
 			const activity = await ActivityModel.findById(testActivity2.id)
 			expect(activity).to.have.property('name', 'Activity 2')
-			expect(activity?.priorityRooms[0].toString()).to.equal(testRoom2.id.toString())
+			expect(activity?.enabledRooms[0].toString()).to.equal(testRoom2.id.toString())
 		})
 
 		it('should not allow updating the _id', async function () {
@@ -420,14 +420,14 @@ describe('Activities routes', function () {
 			expect(response).to.have.status(404)
 		})
 
-		it('should update to multiple priorityRooms', async function () {
+		it('should update to multiple enabledRooms', async function () {
 			const testRoom2 = await RoomModel.create({
 				name: 'Room 2',
 				description: 'Description for Room 2'
 			})
 			const updatedFields = {
 				name: 'Updated Activity 1',
-				priorityRooms: [testActivityFields1.priorityRooms[0], testRoom2.id.toString()]
+				enabledRooms: [testActivityFields1.enabledRooms[0], testRoom2.id.toString()]
 			}
 
 			const response = await agent()
@@ -436,13 +436,13 @@ describe('Activities routes', function () {
 				.set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
-			expect(response.body.priorityRooms).to.be.an('array').that.has.lengthOf(2)
-			expect(response.body.priorityRooms).to.have.members([testActivityFields1.priorityRooms[0], testRoom2.id.toString()])
+			expect(response.body.enabledRooms).to.be.an('array').that.has.lengthOf(2)
+			expect(response.body.enabledRooms).to.have.members([testActivityFields1.enabledRooms[0], testRoom2.id.toString()])
 		})
 
-		it('should clear priorityRooms when setting to empty array', async function () {
+		it('should clear enabledRooms when setting to empty array', async function () {
 			const updatedFields = {
-				priorityRooms: []
+				enabledRooms: []
 			}
 
 			const response = await agent()
@@ -451,14 +451,14 @@ describe('Activities routes', function () {
 				.set('Cookie', sessionCookie)
 
 			expect(response).to.have.status(200)
-			expect(response.body.priorityRooms).to.be.an('array').that.has.lengthOf(0)
+			expect(response.body.enabledRooms).to.be.an('array').that.has.lengthOf(0)
 		})
 
-		it('should throw error when updating to duplicate priorityRooms', async function () {
+		it('should throw error when updating to duplicate enabledRooms', async function () {
 			const response = await agent()
 				.patch(`/api/v1/activities/${testActivity1.id}`)
 				.send({
-					priorityRooms: [testActivityFields1.priorityRooms[0], testActivityFields1.priorityRooms[0]]
+					enabledRooms: [testActivityFields1.enabledRooms[0], testActivityFields1.enabledRooms[0]]
 				})
 				.set('Cookie', sessionCookie)
 			expect(response).to.have.status(400)
@@ -475,7 +475,7 @@ describe('Activities routes', function () {
 			})
 			testActivity1 = await ActivityModel.create({
 				name: 'Activity 1',
-				priorityRooms: [testRoom1.id]
+				enabledRooms: [testRoom1.id]
 			})
 		})
 
@@ -500,14 +500,14 @@ describe('Activities routes', function () {
 			expect(product).to.not.exist
 		})
 
-		it('should not delete other priorityActivities', async function () {
+		it('should not delete other activities', async function () {
 			const testRoom2 = await RoomModel.create({
 				name: 'Room 2',
 				description: 'Description for Room 2'
 			})
 			const testActivity2 = await ActivityModel.create({
 				name: 'Activity 2',
-				priorityRooms: [testRoom2.id]
+				enabledRooms: [testRoom2.id]
 			})
 
 			await agent().delete(`/api/v1/activities/${testActivity1.id}`).send({ confirm: true }).set('Cookie', sessionCookie)

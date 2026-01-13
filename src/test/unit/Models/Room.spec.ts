@@ -82,7 +82,7 @@ describe('Room Model', function () {
 		expect(errorOccurred).to.be.true
 	})
 
-	it('should remove the room from any priorityActivities when deleted', async function () {
+	it('should remove the room from any activities enabledRooms when deleted', async function () {
 		const room = await RoomModel.create(testRoomField)
 		const activity = await ActivityModel.create({
 			name: 'TestActivity',
@@ -92,7 +92,7 @@ describe('Room Model', function () {
 		await RoomModel.findByIdAndDelete(room._id)
 
 		const updatedActivity = await ActivityModel.findById(activity._id)
-		expect(updatedActivity?.priorityRooms).to.be.an('array').that.is.empty
+		expect(updatedActivity?.enabledRooms).to.be.an('array').that.is.empty
 	})
 
 	describe('Delete middleware', function () {
@@ -106,76 +106,51 @@ describe('Room Model', function () {
 
 			activity1 = await ActivityModel.create({
 				name: 'Activity1',
-				priorityRooms: [room1._id, room3._id],
-				disabledRooms: [room1._id, room3._id]
+				enabledRooms: [room1._id, room3._id]
 			})
 			activity2 = await ActivityModel.create({
 				name: 'Activity2',
-				priorityRooms: [room2._id],
-				disabledRooms: [room2._id]
+				enabledRooms: [room2._id]
 			})
 		})
 
 		describe('Pre-delete middleware (deleteOne / findOneAndDelete)', function () {
-			it('should remove the room from Activity.priorityRooms when deleted', async function () {
+			it('should remove the room from Activity.enabledRooms when deleted', async function () {
 				await RoomModel.deleteOne({ _id: room1._id })
 
 				const updatedActivity1 = await ActivityModel.findById(activity1._id)
-				expect(updatedActivity1?.priorityRooms).to.have.lengthOf(1)
-				expect(updatedActivity1?.priorityRooms?.[0].toString()).to.equal(room3._id.toString())
+				expect(updatedActivity1?.enabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity1?.enabledRooms?.[0].toString()).to.equal(room3._id.toString())
 			})
 
-			it('should remove the room from Activity.disabledRooms when deleted', async function () {
-				await RoomModel.deleteOne({ _id: room1._id })
-
-				const updatedActivity1 = await ActivityModel.findById(activity1._id)
-				expect(updatedActivity1?.disabledRooms).to.have.lengthOf(1)
-				expect(updatedActivity1?.disabledRooms?.[0].toString()).to.equal(room3._id.toString())
-			})
-
-			it('should not affect other priorityActivities when deleting a room', async function () {
+			it('should not affect other activities when deleting a room', async function () {
 				await RoomModel.deleteOne({ _id: room1._id })
 
 				const updatedActivity2 = await ActivityModel.findById(activity2._id)
-				expect(updatedActivity2?.priorityRooms).to.have.lengthOf(1)
-				expect(updatedActivity2?.priorityRooms?.[0].toString()).to.equal(room2._id.toString())
-				expect(updatedActivity2?.disabledRooms).to.have.lengthOf(1)
-				expect(updatedActivity2?.disabledRooms?.[0].toString()).to.equal(room2._id.toString())
+				expect(updatedActivity2?.enabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity2?.enabledRooms?.[0].toString()).to.equal(room2._id.toString())
 			})
 		})
 
 		describe('Pre-delete-many middleware', function () {
-			it('should remove the priorityRooms from Activity.priorityRooms when deleted via deleteMany', async function () {
+			it('should remove the rooms from Activity.enabledRooms when deleted via deleteMany', async function () {
 				await RoomModel.deleteMany({ _id: { $in: [room1._id, room2._id] } })
 
 				const updatedActivity1 = await ActivityModel.findById(activity1._id)
 				const updatedActivity2 = await ActivityModel.findById(activity2._id)
 
-				expect(updatedActivity1?.priorityRooms).to.have.lengthOf(1)
-				expect(updatedActivity1?.priorityRooms?.[0].toString()).to.equal(room3._id.toString())
-				expect(updatedActivity2?.priorityRooms).to.be.empty
+				expect(updatedActivity1?.enabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity1?.enabledRooms?.[0].toString()).to.equal(room3._id.toString())
+				expect(updatedActivity2?.enabledRooms).to.be.empty
 			})
 
-			it('should remove the priorityRooms from Activity.disabledRooms when deleted via deleteMany', async function () {
-				await RoomModel.deleteMany({ _id: { $in: [room1._id, room2._id] } })
-
-				const updatedActivity1 = await ActivityModel.findById(activity1._id)
-				const updatedActivity2 = await ActivityModel.findById(activity2._id)
-
-				expect(updatedActivity1?.disabledRooms).to.have.lengthOf(1)
-				expect(updatedActivity1?.disabledRooms?.[0].toString()).to.equal(room3._id.toString())
-				expect(updatedActivity2?.disabledRooms).to.be.empty
-			})
-
-			it('should not affect priorityActivities not referencing the deleted priorityRooms via deleteMany', async function () {
-				const activity3 = await ActivityModel.create({ name: 'Activity3', priorityRooms: [room3._id], disabledRooms: [room3._id] })
+			it('should not affect activities not referencing the deleted rooms via deleteMany', async function () {
+				const activity3 = await ActivityModel.create({ name: 'Activity3', enabledRooms: [room3._id] })
 				await RoomModel.deleteMany({ _id: { $in: [room1._id, room2._id] } })
 
 				const updatedActivity3 = await ActivityModel.findById(activity3._id)
-				expect(updatedActivity3?.priorityRooms).to.have.lengthOf(1)
-				expect(updatedActivity3?.priorityRooms?.[0].toString()).to.equal(room3._id.toString())
-				expect(updatedActivity3?.disabledRooms).to.have.lengthOf(1)
-				expect(updatedActivity3?.disabledRooms?.[0].toString()).to.equal(room3._id.toString())
+				expect(updatedActivity3?.enabledRooms).to.have.lengthOf(1)
+				expect(updatedActivity3?.enabledRooms?.[0].toString()).to.equal(room3._id.toString())
 			})
 		})
 	})
