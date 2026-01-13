@@ -57,18 +57,16 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityCreated" via Model.create()', async function () {
 			const activityData = {
 				name: 'New Activity',
-				priorityRooms: [room1Id],
-				disabledProducts: [product1Id, product2Id],
-				disabledRooms: [room2Id]
+				enabledRooms: [room1Id],
+				disabledProducts: [product1Id, product2Id]
 			}
 			const activity = await ActivityModel.create(activityData)
 
 			const expectedActivityFrontend: Partial<IActivityFrontend> = {
 				_id: activity._id.toString(),
 				name: activity.name,
-				priorityRooms: [room1Id],
-				disabledProducts: [product1Id, product2Id],
-				disabledRooms: [room2Id]
+				enabledRooms: [room1Id],
+				disabledProducts: [product1Id, product2Id]
 			}
 
 			expect(emitSocketEventSpy.calledWith('activityCreated')).to.be.true
@@ -78,18 +76,16 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityCreated" via new Activity().save()', async function () {
 			const activity = new ActivityModel({
 				name: 'New Activity via Save',
-				priorityRooms: [room2Id],
-				disabledProducts: [product1Id],
-				disabledRooms: [room3Id]
+				enabledRooms: [room2Id],
+				disabledProducts: [product1Id]
 			})
 			await activity.save()
 
 			const expectedActivityFrontend: Partial<IActivityFrontend> = {
 				_id: activity._id.toString(),
 				name: activity.name,
-				priorityRooms: [room2Id],
-				disabledProducts: [product1Id],
-				disabledRooms: [room3Id]
+				enabledRooms: [room2Id],
+				disabledProducts: [product1Id]
 			}
 
 			expect(emitSocketEventSpy.calledWith('activityCreated')).to.be.true
@@ -101,23 +97,21 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityUpdated" via document.save()', async function () {
 			const activity = await ActivityModel.create({
 				name: 'Original Activity',
-				priorityRooms: [room1Id],
-				disabledProducts: [product1Id, product2Id],
-				disabledRooms: [room2Id]
+				enabledRooms: [room1Id],
+				disabledProducts: [product1Id, product2Id]
 			})
 
 			emitSocketEventSpy.resetHistory()
 
 			activity.name = 'Updated Activity'
-			activity.priorityRooms.push(room3Id as unknown as Schema.Types.ObjectId)
+			activity.enabledRooms.push(room3Id as unknown as Schema.Types.ObjectId)
 			await activity.save()
 
 			const expectedActivityFrontend: Partial<IActivityFrontend> = {
 				_id: activity._id.toString(),
 				name: 'Updated Activity',
-				priorityRooms: [room1Id, room3Id],
-				disabledProducts: [product1Id, product2Id],
-				disabledRooms: [room2Id]
+				enabledRooms: [room1Id, room3Id],
+				disabledProducts: [product1Id, product2Id]
 			}
 
 			expect(emitSocketEventSpy.calledWith('activityUpdated')).to.be.true
@@ -127,9 +121,8 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityUpdated" via findByIdAndUpdate()', async function () {
 			const activity = await ActivityModel.create({
 				name: 'Activity to Update',
-				priorityRooms: [room1Id],
-				disabledProducts: [],
-				disabledRooms: []
+				enabledRooms: [room1Id],
+				disabledProducts: []
 			})
 
 			emitSocketEventSpy.resetHistory()
@@ -149,9 +142,8 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityDeleted" via Model.deleteOne() (query-based)', async function () {
 			const activity = await ActivityModel.create({
 				name: 'Activity to Delete Query',
-				priorityRooms: [room1Id],
-				disabledProducts: [product1Id, product2Id],
-				disabledRooms: [room2Id]
+				enabledRooms: [room1Id],
+				disabledProducts: [product1Id, product2Id]
 			})
 			const activityId = activity._id.toString()
 
@@ -166,9 +158,8 @@ describe('Activity WebSocket Emitters', function () {
 		it('should emit "activityDeleted" via document.deleteOne() (document-based)', async function () {
 			const activity = await ActivityModel.create({
 				name: 'Activity to Delete Document',
-				priorityRooms: [room1Id],
-				disabledProducts: [product1Id, product2Id],
-				disabledRooms: [room2Id]
+				enabledRooms: [room1Id],
+				disabledProducts: [product1Id, product2Id]
 			})
 			const activityId = activity._id.toString()
 

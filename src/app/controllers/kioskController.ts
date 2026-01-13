@@ -3,6 +3,7 @@ import mongoose, { type FlattenMaps } from 'mongoose'
 
 import KioskModel, { type IKiosk, type IKioskFrontend } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
+import { broadcastEvent, emitSocketEvent } from '../utils/socket.js'
 
 export function transformKiosk (
 	kiosk: IKiosk | FlattenMaps<IKiosk>
@@ -12,8 +13,7 @@ export function transformKiosk (
 		name: kiosk.name,
 		readerId: kiosk.readerId?.toString() ?? null,
 		kioskTag: kiosk.kioskTag,
-		priorityActivities: kiosk.priorityActivities.map((activity) => activity.toString()),
-		disabledActivities: kiosk.disabledActivities.map((activity) => activity.toString()),
+		enabledActivities: kiosk.enabledActivities.map((activity) => activity.toString()),
 		deactivated: kiosk.deactivated,
 		deactivatedUntil: kiosk.deactivatedUntil?.toString() ?? null,
 		createdAt: kiosk.createdAt,
@@ -30,8 +30,7 @@ export async function createKiosk (req: Request, res: Response, next: NextFuncti
 		name: req.body.name,
 		kioskTag: req.body.kioskTag,
 		readerId: req.body.readerId,
-		priorityActivities: req.body.priorityActivities,
-		disabledActivities: req.body.disabledActivities,
+		enabledActivities: req.body.enabledActivities,
 		deactivated: req.body.deactivated,
 		deactivatedUntil: req.body.deactivatedUntil
 	}
@@ -169,14 +168,9 @@ export async function patchKiosk (req: Request, res: Response, next: NextFunctio
 			kiosk.readerId = req.body.readerId
 			updateApplied = true
 		}
-		if (req.body.priorityActivities !== undefined) { // Array comparison is complex, log if provided
-			logger.debug(`Updating priorityActivities for kiosk ID ${kioskId}`)
-			kiosk.priorityActivities = req.body.priorityActivities
-			updateApplied = true
-		}
-		if (req.body.disabledActivities !== undefined) { // Array comparison is complex, log if provided
-			logger.debug(`Updating disabledActivities for kiosk ID ${kioskId}`)
-			kiosk.disabledActivities = req.body.disabledActivities
+		if (req.body.enabledActivities !== undefined) { // Array comparison is complex, log if provided
+			logger.debug(`Updating enabledActivities for kiosk ID ${kioskId}`)
+			kiosk.enabledActivities = req.body.enabledActivities
 			updateApplied = true
 		}
 		if (req.body.deactivatedUntil !== undefined && kiosk.deactivatedUntil?.toISOString() !== new Date(req.body.deactivatedUntil).toISOString()) { // Compare dates
@@ -290,5 +284,54 @@ export async function deleteKiosk (req: Request, res: Response, next: NextFuncti
 		} else {
 			next(error)
 		}
+	}
+}
+
+export function ping (req: Request, res: Response, next: NextFunction): void {
+	logger.info('Admin triggered kiosk ping broadcast')
+
+	try {
+		broadcastEvent('kiosk-ping', 'Kiosk ping broadcast sent to all connected clients')
+		res.status(200).json({ success: true })
+	} catch (error) {
+		logger.error('Failed to broadcast kiosk ping', { error })
+		next(error)
+	}
+}
+
+export function pong (req: Request, res: Response, next: NextFunction): void {
+	const kioskUser = req.user as IKiosk | undefined
+
+	if (kioskUser === undefined) {
+		logger.error('Kiosk pong failed: req.user is undefined despite authentication check')
+		res.status(403).json({ error: 'Forbidden' })
+		return
+	}
+
+	const kioskId = kioskUser._id.toString()
+	logger.debug(`Kiosk pong received from kiosk ID: ${kioskId}`)
+
+	const { path, viewState, gitHash } = req.body as { path?: string, viewState?: string, gitHash?: string }
+
+	if (path === undefined || path === null || viewState === undefined || viewState === null || gitHash === undefined || gitHash === null) {
+		logger.warn(`Kiosk pong failed: Missing required fields. path: ${path ?? 'undefined'}, viewState: ${viewState ?? 'undefined'}, gitHash: ${gitHash ?? 'undefined'}`)
+		res.status(400).json({ error: 'Missing required fields: path, viewState, gitHash' })
+		return
+	}
+
+	try {
+		const payload = {
+			kioskId,
+			path,
+			viewState: viewState,
+			timestamp: new Date().toISOString(),
+			gitHash
+		}
+
+		emitSocketEvent('kiosk-pong', payload, `Kiosk pong emitted for kiosk ID: ${kioskId}`)
+		res.status(200).json({ success: true })
+	} catch (error) {
+		logger.error(`Failed to emit kiosk pong for kiosk ID: ${kioskId}`, { error })
+		next(error)
 	}
 }

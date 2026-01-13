@@ -34,12 +34,12 @@ describe('Kiosk WebSocket Emitters', function () {
 
 		const activity1 = await ActivityModel.create({
 			name: 'Activity 1',
-			priorityRooms: [room._id],
+			enabledRooms: [room._id],
 			disabledProducts: [product._id]
 		})
 		const activity2 = await ActivityModel.create({
 			name: 'Activity 2',
-			priorityRooms: [room._id]
+			enabledRooms: [room._id]
 		})
 		activity1Id = activity1._id.toString()
 		activity2Id = activity2._id.toString()
@@ -62,8 +62,7 @@ describe('Kiosk WebSocket Emitters', function () {
 			const kioskData = {
 				name: 'New Kiosk',
 				kioskTag: '54321',
-				priorityActivities: [activity1Id],
-				disabledActivities: [activity2Id],
+				enabledActivities: [activity1Id, activity2Id],
 				readerId
 			}
 			const kiosk = await KioskModel.create(kioskData)
@@ -72,8 +71,7 @@ describe('Kiosk WebSocket Emitters', function () {
 				_id: kiosk._id.toString(),
 				name: kiosk.name,
 				kioskTag: kiosk.kioskTag,
-				priorityActivities: [activity1Id],
-				disabledActivities: [activity2Id],
+				enabledActivities: [activity1Id, activity2Id],
 				readerId
 			}
 
@@ -85,7 +83,7 @@ describe('Kiosk WebSocket Emitters', function () {
 			const kiosk = new KioskModel({
 				name: 'Kiosk via Save',
 				kioskTag: '98765',
-				priorityActivities: [activity1Id, activity2Id]
+				enabledActivities: [activity1Id, activity2Id]
 			})
 			await kiosk.save()
 
@@ -93,7 +91,7 @@ describe('Kiosk WebSocket Emitters', function () {
 				_id: kiosk._id.toString(),
 				name: kiosk.name,
 				kioskTag: kiosk.kioskTag,
-				priorityActivities: [activity1Id, activity2Id]
+				enabledActivities: [activity1Id, activity2Id]
 			}
 
 			expect(emitSocketEventSpy.calledWith('kioskCreated')).to.be.true
@@ -106,19 +104,19 @@ describe('Kiosk WebSocket Emitters', function () {
 			const kiosk = await KioskModel.create({
 				name: 'Original Kiosk',
 				kioskTag: '11111',
-				priorityActivities: [activity1Id]
+				enabledActivities: [activity1Id]
 			})
 
 			emitSocketEventSpy.resetHistory()
 
 			kiosk.name = 'Updated Kiosk'
-			kiosk.priorityActivities = [activity1Id, activity2Id] as unknown as typeof kiosk.priorityActivities
+			kiosk.enabledActivities = [activity1Id, activity2Id] as unknown as typeof kiosk.enabledActivities
 			await kiosk.save()
 
 			const expectedKioskFrontend: Partial<IKioskFrontend> = {
 				_id: kiosk._id.toString(),
 				name: 'Updated Kiosk',
-				priorityActivities: [activity1Id, activity2Id]
+				enabledActivities: [activity1Id, activity2Id]
 			}
 
 			expect(emitSocketEventSpy.calledWith('kioskUpdated')).to.be.true

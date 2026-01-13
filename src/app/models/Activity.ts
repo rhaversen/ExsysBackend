@@ -14,9 +14,8 @@ import RoomModel, { IRoomFrontend } from './Room.js'
 export interface IActivity extends Document {
 	// Properties
 	_id: Types.ObjectId
-	priorityRooms: Schema.Types.ObjectId[] // Rooms which are promoted for this activity
-	disabledProducts: Schema.Types.ObjectId[] // Products that are disabled for this activity
-	disabledRooms: Schema.Types.ObjectId[] // Rooms that are disabled for this activity
+	enabledRooms: Schema.Types.ObjectId[] // Rooms which are enabled for this activity
+	disabledProducts: Schema.Types.ObjectId[] // Products that are enabled for this activity
 	name: string
 
 	// Timestamps
@@ -29,9 +28,8 @@ export interface IActivity extends Document {
 
 export interface IActivityFrontend {
 	_id: string
-	priorityRooms: Array<IRoomFrontend['_id']>
+	enabledRooms: Array<IRoomFrontend['_id']>
 	disabledProducts: Array<IProductFrontend['_id']>
-	disabledRooms: Array<IRoomFrontend['_id']>
 	name: string
 	createdAt: Date
 	updatedAt: Date
@@ -39,7 +37,7 @@ export interface IActivityFrontend {
 
 // Schema
 const activitySchema = new Schema<IActivity>({
-	priorityRooms: [{
+	enabledRooms: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Room',
 		default: []
@@ -54,11 +52,6 @@ const activitySchema = new Schema<IActivity>({
 	disabledProducts: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Product',
-		default: []
-	}],
-	disabledRooms: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Room',
 		default: []
 	}]
 }, {
@@ -75,12 +68,12 @@ activitySchema.path('name').validate(async function (value: string) {
 	return !foundActivity
 }, 'Navnet er allerede i brug')
 
-activitySchema.path('priorityRooms').validate(async function (v: Schema.Types.ObjectId[]) {
+activitySchema.path('enabledRooms').validate(async function (v: Schema.Types.ObjectId[]) {
 	const foundRooms = await RoomModel.find({ _id: { $in: v } })
 	return foundRooms.length === v.length
-}, 'Et eller flere spisested findes ikke')
+}, 'Et eller flere spisesteder findes ikke')
 
-activitySchema.path('priorityRooms').validate(async function (v: Schema.Types.ObjectId[]) {
+activitySchema.path('enabledRooms').validate(async function (v: Schema.Types.ObjectId[]) {
 	const uniqueRooms = new Set(v)
 	return uniqueRooms.size === v.length
 }, 'Spisestederne skal være unikke')
@@ -94,16 +87,6 @@ activitySchema.path('disabledProducts').validate(async function (v: Schema.Types
 	const uniqueProducts = new Set(v)
 	return uniqueProducts.size === v.length
 }, 'Produkterne skal være unikke')
-
-activitySchema.path('disabledRooms').validate(async function (v: Schema.Types.ObjectId[]) {
-	const foundRooms = await RoomModel.find({ _id: { $in: v } })
-	return foundRooms.length === v.length
-}, 'Et eller flere deaktiverede spisesteder findes ikke')
-
-activitySchema.path('disabledRooms').validate(async function (v: Schema.Types.ObjectId[]) {
-	const uniqueRooms = new Set(v)
-	return uniqueRooms.size === v.length
-}, 'De deaktiverede spisesteder skal være unikke')
 
 // Pre-save middleware
 activitySchema.pre('save', function (next) {
@@ -151,20 +134,20 @@ activitySchema.pre('deleteOne', { document: false, query: true }, async function
 
 		// Find Kiosks that will be affected BEFORE the update
 		const affectedKiosksBeforeUpdate = await KioskModel.find({
-			$or: [{ priorityActivities: activityId }, { disabledActivities: activityId }]
+			enabledActivities: activityId
 		}).lean()
 
-		// Remove activity from Kiosk.priorityActivities and Kiosk.disabledActivities
-		logger.debug(`Removing activity ID ${activityId} from Kiosk priorityActivities/disabledActivities`)
+		// Remove activity from Kiosk.enabledActivities
+		logger.debug(`Removing activity ID ${activityId} from Kiosk enabledActivities`)
 		await KioskModel.updateMany(
-			{ $or: [{ priorityActivities: activityId }, { disabledActivities: activityId }] },
-			{ $pull: { priorityActivities: activityId, disabledActivities: activityId } }
+			{ enabledActivities: activityId },
+			{ $pull: { enabledActivities: activityId } }
 		)
 		logger.debug(`Activity ID ${activityId} removal attempt from relevant Kiosks completed`)
 
 		// Emit updates for affected kiosks
 		for (const kioskDoc of affectedKiosksBeforeUpdate) {
-			const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
+			const updatedKiosk = await KioskModel.findById(kioskDoc._id)
 			if (updatedKiosk) {
 				emitKioskUpdated(transformKiosk(updatedKiosk))
 			}
@@ -196,20 +179,20 @@ activitySchema.pre('deleteMany', async function (next) {
 
 			// Find Kiosks that will be affected BEFORE the update
 			const affectedKiosksBeforeUpdate = await KioskModel.find({
-				$or: [{ priorityActivities: { $in: docIds } }, { disabledActivities: { $in: docIds } }]
+				enabledActivities: { $in: docIds }
 			}).lean()
 
-			// Remove activities from Kiosk.priorityActivities and Kiosk.disabledActivities
-			logger.debug(`Removing activity IDs [${docIds.join(', ')}] from Kiosk priorityActivities/disabledActivities`)
+			// Remove activities from Kiosk.enabledActivities
+			logger.debug(`Removing activity IDs [${docIds.join(', ')}] from Kiosk enabledActivities`)
 			await KioskModel.updateMany(
-				{ $or: [{ priorityActivities: { $in: docIds } }, { disabledActivities: { $in: docIds } }] },
-				{ $pull: { priorityActivities: { $in: docIds }, disabledActivities: { $in: docIds } } }
+				{ enabledActivities: { $in: docIds } },
+				{ $pull: { enabledActivities: { $in: docIds } } }
 			)
 			logger.debug(`Activity IDs [${docIds.join(', ')}] removed from relevant Kiosks`)
 
 			// Emit updates for affected kiosks
 			for (const kioskDoc of affectedKiosksBeforeUpdate) {
-				const updatedKiosk = await KioskModel.findById(kioskDoc._id) // Re-fetch to get the updated document
+				const updatedKiosk = await KioskModel.findById(kioskDoc._id)
 				if (updatedKiosk) {
 					emitKioskUpdated(transformKiosk(updatedKiosk))
 				}

@@ -146,6 +146,11 @@ export async function deleteRoom (req: Request, res: Response, next: NextFunctio
 	const roomId = req.params.id
 	logger.info(`Attempting to delete room: ID ${roomId}`)
 
+	if (typeof roomId !== 'string') {
+		logger.warn(`Delete room failed: Invalid Room ID format: ${roomId}`)
+		res.status(400).json({ error: 'Invalid Room ID format' })
+		return
+	}
 	if (!mongoose.Types.ObjectId.isValid(roomId)) {
 		logger.warn(`Delete room failed: Invalid Room ID format: ${roomId}`)
 		res.status(400).json({ error: 'Invalid Room ID format' })
