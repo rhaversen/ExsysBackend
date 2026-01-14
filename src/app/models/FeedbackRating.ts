@@ -50,17 +50,25 @@ feedbackRatingSchema.pre('save', function (next) {
 })
 
 feedbackRatingSchema.post('save', function () {
-	const transformed = transformFeedbackRating(this)
-	if (this._wasNew === true) {
-		logger.info(`Feedback rating created: ${this.rating} from kiosk ${this.kioskId.toString()}`)
-		emitFeedbackRatingCreated(transformed)
+	try {
+		const transformed = transformFeedbackRating(this)
+		if (this._wasNew === true) {
+			logger.info(`Feedback rating created: ${this.rating} from kiosk ${this.kioskId.toString()}`)
+			emitFeedbackRatingCreated(transformed)
+		}
+	} catch (error) {
+		logger.error(`Error emitting WebSocket event for FeedbackRating ID ${this._id.toString()}:`, { error })
 	}
 })
 
 feedbackRatingSchema.post('findOneAndDelete', function (doc: IFeedbackRating | null) {
 	if (doc !== null) {
 		logger.info(`Feedback rating deleted: ID ${doc._id.toString()}`)
-		emitFeedbackRatingDeleted(doc._id.toString())
+		try {
+			emitFeedbackRatingDeleted(doc._id.toString())
+		} catch (error) {
+			logger.error(`Error emitting WebSocket event for deleted FeedbackRating ID ${doc._id.toString()}:`, { error })
+		}
 	}
 })
 
