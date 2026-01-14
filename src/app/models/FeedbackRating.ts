@@ -64,4 +64,8 @@ feedbackRatingSchema.post('findOneAndDelete', function (doc: IFeedbackRating | n
 	}
 })
 
-export const FeedbackRatingModel = model<IFeedbackRating>('FeedbackRating', feedbackRatingSchema)
+// Compile the schema into a model
+const FeedbackRatingModel = model<IFeedbackRating>('FeedbackRating', feedbackRatingSchema)
+
+// Export the model
+export default FeedbackRatingModel

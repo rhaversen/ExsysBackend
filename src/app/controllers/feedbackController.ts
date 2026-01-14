@@ -1,13 +1,11 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose, { type FlattenMaps } from 'mongoose'
 
-import {
-	FeedbackMessageModel,
+import FeedbackMessageModel, {
 	IFeedbackMessage,
 	IFeedbackMessageFrontend
 } from '../models/FeedbackMessage.js'
-import {
-	FeedbackRatingModel,
+import FeedbackRatingModel, {
 	IFeedbackRating,
 	IFeedbackRatingFrontend
 } from '../models/FeedbackRating.js'

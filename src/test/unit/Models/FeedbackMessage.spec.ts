@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
-import { FeedbackMessageModel } from '../../../app/models/FeedbackMessage.js'
+import FeedbackMessageModel from '../../../app/models/FeedbackMessage.js'
 import '../../testSetup.js'
 
 describe('FeedbackMessage Model', function () {

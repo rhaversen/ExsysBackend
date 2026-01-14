@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import mongoose from 'mongoose'
 
-import { FeedbackRatingModel } from '../../../app/models/FeedbackRating.js'
+import FeedbackRatingModel from '../../../app/models/FeedbackRating.js'
 import '../../testSetup.js'
 
 describe('FeedbackRating Model', function () {

@@ -9,7 +9,7 @@ import mongoose from 'mongoose'
 
 import { getOrCreateConfigs } from '../../../app/controllers/configsController.js'
 import AdminModel from '../../../app/models/Admin.js'
-import { FeedbackRatingModel, type IFeedbackRating } from '../../../app/models/FeedbackRating.js'
+import FeedbackRatingModel, { type IFeedbackRating } from '../../../app/models/FeedbackRating.js'
 import KioskModel from '../../../app/models/Kiosk.js'
 import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 

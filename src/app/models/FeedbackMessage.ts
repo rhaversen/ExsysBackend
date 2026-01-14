@@ -144,4 +144,8 @@ feedbackMessageSchema.post('deleteMany', function (result, next) {
 	next()
 })
 
-export const FeedbackMessageModel = model<IFeedbackMessage>('FeedbackMessage', feedbackMessageSchema)
+// Compile the schema into a model
+const FeedbackMessageModel = model<IFeedbackMessage>('FeedbackMessage', feedbackMessageSchema)
+
+// Export the model
+export default FeedbackMessageModel

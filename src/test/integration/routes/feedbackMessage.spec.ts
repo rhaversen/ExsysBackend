@@ -8,7 +8,7 @@ import { describe, it, beforeEach } from 'mocha'
 import mongoose from 'mongoose'
 
 import AdminModel from '../../../app/models/Admin.js'
-import { FeedbackMessageModel, type IFeedbackMessage } from '../../../app/models/FeedbackMessage.js'
+import FeedbackMessageModel, { type IFeedbackMessage } from '../../../app/models/FeedbackMessage.js'
 import { getChaiAgent as agent, extractConnectSid } from '../../testSetup.js'
 
 describe('FeedbackMessage routes', function () {
