@@ -28,14 +28,14 @@ describe('FeedbackRating routes', function () {
 
 		const testKiosk = await KioskModel.create({
 			name: 'Test Kiosk',
-			kioskTag: 'test-kiosk-tag',
+			kioskTag: '99999',
 			password: 'kioskPassword',
 			enabledActivities: []
 		})
 		testKioskId = testKiosk.id
 
 		const kioskResponse = await agent().post('/api/v1/auth/login-kiosk-local').send({
-			kioskTag: 'test-kiosk-tag',
+			kioskTag: '99999',
 			password: 'kioskPassword'
 		})
 		kioskSessionCookie = extractConnectSid(kioskResponse.headers['set-cookie'])
