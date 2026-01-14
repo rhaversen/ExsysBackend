@@ -6,6 +6,8 @@ import { randomUUID } from 'crypto'
 
 import ActivityModel from '../app/models/Activity.js'
 import AdminModel from '../app/models/Admin.js'
+import FeedbackMessageModel from '../app/models/FeedbackMessage.js'
+import FeedbackRatingModel from '../app/models/FeedbackRating.js'
 import KioskModel from '../app/models/Kiosk.js'
 import OptionModel from '../app/models/Option.js'
 import OrderModel from '../app/models/Order.js'
@@ -16,6 +18,8 @@ import SessionModel from '../app/models/Session.js'
 import logger from '../app/utils/logger.js'
 
 logger.info('Seeding database')
+
+const now = new Date()
 
 const sampleImageURL = 'https://dummyimage.com/200x200/ffffff/000000.png&text=Sample+Image+200x200'
 
@@ -1536,7 +1540,6 @@ function randomDate (start: Date, end: Date) {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
 }
 
-const now = new Date()
 const monthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
 
 // Only use products with orderWindow from 00:00 to 23:59
@@ -1594,5 +1597,102 @@ for (let i = 0; i < 300; i++) {
 }
 
 logger.info('Random orders seeded')
+
+// Feedback Messages
+const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
+const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+
+await FeedbackMessageModel.create({
+	message: 'Super fed service! Elsker det nye system.',
+	name: 'Anders',
+	isRead: false,
+	createdAt: oneHourAgo
+})
+
+await FeedbackMessageModel.create({
+	message: 'Lidt langsom betjening i dag, men ellers fint.',
+	name: 'Mette Hansen',
+	isRead: false,
+	createdAt: oneDayAgo
+})
+
+await FeedbackMessageModel.create({
+	message: 'Kunne godt bruge flere vegetariske muligheder på menuen.',
+	isRead: true,
+	createdAt: threeDaysAgo
+})
+
+await FeedbackMessageModel.create({
+	message: 'Tak for en god oplevelse! Personalet var meget venlige.',
+	name: 'Lars',
+	isRead: true,
+	createdAt: oneWeekAgo
+})
+
+await FeedbackMessageModel.create({
+	message: 'Priserne er steget en del, men kvaliteten er stadig god.',
+	isRead: false,
+	createdAt: twoWeeksAgo
+})
+
+await FeedbackMessageModel.create({
+	message: 'Bestillingssystemet er virkelig nemt at bruge!',
+	name: 'Sofie Larsen',
+	isRead: true,
+	createdAt: oneMonthAgo
+})
+
+await FeedbackMessageModel.create({
+	message: 'Der var lidt ventetid, men maden var det hele værd.',
+	isRead: true,
+	createdAt: twoMonthsAgo
+})
+
+logger.info('Feedback messages seeded')
+
+// Feedback Ratings - distributed across different kiosks and time periods
+const kiosksForRatings = [kiosk1, kiosk2, kiosk3, kiosk4, kiosk5, kiosk6]
+
+for (let i = 0; i < 50; i++) {
+	const randomKiosk = kiosksForRatings[Math.floor(Math.random() * kiosksForRatings.length)]
+	const isPositive = Math.random() > 0.2
+	const daysAgo = Math.floor(Math.random() * 40)
+	const randomDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000)
+
+	await FeedbackRatingModel.create({
+		kioskId: randomKiosk.id,
+		rating: isPositive ? 'positive' : 'negative',
+		createdAt: randomDate
+	})
+}
+
+for (let i = 0; i < 10; i++) {
+	const daysAgo = Math.floor(Math.random() * 3)
+	const randomDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000)
+
+	await FeedbackRatingModel.create({
+		kioskId: kiosk1.id,
+		rating: Math.random() > 0.1 ? 'positive' : 'negative',
+		createdAt: randomDate
+	})
+}
+
+for (let i = 0; i < 8; i++) {
+	const daysAgo = Math.floor(Math.random() * 3)
+	const randomDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000)
+
+	await FeedbackRatingModel.create({
+		kioskId: kiosk3.id,
+		rating: Math.random() > 0.5 ? 'positive' : 'negative',
+		createdAt: randomDate
+	})
+}
+
+logger.info('Feedback ratings seeded')
 
 logger.info('Database seeded')
