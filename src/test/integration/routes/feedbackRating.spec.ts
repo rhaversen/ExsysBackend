@@ -7,6 +7,7 @@ import { expect } from 'chai'
 import { describe, it, beforeEach } from 'mocha'
 import mongoose from 'mongoose'
 
+import { getOrCreateConfigs } from '../../../app/controllers/configsController.js'
 import AdminModel from '../../../app/models/Admin.js'
 import { FeedbackRatingModel, type IFeedbackRating } from '../../../app/models/FeedbackRating.js'
 import KioskModel from '../../../app/models/Kiosk.js'
@@ -26,17 +27,21 @@ describe('FeedbackRating routes', function () {
 		const adminResponse = await agent().post('/api/v1/auth/login-admin-local').send(adminFields)
 		adminSessionCookie = extractConnectSid(adminResponse.headers['set-cookie'])
 
+		const kioskPassword = 'kioskPassword'
 		const testKiosk = await KioskModel.create({
 			name: 'Test Kiosk',
 			kioskTag: '99999',
-			password: 'kioskPassword',
 			enabledActivities: []
 		})
 		testKioskId = testKiosk.id
 
+		const configs = await getOrCreateConfigs()
+		configs.kioskPassword = kioskPassword
+		await configs.save()
+
 		const kioskResponse = await agent().post('/api/v1/auth/login-kiosk-local').send({
 			kioskTag: '99999',
-			password: 'kioskPassword'
+			password: kioskPassword
 		})
 		kioskSessionCookie = extractConnectSid(kioskResponse.headers['set-cookie'])
 	})
