@@ -1,34 +1,52 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose, { type FlattenMaps } from 'mongoose'
 
-import FeedbackModel, { IFeedback, IFeedbackFrontend } from '../models/Feedback.js'
+import FeedbackMessageModel, {
+	IFeedbackMessage,
+	IFeedbackMessageFrontend
+} from '../models/FeedbackMessage.js'
+import FeedbackRatingModel, {
+	IFeedbackRating,
+	IFeedbackRatingFrontend
+} from '../models/FeedbackRating.js'
+import { IKiosk } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
 
-export function transformFeedback (
-	feedbackDoc: IFeedback | FlattenMaps<IFeedback>
-): IFeedbackFrontend {
+export function transformFeedbackMessage (
+	doc: IFeedbackMessage | FlattenMaps<IFeedbackMessage>
+): IFeedbackMessageFrontend {
 	return {
-		_id: feedbackDoc._id.toString(),
-		feedback: feedbackDoc.feedback,
-		name: feedbackDoc.name,
-		isRead: feedbackDoc.isRead,
-		createdAt: feedbackDoc.createdAt,
-		updatedAt: feedbackDoc.updatedAt
+		_id: doc._id.toString(),
+		message: doc.message,
+		name: doc.name,
+		isRead: doc.isRead,
+		createdAt: doc.createdAt,
+		updatedAt: doc.updatedAt
 	}
 }
 
-export async function createFeedback (req: Request, res: Response, next: NextFunction): Promise<void> {
-	const feedbackText = req.body.feedback ?? 'N/A'
-	const feedbackName = req.body.name
-	logger.info(`Attempting to create feedback with text: ${feedbackText}${feedbackName !== undefined ? ` by ${feedbackName as string}` : ''}`)
+export function transformFeedbackRating (
+	doc: IFeedbackRating | FlattenMaps<IFeedbackRating>
+): IFeedbackRatingFrontend {
+	return {
+		_id: doc._id.toString(),
+		kioskId: doc.kioskId.toString(),
+		rating: doc.rating,
+		createdAt: doc.createdAt,
+		updatedAt: doc.updatedAt
+	}
+}
 
-	// Create a new object with only the allowed fields
+export async function createFeedbackMessage (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const messageText = req.body.message ?? 'N/A'
+	const messageName = req.body.name
+	logger.info(`Creating feedback message: ${messageText}${messageName !== undefined ? ` by ${messageName as string}` : ''}`)
+
 	const allowedFields: Record<string, unknown> = {
-		feedback: req.body.feedback,
+		message: req.body.message,
 		name: req.body.name
 	}
 
-	// Remove undefined fields to prevent issues with Mongoose defaults or required fields if not provided
 	Object.keys(allowedFields).forEach(key => {
 		if (allowedFields[key] === undefined) {
 			delete allowedFields[key]
@@ -36,11 +54,11 @@ export async function createFeedback (req: Request, res: Response, next: NextFun
 	})
 
 	try {
-		const newFeedback = await FeedbackModel.create(allowedFields)
-		logger.debug(`Feedback created successfully: ID ${newFeedback.id}, Text: ${newFeedback.feedback}${newFeedback.name !== undefined ? `, Name: ${newFeedback.name}` : ''}`)
-		res.status(201).json(transformFeedback(newFeedback))
+		const newMessage = await FeedbackMessageModel.create(allowedFields)
+		logger.debug(`Feedback message created: ID ${newMessage.id}`)
+		res.status(201).json(transformFeedbackMessage(newMessage))
 	} catch (error) {
-		logger.error(`Feedback creation failed for text: ${feedbackText}${feedbackName !== undefined ? ` by ${feedbackName as string}` : ''}`, { error })
+		logger.error(`Feedback message creation failed: ${messageText}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -49,23 +67,23 @@ export async function createFeedback (req: Request, res: Response, next: NextFun
 	}
 }
 
-export async function getFeedback (req: Request, res: Response, next: NextFunction): Promise<void> {
-	const feedbackId = req.params.id
-	logger.debug(`Getting feedback: ID ${feedbackId}`)
+export async function getFeedbackMessage (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const messageId = req.params.id
+	logger.debug(`Getting feedback message: ID ${messageId}`)
 
 	try {
-		const feedback = await FeedbackModel.findById(feedbackId).lean()
+		const message = await FeedbackMessageModel.findById(messageId).lean()
 
-		if (feedback === null || feedback === undefined) {
-			logger.warn(`Get feedback failed: Feedback not found. ID: ${feedbackId}`)
-			res.status(404).json({ error: 'Feedback not found' })
+		if (message === null || message === undefined) {
+			logger.warn(`Get feedback message failed: Not found. ID: ${messageId}`)
+			res.status(404).json({ error: 'Feedback message not found' })
 			return
 		}
 
-		logger.debug(`Retrieved feedback successfully: ID ${feedbackId}`)
-		res.status(200).json(transformFeedback(feedback))
+		logger.debug(`Retrieved feedback message: ID ${messageId}`)
+		res.status(200).json(transformFeedbackMessage(message))
 	} catch (error) {
-		logger.error(`Get feedback failed: Error retrieving feedback ID ${feedbackId}`, { error })
+		logger.error(`Get feedback message failed: ID ${messageId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -74,15 +92,15 @@ export async function getFeedback (req: Request, res: Response, next: NextFuncti
 	}
 }
 
-export async function getFeedbacks (req: Request, res: Response, next: NextFunction): Promise<void> {
-	logger.debug('Getting all feedbacks')
+export async function getFeedbackMessages (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.debug('Getting all feedback messages')
 
 	try {
-		const feedbacks = await FeedbackModel.find().lean()
-		logger.debug(`Retrieved ${feedbacks.length} feedbacks successfully`)
-		res.status(200).json(feedbacks.map(transformFeedback))
+		const messages = await FeedbackMessageModel.find().lean()
+		logger.debug(`Retrieved ${messages.length} feedback messages`)
+		res.status(200).json(messages.map(transformFeedbackMessage))
 	} catch (error) {
-		logger.error('Get feedbacks failed: Error retrieving all feedbacks', { error })
+		logger.error('Get feedback messages failed', { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -91,19 +109,19 @@ export async function getFeedbacks (req: Request, res: Response, next: NextFunct
 	}
 }
 
-export async function patchFeedback (req: Request, res: Response, next: NextFunction): Promise<void> {
-	const feedbackId = req.params.id
-	logger.debug(`Attempting to update feedback: ID ${feedbackId}`)
+export async function patchFeedbackMessage (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const messageId = req.params.id
+	logger.debug(`Updating feedback message: ID ${messageId}`)
 
 	const session = await mongoose.startSession()
 	session.startTransaction()
 
 	try {
-		const feedback = await FeedbackModel.findById(feedbackId).session(session)
+		const message = await FeedbackMessageModel.findById(messageId).session(session)
 
-		if (feedback === null || feedback === undefined) {
-			logger.warn(`Patch feedback failed: Feedback not found. ID: ${feedbackId}`)
-			res.status(404).json({ error: 'Feedback not found' })
+		if (message === null || message === undefined) {
+			logger.warn(`Patch feedback message failed: Not found. ID: ${messageId}`)
+			res.status(404).json({ error: 'Feedback message not found' })
 			await session.abortTransaction()
 			await session.endSession()
 			return
@@ -111,46 +129,46 @@ export async function patchFeedback (req: Request, res: Response, next: NextFunc
 
 		let updateApplied = false
 
-		if (req.body.feedback !== undefined && feedback.feedback !== req.body.feedback) {
-			logger.debug(`Updating feedback text for feedback ID ${feedbackId}`)
-			feedback.feedback = req.body.feedback
+		if (req.body.message !== undefined && message.message !== req.body.message) {
+			logger.debug(`Updating message text for ID ${messageId}`)
+			message.message = req.body.message
 			updateApplied = true
 		}
 
-		if (req.body.isRead !== undefined && feedback.isRead !== req.body.isRead) {
-			logger.debug(`Updating isRead status for feedback ID ${feedbackId}`)
-			feedback.isRead = req.body.isRead
+		if (req.body.isRead !== undefined && message.isRead !== req.body.isRead) {
+			logger.debug(`Updating isRead status for ID ${messageId}`)
+			message.isRead = req.body.isRead
 			updateApplied = true
 		}
 
-		if (req.body.name !== undefined && feedback.name !== req.body.name) {
-			logger.debug(`Updating name for feedback ID ${feedbackId}`)
-			feedback.name = req.body.name
+		if (req.body.name !== undefined && message.name !== req.body.name) {
+			logger.debug(`Updating name for ID ${messageId}`)
+			message.name = req.body.name
 			updateApplied = true
-		} else if (req.body.name === null && feedback.name !== undefined) { // Allow explicitly setting name to null/undefined
-			logger.debug(`Removing name for feedback ID ${feedbackId}`)
-			feedback.name = undefined
+		} else if (req.body.name === null && message.name !== undefined) {
+			logger.debug(`Removing name for ID ${messageId}`)
+			message.name = undefined
 			updateApplied = true
 		}
 
 		if (!updateApplied) {
-			logger.info(`Patch feedback: No changes detected for feedback ID ${feedbackId}`)
-			res.status(200).json(transformFeedback(feedback)) // Return current state if no changes
+			logger.info(`Patch feedback message: No changes for ID ${messageId}`)
+			res.status(200).json(transformFeedbackMessage(message))
 			await session.commitTransaction()
 			await session.endSession()
 			return
 		}
 
-		await feedback.validate()
-		const updatedFeedback = await feedback.save({ session })
+		await message.validate()
+		const updatedMessage = await message.save({ session })
 
 		await session.commitTransaction()
 
-		logger.info(`Feedback updated successfully: ID ${updatedFeedback.id}`)
-		res.status(200).json(transformFeedback(updatedFeedback))
+		logger.info(`Feedback message updated: ID ${updatedMessage.id}`)
+		res.status(200).json(transformFeedbackMessage(updatedMessage))
 	} catch (error) {
 		await session.abortTransaction()
-		logger.error(`Patch feedback failed: Error updating feedback ID ${feedbackId}`, { error })
+		logger.error(`Patch feedback message failed: ID ${messageId}`, { error })
 		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
 			res.status(400).json({ error: error.message })
 		} else {
@@ -161,26 +179,92 @@ export async function patchFeedback (req: Request, res: Response, next: NextFunc
 	}
 }
 
-export async function deleteFeedback (req: Request, res: Response, next: NextFunction): Promise<void> {
-	const feedbackId = req.params.id
-	logger.info(`Attempting to delete feedback: ID ${feedbackId}`)
+export async function deleteFeedbackMessage (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const messageId = req.params.id
+	logger.info(`Deleting feedback message: ID ${messageId}`)
 
 	try {
-		const deletedFeedback = await FeedbackModel.findById(feedbackId)
-		await deletedFeedback?.deleteOne()
+		const deletedMessage = await FeedbackMessageModel.findById(messageId)
+		await deletedMessage?.deleteOne()
 
-		if (deletedFeedback === null || deletedFeedback === undefined) {
-			logger.warn(`Delete feedback failed: Feedback not found. ID: ${feedbackId}`)
-			res.status(404).json({ error: 'Feedback not found' })
+		if (deletedMessage === null || deletedMessage === undefined) {
+			logger.warn(`Delete feedback message failed: Not found. ID: ${messageId}`)
+			res.status(404).json({ error: 'Feedback message not found' })
 			return
 		}
 
-		logger.info(`Feedback deleted successfully: ID ${deletedFeedback.id}`)
-		res.status(200).json({ message: 'Feedback deleted successfully', id: deletedFeedback.id })
+		logger.info(`Feedback message deleted: ID ${deletedMessage.id}`)
+		res.status(200).json({ message: 'Feedback message deleted successfully', id: deletedMessage.id })
 	} catch (error) {
-		logger.error(`Delete feedback failed: Error deleting feedback ID ${feedbackId}`, { error })
-		if (error instanceof mongoose.Error.CastError) { // CastError can happen if ID format is invalid
-			res.status(400).json({ error: 'Invalid feedback ID format' })
+		logger.error(`Delete feedback message failed: ID ${messageId}`, { error })
+		if (error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: 'Invalid feedback message ID format' })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function createFeedbackRating (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const rating = req.body.rating
+	const kiosk = req.user as IKiosk
+	const kioskId = kiosk._id
+
+	logger.info(`Creating feedback rating: ${rating as string} from kiosk ${kioskId.toString()}`)
+
+	try {
+		const newRating = await FeedbackRatingModel.create({
+			kioskId,
+			rating
+		})
+		logger.debug(`Feedback rating created: ID ${newRating.id}`)
+		res.status(201).json(transformFeedbackRating(newRating))
+	} catch (error) {
+		logger.error(`Feedback rating creation failed for kiosk ${kioskId.toString()}`, { error })
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function getFeedbackRatings (req: Request, res: Response, next: NextFunction): Promise<void> {
+	logger.debug('Getting all feedback ratings')
+
+	try {
+		const ratings = await FeedbackRatingModel.find().sort({ createdAt: -1 }).lean()
+		logger.debug(`Retrieved ${ratings.length} feedback ratings`)
+		res.status(200).json(ratings.map(transformFeedbackRating))
+	} catch (error) {
+		logger.error('Get feedback ratings failed', { error })
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
+		} else {
+			next(error)
+		}
+	}
+}
+
+export async function deleteFeedbackRating (req: Request, res: Response, next: NextFunction): Promise<void> {
+	const ratingId = req.params.id
+	logger.info(`Deleting feedback rating: ID ${ratingId}`)
+
+	try {
+		const deletedRating = await FeedbackRatingModel.findByIdAndDelete(ratingId)
+
+		if (deletedRating === null) {
+			logger.warn(`Delete feedback rating failed: Not found. ID: ${ratingId}`)
+			res.status(404).json({ error: 'Feedback rating not found' })
+			return
+		}
+
+		logger.debug(`Feedback rating deleted: ID ${ratingId}`)
+		res.status(200).json(transformFeedbackRating(deletedRating))
+	} catch (error) {
+		logger.error(`Delete feedback rating failed: ID ${ratingId}`, { error })
+		if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
+			res.status(400).json({ error: error.message })
 		} else {
 			next(error)
 		}
