@@ -77,8 +77,8 @@ jobs:
                     name: dist
                     path: dist
 
-            -   name: Unit tests
-                run: npm run test:devEnv
+            -   name: Development environment tests
+                run: npm run test:development
 
     test-lint:
         runs-on: ubuntu-latest
