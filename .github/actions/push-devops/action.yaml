@@ -32,22 +32,22 @@ runs:
                 git commit -m "${{ github.sha }}"
             shell: bash
 
-        -   name: Checkout ExsysBackend-DevOps
+        -   name: Checkout DevOps
             uses: actions/checkout@v4
             with:
-                repository: "rhaversen/ExsysBackend-DevOps"
+                repository: "rhaversen/DevOps"
                 token: ${{ inputs.devops_repo_token }}
-                path: "ExsysBackend-DevOps"
+                path: "DevOps"
 
-        -   name: Copy files to ExsysBackend-DevOps
+        -   name: Copy files to DevOps
             run: |
-                cp -r k8s/${{ inputs.environment }}/* ExsysBackend-DevOps/k8s/${{ inputs.environment }}/
+                cp -r k8s/${{ inputs.environment }}/* DevOps/ExsysBackend/${{ inputs.environment }}/
             shell: bash
 
-        -   name: Push changes to ExsysBackend-DevOps
+        -   name: Push changes to DevOps
             run: |
-                cd ExsysBackend-DevOps
-                git add k8s/${{ inputs.environment }}/*
-                git commit -m "${{ inputs.environment }}: ${{ github.sha }}"
+                cd DevOps
+                git add ExsysBackend/${{ inputs.environment }}/*
+                git commit -m "ExsysBackend/${{ inputs.environment }}: ${{ github.sha }}"
                 git push origin HEAD
             shell: bash
