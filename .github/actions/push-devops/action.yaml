@@ -41,6 +41,7 @@ runs:
 
         -   name: Copy files to DevOps
             run: |
+                mkdir -p DevOps/ExsysBackend/${{ inputs.environment }}
                 cp -r k8s/${{ inputs.environment }}/* DevOps/ExsysBackend/${{ inputs.environment }}/
             shell: bash
 
