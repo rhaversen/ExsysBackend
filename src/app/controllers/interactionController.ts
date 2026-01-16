@@ -1,7 +1,7 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import mongoose, { type FlattenMaps } from 'mongoose'
 
-import InteractionModel, { type IInteraction, type IInteractionFrontend } from '../models/Interaction.js'
+import InteractionModel, { type IInteraction, type IInteractionFrontend, type InteractionMetadata } from '../models/Interaction.js'
 import { type IKiosk } from '../models/Kiosk.js'
 import logger from '../utils/logger.js'
 import { emitInteractionCreated } from '../webSockets/interactionHandlers.js'
@@ -9,6 +9,7 @@ import { emitInteractionCreated } from '../webSockets/interactionHandlers.js'
 interface InteractionInput {
 	type: string
 	timestamp: string
+	metadata?: InteractionMetadata
 }
 
 interface CreateInteractionsRequest extends Request {
@@ -25,6 +26,7 @@ export function transformInteraction (interaction: IInteraction | FlattenMaps<II
 		kioskId: interaction.kioskId.toString(),
 		type: interaction.type,
 		timestamp: interaction.timestamp.toISOString(),
+		metadata: interaction.metadata,
 		createdAt: interaction.createdAt.toISOString(),
 		updatedAt: interaction.updatedAt.toISOString()
 	}
@@ -56,7 +58,8 @@ export async function createInteractions (req: CreateInteractionsRequest, res: R
 			sessionId,
 			kioskId: kiosk._id,
 			type: i.type,
-			timestamp: new Date(i.timestamp)
+			timestamp: new Date(i.timestamp),
+			metadata: i.metadata
 		}))
 
 		const created = await InteractionModel.insertMany(docs)

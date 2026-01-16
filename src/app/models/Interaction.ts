@@ -2,12 +2,21 @@ import { type Document, model, Schema, Types } from 'mongoose'
 
 import logger from '../utils/logger.js'
 
+export interface InteractionMetadata {
+	activityId?: string
+	roomId?: string
+	productId?: string
+	optionId?: string
+	orderId?: string
+}
+
 export interface IInteraction extends Document {
 	_id: Types.ObjectId
 	sessionId: string
 	kioskId: Types.ObjectId
 	type: string
 	timestamp: Date
+	metadata?: InteractionMetadata
 	createdAt: Date
 	updatedAt: Date
 }
@@ -18,6 +27,7 @@ export interface IInteractionFrontend {
 	kioskId: string
 	type: string
 	timestamp: string
+	metadata?: InteractionMetadata
 	createdAt: string
 	updatedAt: string
 }
@@ -45,6 +55,10 @@ const interactionSchema = new Schema<IInteraction>({
 		type: Schema.Types.Date,
 		required: [true, 'Tidsstempel er påkrævet'],
 		index: true
+	},
+	metadata: {
+		type: Schema.Types.Mixed,
+		required: false
 	}
 }, {
 	timestamps: true
