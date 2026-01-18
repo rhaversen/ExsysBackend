@@ -2,120 +2,13 @@ name: Development Testing CI
 
 on:
     pull_request:
-        branches: [ "development" ]
+        branches: ["development"]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Setup environment
-                uses: ./.github/actions/setup
-
-            -   name: Build
-                run: npm run build
-
-            -   name: Archive production artifacts
-                uses: actions/upload-artifact@v4
-                with:
-                    name: dist
-                    path: dist
-
-    test-unit:
-        runs-on: ubuntu-latest
-        needs: build
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Setup environment
-                uses: ./.github/actions/setup
-
-            -   name: Download build artifacts
-                uses: actions/download-artifact@v4
-                with:
-                    name: dist
-                    path: dist
-
-            -   name: Unit tests
-                run: npm run test:unit
-
-    test-integration:
-        runs-on: ubuntu-latest
-        needs: build
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Setup environment
-                uses: ./.github/actions/setup
-
-            -   name: Download build artifacts
-                uses: actions/download-artifact@v4
-                with:
-                    name: dist
-                    path: dist
-
-            -   name: Integration tests
-                run: npm run test:integration
-
-    test-developmentEnvironment:
-        runs-on: ubuntu-latest
-        needs: build
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Setup environment
-                uses: ./.github/actions/setup
-
-            -   name: Download build artifacts
-                uses: actions/download-artifact@v4
-                with:
-                    name: dist
-                    path: dist
-
-            -   name: Development environment tests
-                run: npm run test:development
-
-    test-lint:
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Setup environment
-                uses: ./.github/actions/setup
-
-            -   name: Lint tests
-                run: npm run lint
-
-    spellcheck:
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Setup environment
-                uses: ./.github/actions/setup
-
-            -   name: Run spellcheck
-                run: npm run spellcheck
-
-    test-image:
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v4
-
-            -   name: Download production artifacts
-                uses: actions/download-artifact@v4
-                with:
-                    name: dist
-                    path: dist
-
-            -   name: Build Docker image
-                uses: ./.github/actions/build-dockerfile
+    test:
+        uses: rhaversen/.github/.github/workflows/development-backend.yml@main
+        with:
+            node_version: "lts/*"
+            run_unit_tests: true
+            run_integration_tests: true
+            run_development_tests: true

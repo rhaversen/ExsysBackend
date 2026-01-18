@@ -10,8 +10,7 @@
 		"test:development": "mocha --reporter spec --recursive \"dist/test/development/**/*.spec.js\"",
 		"lint": "npx eslint \"**/*.ts\"",
 		"lint:fix": "npx eslint \"**/*.ts\" --fix",
-		"spellcheck": "npx cspell .",
-		"sentry:sourcemaps": "sentry-cli sourcemaps inject --org aarhus-universitet-c9cd1e514 --project exsys-backend ./dist && sentry-cli sourcemaps upload --org aarhus-universitet-c9cd1e514 --project exsys-backend ./dist"
+		"spellcheck": "npx cspell ."
 	},
 	"engines": {
 		"node": ">=24.0.0"
