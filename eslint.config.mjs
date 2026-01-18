@@ -60,7 +60,7 @@ export default tseslint.config(
 		rules: {
 			// TypeScript specific rules
 			'@typescript-eslint/strict-boolean-expressions': 'error',
-			'@typescript-eslint/no-unused-vars': 'warn',
+			'@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
 
 			// Disallow console.log
 			'no-console': ['error'],
