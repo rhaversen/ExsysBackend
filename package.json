@@ -4,7 +4,7 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "node \"index.js\"",
-		"dev": "if exist dist rmdir /s /q dist && tsc && node --env-file .env \"dist/development/index.js\"",
+		"dev": "(if exist dist rmdir /s /q dist) & tsc && node --env-file .env \"dist/development/index.js\"",
 		"test:unit": "mocha --reporter spec --recursive \"dist/test/unit/**/*.spec.js\"",
 		"test:integration": "mocha --reporter spec --recursive \"dist/test/integration/**/*.spec.js\"",
 		"test:development": "mocha --reporter spec --recursive \"dist/test/development/**/*.spec.js\"",
