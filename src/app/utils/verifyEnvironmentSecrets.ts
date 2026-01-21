@@ -24,9 +24,7 @@ const envSecrets = [
 
 const envSecretsDev = [
 	'NODE_ENV',
-	'SESSION_SECRET',
-	'SUMUP_API_KEY',
-	'SUMUP_MERCHANT_CODE'
+	'SESSION_SECRET'
 ]
 
 const envSecretsTest = [
