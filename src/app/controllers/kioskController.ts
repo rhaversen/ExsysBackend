@@ -74,6 +74,12 @@ export async function getMe (req: Request, res: Response, next: NextFunction): P
 			return
 		}
 
+		if (kiosk.id == null) {
+			logger.error('Get me (kiosk) failed: Kiosk ID is undefined')
+			res.status(500).json({ error: 'Intern serverfejl: Kiosk ID mangler' })
+			return
+		}
+
 		const transformedKiosk = transformKiosk(kiosk)
 		logger.debug(`Retrieved current kiosk successfully: ID ${kiosk.id}, Name: ${kiosk.name}`)
 		res.status(200).json(transformedKiosk)
