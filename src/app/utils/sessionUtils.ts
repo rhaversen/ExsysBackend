@@ -3,7 +3,7 @@ import { publicIpv4 } from 'public-ip'
 
 let serverIp
 
-async function getServerIpWithRetry(maxRetries = 3): Promise<string | null> {
+async function getServerIpWithRetry (maxRetries = 3): Promise<string | null> {
 	for (let i = 0; i < maxRetries; i++) {
 		try {
 			return await publicIpv4() // Get the server's public IP address
