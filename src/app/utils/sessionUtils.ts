@@ -28,7 +28,7 @@ export const getIPAddress = (req: express.Request): string => {
 	// If the request is from localhost or a private IP, set the session IP address to the server's IP
 	if (req.ip === undefined) {
 		return 'Ukendt IP'
-	} else if (req.ip === '::1' || req.ip === '127.0. 0.1' || req.ip?.includes('192.168')) {
+	} else if (req.ip === '::1' || req.ip === '127.0.0.1' || req.ip.startsWith('192.168.') || req.ip.startsWith('10.') || /^172\.(1[6-9]|2\d|3[01])\./.test(req.ip)) {
 		return serverIp ?? 'server offline'
 	} else {
 		return req.ip
