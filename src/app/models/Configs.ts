@@ -14,6 +14,7 @@ export interface IConfigs extends Document {
 	kioskPassword: string
 	kioskFeedbackBannerDelayMs: number
 	kioskWelcomeMessage: string
+	kioskReloadMsSinceMidnight: number
 
 	// Timestamps
 	createdAt: Date
@@ -29,7 +30,8 @@ export interface IConfigsFrontend {
 		disabledWeekdays: number[] // 0=Monday, 6=Sunday
 		kioskPassword: string
 		kioskFeedbackBannerDelayMs: number
-		kioskWelcomeMessage: string
+		kioskWelcomeMessage: string,
+		kioskReloadMsSinceMidnight: number
 	},
 	createdAt: Date
 	updatedAt: Date
@@ -90,6 +92,16 @@ const configsSchema = new Schema<IConfigs>({
 		default: 'Bestilling af brød, kaffe og the',
 		minLength: [1, 'Velkomstbesked skal være mindst 1 tegn'],
 		maxLength: [200, 'Velkomstbesked kan højest være 200 tegn']
+	},
+	kioskReloadMsSinceMidnight: {
+		type: Schema.Types.Number,
+		default: 10800000, // 3 AM (3 * 60 * 60 * 1000)
+		min: [3600000, 'Kiosk genindlæsningstidspunkt skal være mindst kl. 01:00'],
+		max: [39600000, 'Kiosk genindlæsningstidspunkt skal være senest kl. 11:00'],
+		validate: {
+			validator: Number.isInteger,
+			message: 'Kiosk genindlæsningstidspunkt skal være et heltal'
+		}
 	}
 }, {
 	timestamps: true
