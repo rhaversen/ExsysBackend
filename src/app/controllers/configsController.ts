@@ -16,7 +16,8 @@ export function transformConfigs (
 			disabledWeekdays: configsDoc.disabledWeekdays,
 			kioskPassword: configsDoc.kioskPassword,
 			kioskFeedbackBannerDelayMs: configsDoc.kioskFeedbackBannerDelayMs,
-			kioskWelcomeMessage: configsDoc.kioskWelcomeMessage
+			kioskWelcomeMessage: configsDoc.kioskWelcomeMessage,
+			kioskReloadMsSinceMidnight: configsDoc.kioskReloadMsSinceMidnight
 		},
 		createdAt: configsDoc.createdAt,
 		updatedAt: configsDoc.updatedAt
@@ -104,6 +105,11 @@ export async function patchConfigs (req: Request, res: Response, next: NextFunct
 		if (req.body.kioskWelcomeMessage !== undefined && configs.kioskWelcomeMessage !== req.body.kioskWelcomeMessage) {
 			logger.debug(`Updating kioskWelcomeMessage for configs ID ${configs.id}`)
 			configs.kioskWelcomeMessage = req.body.kioskWelcomeMessage
+			updateApplied = true
+		}
+		if (req.body.kioskReloadMsSinceMidnight !== undefined && configs.kioskReloadMsSinceMidnight !== req.body.kioskReloadMsSinceMidnight) {
+			logger.debug(`Updating kioskReloadMsSinceMidnight for configs ID ${configs.id}`)
+			configs.kioskReloadMsSinceMidnight = req.body.kioskReloadMsSinceMidnight
 			updateApplied = true
 		}
 
