@@ -507,9 +507,8 @@ export async function updateOrderStatus (req: Request, res: Response, next: Next
 		for (const order of ordersToUpdate) {
 			if (order.status !== status) {
 				logger.silly(`Updating status for Order ID ${order.id} from "${order.status ?? 'N/A'}" to "${status}"`)
-				order.status = status as 'pending' | 'confirmed' | 'delivered' // Update the status
-				await order.validate() // Validate any changes (though only status changed here)
-				await order.save({ session }) // Save each order individually
+				order.status = status as 'pending' | 'confirmed' | 'delivered'
+				await order.save({ session, validateModifiedOnly: true })
 				updatedCount++
 				updatedOrderDocs.push(order) // Collect the updated orders for response
 			} else {
